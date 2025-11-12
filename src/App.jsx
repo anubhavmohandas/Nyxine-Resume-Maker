@@ -14,6 +14,7 @@ const NyxineResumeMaker = () => {
     additional: { volunteer: '', awards: '', publications: '' }
   });
   const [savedResumes, setSavedResumes] = useState([]);
+  const [isProcessingUpload, setIsProcessingUpload] = useState(false);
   const saveTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -58,11 +59,197 @@ const NyxineResumeMaker = () => {
     { name: 'Additional', icon: Award }
   ];
 
-  const handleFileUpload = (e) => {
-    if (e.target.files[0]) {
-      alert('Resume upload coming soon! AI extraction will be available in the next version.');
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|docx|doc)$/i)) {
+      alert('Please upload a PDF or DOCX file');
+      return;
+    }
+
+    setIsProcessingUpload(true);
+
+    try {
+      let extractedText = '';
+
+      // Extract text based on file type
+      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        // For PDF: Use basic text extraction
+        const arrayBuffer = await file.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const decoder = new TextDecoder('utf-8');
+        extractedText = decoder.decode(uint8Array);
+        
+        // Clean up PDF extraction artifacts
+        extractedText = extractedText
+          .replace(/[^\x20-\x7E\n]/g, ' ') // Remove non-printable chars
+          .replace(/\s+/g, ' ') // Collapse whitespace
+          .trim();
+        
+      } else if (file.name.match(/\.docx?$/i)) {
+        // For DOCX: Read as text (basic extraction)
+        const text = await file.text();
+        extractedText = text;
+      }
+
+      // If extraction failed or text is too short
+      if (!extractedText || extractedText.length < 50) {
+        throw new Error('Could not extract text from file. The file might be image-based or corrupted.');
+      }
+
+      // Parse with AI
+      const prompt = `You are a resume parsing expert. Extract structured data from this resume text and return ONLY valid JSON.
+
+RESUME TEXT:
+${extractedText.slice(0, 6000)}
+
+Return ONLY a JSON object in this EXACT format (no markdown, no backticks, no extra text):
+{
+  "personal": {
+    "fullName": "",
+    "email": "",
+    "phone": "",
+    "location": "",
+    "linkedin": "",
+    "portfolio": "",
+    "github": ""
+  },
+  "workExperience": [
+    {
+      "title": "",
+      "company": "",
+      "location": "",
+      "startDate": "YYYY-MM",
+      "endDate": "YYYY-MM",
+      "current": false,
+      "bullets": ["achievement 1", "achievement 2"]
+    }
+  ],
+  "education": [
+    {
+      "degree": "",
+      "major": "",
+      "school": "",
+      "location": "",
+      "graduationDate": "YYYY-MM",
+      "gpa": ""
+    }
+  ],
+  "skills": {
+    "technical": [],
+    "soft": [],
+    "certifications": [],
+    "languages": []
+  },
+  "projects": [
+    {
+      "name": "",
+      "description": "",
+      "technologies": "",
+      "link": ""
+    }
+  ],
+  "additional": {
+    "volunteer": "",
+    "awards": "",
+    "publications": ""
+  }
+}
+
+IMPORTANT RULES:
+1. Extract ALL information you can find
+2. For dates, use YYYY-MM format (e.g., "2023-01")
+3. If current job, set "current": true and "endDate": ""
+4. Separate technical vs soft skills appropriately
+5. Extract complete bullet points for each job
+6. Include ALL jobs, education, and projects found
+7. Return ONLY the JSON object, no other text
+8. If a field is not found, use empty string "" or empty array []`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`AI parsing failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      let responseText = data.content[0].text;
+
+      // Clean up response
+      responseText = responseText
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim();
+
+      const parsed = JSON.parse(responseText);
+
+      // Add IDs to arrays
+      if (parsed.workExperience) {
+        parsed.workExperience = parsed.workExperience.map((job, idx) => ({
+          ...job,
+          id: Date.now() + idx,
+          bullets: Array.isArray(job.bullets) ? job.bullets : [job.bullets || '']
+        }));
+      }
+
+      if (parsed.education) {
+        parsed.education = parsed.education.map((edu, idx) => ({
+          ...edu,
+          id: Date.now() + idx + 1000
+        }));
+      }
+
+      if (parsed.projects) {
+        parsed.projects = parsed.projects.map((proj, idx) => ({
+          ...proj,
+          id: Date.now() + idx + 2000
+        }));
+      }
+
+      // Ensure skills structure
+      if (!parsed.skills) {
+        parsed.skills = { technical: [], soft: [], certifications: [], languages: [] };
+      }
+
+      // Merge with existing profile (in case user wants to keep some data)
+      setProfile(prev => ({
+        personal: { ...prev.personal, ...parsed.personal },
+        workExperience: parsed.workExperience || prev.workExperience,
+        education: parsed.education || prev.education,
+        skills: {
+          technical: parsed.skills.technical || prev.skills.technical,
+          soft: parsed.skills.soft || prev.skills.soft,
+          certifications: parsed.skills.certifications || prev.skills.certifications,
+          languages: parsed.skills.languages || prev.skills.languages
+        },
+        projects: parsed.projects || prev.projects,
+        additional: { ...prev.additional, ...parsed.additional }
+      }));
+
+      alert('✅ Resume parsed successfully! Please review and edit the extracted information.');
       setCurrentView('wizard');
       setCurrentStep(0);
+
+    } catch (error) {
+      console.error('Resume upload error:', error);
+      alert(`❌ Failed to parse resume: ${error.message}\n\nPlease try:\n1. A different file format\n2. Manual entry (Start Fresh)`);
+    } finally {
+      setIsProcessingUpload(false);
+      // Clear the file input
+      e.target.value = '';
     }
   };
 
@@ -111,7 +298,7 @@ const NyxineResumeMaker = () => {
   };
 
   if (currentView === 'landing') {
-    return <LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} handleFileUpload={handleFileUpload} profile={profile} savedResumes={savedResumes} />;
+    return <LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} handleFileUpload={handleFileUpload} profile={profile} savedResumes={savedResumes} isProcessingUpload={isProcessingUpload} />;
   }
 
   if (currentView === 'wizard') {
@@ -130,7 +317,7 @@ const NyxineResumeMaker = () => {
   return null;
 };
 
-const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, handleFileUpload, profile, savedResumes }) => {
+const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, handleFileUpload, profile, savedResumes, isProcessingUpload }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
@@ -168,11 +355,32 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
               <h3 className="text-lg font-semibold text-slate-200 mb-2">Upload Resume</h3>
               <p className="text-slate-400 text-sm mb-4">AI extracts your info</p>
               <label className="block">
-                <input type="file" accept=".pdf,.docx" onChange={handleFileUpload} className="hidden" />
-                <div className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer text-center transition-colors">
-                  Choose File
+                <input 
+                  type="file" 
+                  accept=".pdf,.docx,.doc" 
+                  onChange={handleFileUpload} 
+                  disabled={isProcessingUpload}
+                  className="hidden" 
+                />
+                <div className={`px-4 py-3 ${isProcessingUpload ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'} text-white rounded-lg text-center transition-colors`}>
+                  {isProcessingUpload ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    'Choose File'
+                  )}
                 </div>
               </label>
+              {isProcessingUpload && (
+                <p className="text-xs text-blue-400 mt-2 text-center">
+                  Extracting and parsing resume...
+                </p>
+              )}
             </div>
 
             <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50 hover:border-purple-500/50 transition-colors">
@@ -764,16 +972,26 @@ const EduForm = ({ edu, idx, setProfile, removeEdu }) => {
 };
 
 const SkillsStep = ({ profile, setProfile }) => {
-  const [newSkill, setNewSkill] = useState({ technical: '', soft: '', certifications: '', languages: '' });
+  // 🔧 FIX: Use refs to prevent re-render on every keystroke
+  const technicalInputRef = useRef(null);
+  const softInputRef = useRef(null);
+  const certificationsInputRef = useRef(null);
+  const languagesInputRef = useRef(null);
 
-  const addSkill = (cat) => {
-    if (!newSkill[cat].trim()) return;
+  const addSkill = (cat, inputRef) => {
+    const value = inputRef.current?.value.trim();
+    if (!value) return;
+    
     setProfile(prev => {
       const newSkills = { ...prev.skills };
-      newSkills[cat] = [...newSkills[cat], newSkill[cat].trim()];
+      newSkills[cat] = [...newSkills[cat], value];
       return { ...prev, skills: newSkills };
     });
-    setNewSkill(prev => ({ ...prev, [cat]: '' }));
+    
+    if (inputRef.current) {
+      inputRef.current.value = '';
+      inputRef.current.focus();
+    }
   };
 
   const removeSkill = (cat, idx) => {
@@ -784,19 +1002,23 @@ const SkillsStep = ({ profile, setProfile }) => {
     });
   };
 
-  const SkillSection = ({ title, cat, placeholder, color }) => (
+  const SkillSection = ({ title, cat, placeholder, color, inputRef }) => (
     <div>
       <label className="block text-sm text-slate-300 mb-2">{title}</label>
       <div className="flex gap-2 mb-2">
         <input
+          ref={inputRef}
           type="text"
-          value={newSkill[cat]}
-          onChange={(e) => setNewSkill(prev => ({ ...prev, [cat]: e.target.value }))}
-          onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(cat); } }}
+          onKeyPress={(e) => { 
+            if (e.key === 'Enter') { 
+              e.preventDefault(); 
+              addSkill(cat, inputRef); 
+            } 
+          }}
           className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           placeholder={placeholder}
         />
-        <button onClick={() => addSkill(cat)} className={`px-4 py-2 ${color} text-white rounded-lg transition-colors`}>
+        <button onClick={() => addSkill(cat, inputRef)} className={`px-4 py-2 ${color} text-white rounded-lg transition-colors`}>
           <Plus className="w-4 h-4" />
         </button>
       </div>
@@ -816,10 +1038,10 @@ const SkillsStep = ({ profile, setProfile }) => {
   return (
     <div className="space-y-6">
       <p className="text-slate-400 text-sm">Type a skill and press Enter or click + to add. List 10-15 skills most relevant to your target jobs.</p>
-      <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." color="bg-blue-600" />
-      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." color="bg-purple-600" />
-      <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." color="bg-green-600" />
-      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." color="bg-yellow-600" />
+      <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." color="bg-blue-600" inputRef={technicalInputRef} />
+      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." color="bg-teal-600" inputRef={softInputRef} />
+      <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." color="bg-green-600" inputRef={certificationsInputRef} />
+      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." color="bg-yellow-600" inputRef={languagesInputRef} />
     </div>
   );
 };
@@ -1122,28 +1344,30 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
 
 const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-8 max-w-5xl mx-auto">
-      <div className="grid grid-cols-3 gap-6">
-        {/* Left sidebar */}
-        <div className="col-span-1 bg-gray-50 p-6 -m-8 mr-0 min-h-full">
+    <div className="bg-white p-10 max-w-6xl mx-auto">
+      <div className="grid grid-cols-[300px_1fr] gap-8">
+        {/* Left sidebar - Contact & Skills */}
+        <div className="bg-gray-100 p-6 rounded-lg">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.personal.fullName}</h1>
-            <div className="text-xs text-gray-600 space-y-1 mt-3">
-              <p>{profile.personal.email}</p>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">{profile.personal.fullName}</h1>
+            <div className="text-xs text-gray-700 space-y-1.5">
+              <p className="break-words">{profile.personal.email}</p>
               <p>{profile.personal.phone}</p>
               <p>{profile.personal.location}</p>
-              {profile.personal.linkedin && <p className="text-blue-600 break-all">{profile.personal.linkedin}</p>}
-              {profile.personal.portfolio && <p className="text-blue-600 break-all">{profile.personal.portfolio}</p>}
-              {profile.personal.github && <p className="text-blue-600 break-all">{profile.personal.github}</p>}
+              {profile.personal.linkedin && <p className="text-blue-600 break-words text-xs">{profile.personal.linkedin.replace('https://', '')}</p>}
+              {profile.personal.github && <p className="text-blue-600 break-words text-xs">{profile.personal.github.replace('https://', '')}</p>}
             </div>
           </div>
 
           {displaySkills.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-sm font-bold text-gray-900 border-b border-gray-300 pb-1 mb-2">SKILLS</h2>
+              <h2 className="text-sm font-bold text-gray-900 mb-2 pb-1 border-b border-gray-300">SKILLS</h2>
               <div className="text-xs text-gray-700 space-y-1">
                 {displaySkills.map((skill, idx) => (
-                  <div key={idx}>• {skill}</div>
+                  <div key={idx} className="flex items-start">
+                    <span className="mr-1">•</span>
+                    <span>{skill}</span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -1151,37 +1375,37 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
 
           {profile.education.length > 0 && (
             <div>
-              <h2 className="text-sm font-bold text-gray-900 border-b border-gray-300 pb-1 mb-2">EDUCATION</h2>
+              <h2 className="text-sm font-bold text-gray-900 mb-2 pb-1 border-b border-gray-300">EDUCATION</h2>
               {profile.education.map(edu => (
                 <div key={edu.id} className="mb-3 text-xs">
-                  <div className="font-semibold text-gray-900">{edu.degree}</div>
-                  <div className="text-gray-700">{edu.major}</div>
+                  <div className="font-bold text-gray-900">{edu.degree}</div>
+                  <div className="text-gray-700 font-medium">{edu.major}</div>
                   <div className="text-gray-600">{edu.school}</div>
-                  <div className="text-gray-500">{edu.graduationDate}</div>
-                  {edu.gpa && <div className="text-gray-500">GPA: {edu.gpa}</div>}
+                  <div className="text-gray-500 text-xs mt-0.5">{edu.graduationDate}</div>
+                  {edu.gpa && <div className="text-gray-500 text-xs">GPA: {edu.gpa}</div>}
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right main content */}
-        <div className="col-span-2">
+        {/* Right main content - Experience & Projects */}
+        <div>
           {selectedJobs.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-gray-900 border-b-2 border-gray-300 pb-1 mb-3">EXPERIENCE</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">EXPERIENCE</h2>
               {selectedJobs.map(job => (
-                <div key={job.id} className="mb-4">
-                  <div className="flex justify-between items-start mb-1">
-                    <div>
-                      <h3 className="text-base font-semibold text-gray-900">{job.title}</h3>
-                      <p className="text-sm text-gray-700 italic">{job.company}</p>
-                    </div>
-                    <p className="text-xs text-gray-600 whitespace-nowrap ml-2">{job.startDate} - {job.current ? 'Present' : job.endDate}</p>
+                <div key={job.id} className="mb-5">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
+                    <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
+                      {job.startDate} - {job.current ? 'Present' : job.endDate}
+                    </span>
                   </div>
-                  <ul className="list-disc list-inside space-y-0.5 text-sm text-gray-700">
+                  <p className="text-sm text-gray-700 italic mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
+                  <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
                     {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
-                      <li key={idx}>{bullet}</li>
+                      <li key={idx} className="leading-relaxed">{bullet}</li>
                     ))}
                   </ul>
                 </div>
@@ -1191,13 +1415,17 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
 
           {displayProjects.length > 0 && (
             <div>
-              <h2 className="text-lg font-bold text-gray-900 border-b-2 border-gray-300 pb-1 mb-3">PROJECTS</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">PROJECTS</h2>
               {displayProjects.map(proj => (
-                <div key={proj.id} className="mb-3">
-                  <h3 className="text-base font-semibold text-gray-900">{proj.name}</h3>
-                  <p className="text-sm text-gray-700">{proj.description}</p>
-                  {proj.technologies && <p className="text-xs text-gray-600 mt-1"><strong>Tech:</strong> {proj.technologies}</p>}
-                  {proj.link && <p className="text-xs text-blue-600 mt-1">{proj.link}</p>}
+                <div key={proj.id} className="mb-4">
+                  <h3 className="text-base font-bold text-gray-900">{proj.name}</h3>
+                  <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                  {proj.technologies && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      <span className="font-semibold">Technologies:</span> {proj.technologies}
+                    </p>
+                  )}
+                  {proj.link && <p className="text-xs text-blue-600 mt-1 break-words">{proj.link}</p>}
                 </div>
               ))}
             </div>
@@ -1210,31 +1438,40 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
 
 const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Georgia, Times New Roman, serif' }}>
-      <div className="text-center border-b-2 border-black pb-4 mb-6">
-        <h1 className="text-3xl font-bold mb-2">{profile.personal.fullName}</h1>
-        <p className="text-sm">{profile.personal.email} | {profile.personal.phone} | {profile.personal.location}</p>
-        {(profile.personal.linkedin || profile.personal.portfolio || profile.personal.github) && (
-          <p className="text-sm text-blue-600 mt-1">
-            {[profile.personal.linkedin, profile.personal.portfolio, profile.personal.github].filter(Boolean).join(' | ')}
+    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+      {/* Header */}
+      <div className="text-center mb-6 pb-4 border-b-2 border-black">
+        <h1 className="text-3xl font-bold mb-2 tracking-wide">{profile.personal.fullName.toUpperCase()}</h1>
+        <p className="text-sm text-gray-700">
+          {profile.personal.email} | {profile.personal.phone} | {profile.personal.location}
+        </p>
+        {(profile.personal.linkedin || profile.personal.github) && (
+          <p className="text-sm text-blue-700 mt-1">
+            {[profile.personal.linkedin, profile.personal.github]
+              .filter(Boolean)
+              .map(link => link.replace('https://', ''))
+              .join(' | ')}
           </p>
         )}
       </div>
 
       <div className="space-y-5">
+        {/* Experience */}
         {selectedJobs.length > 0 && (
           <div>
-            <h2 className="text-xl font-bold text-center mb-3">PROFESSIONAL EXPERIENCE</h2>
+            <h2 className="text-lg font-bold text-center mb-3 tracking-wide">PROFESSIONAL EXPERIENCE</h2>
             {selectedJobs.map(job => (
               <div key={job.id} className="mb-4">
-                <div className="flex justify-between items-start mb-1">
+                <div className="flex justify-between items-baseline mb-1">
                   <div>
-                    <h3 className="text-lg font-semibold">{job.title}</h3>
-                    <p className="text-base italic">{job.company}, {job.location}</p>
+                    <h3 className="text-base font-bold">{job.title}</h3>
+                    <p className="text-sm italic">{job.company}{job.location && `, ${job.location}`}</p>
                   </div>
-                  <p className="text-sm whitespace-nowrap ml-4">{job.startDate} - {job.current ? 'Present' : job.endDate}</p>
+                  <span className="text-sm whitespace-nowrap ml-4">
+                    {job.startDate} – {job.current ? 'Present' : job.endDate}
+                  </span>
                 </div>
-                <ul className="list-disc ml-6 space-y-1 text-base">
+                <ul className="list-disc ml-6 mt-2 space-y-1.5 text-sm leading-relaxed">
                   {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
                     <li key={idx}>{bullet}</li>
                   ))}
@@ -1244,40 +1481,49 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           </div>
         )}
 
+        {/* Education */}
         {profile.education.length > 0 && (
           <div>
-            <h2 className="text-xl font-bold text-center mb-3">EDUCATION</h2>
+            <h2 className="text-lg font-bold text-center mb-3 tracking-wide">EDUCATION</h2>
             {profile.education.map(edu => (
               <div key={edu.id} className="mb-3">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-baseline">
                   <div>
-                    <h3 className="text-lg font-semibold">{edu.degree} in {edu.major}</h3>
-                    <p className="text-base">{edu.school}{edu.location && `, ${edu.location}`}</p>
+                    <h3 className="text-base font-bold">{edu.degree} in {edu.major}</h3>
+                    <p className="text-sm">{edu.school}{edu.location && `, ${edu.location}`}</p>
                   </div>
-                  <p className="text-sm whitespace-nowrap ml-4">{edu.graduationDate}</p>
+                  <span className="text-sm whitespace-nowrap ml-4">{edu.graduationDate}</span>
                 </div>
-                {edu.gpa && <p className="text-sm mt-1">GPA: {edu.gpa}</p>}
+                {edu.gpa && <p className="text-sm text-gray-700 mt-1">GPA: {edu.gpa}</p>}
               </div>
             ))}
           </div>
         )}
 
+        {/* Skills */}
         {displaySkills.length > 0 && (
           <div>
-            <h2 className="text-xl font-bold text-center mb-3">SKILLS</h2>
-            <p className="text-base text-center">{displaySkills.join(' • ')}</p>
+            <h2 className="text-lg font-bold text-center mb-3 tracking-wide">SKILLS</h2>
+            <p className="text-sm text-center leading-relaxed">
+              {displaySkills.join(' • ')}
+            </p>
           </div>
         )}
 
+        {/* Projects */}
         {displayProjects.length > 0 && (
           <div>
-            <h2 className="text-xl font-bold text-center mb-3">PROJECTS</h2>
+            <h2 className="text-lg font-bold text-center mb-3 tracking-wide">PROJECTS</h2>
             {displayProjects.map(proj => (
               <div key={proj.id} className="mb-3">
-                <h3 className="text-lg font-semibold">{proj.name}</h3>
-                <p className="text-base">{proj.description}</p>
-                {proj.technologies && <p className="text-sm mt-1"><strong>Technologies:</strong> {proj.technologies}</p>}
-                {proj.link && <p className="text-sm text-blue-600 mt-1">{proj.link}</p>}
+                <h3 className="text-base font-bold">{proj.name}</h3>
+                <p className="text-sm mt-1 leading-relaxed">{proj.description}</p>
+                {proj.technologies && (
+                  <p className="text-sm text-gray-700 mt-1">
+                    <span className="font-semibold">Technologies:</span> {proj.technologies}
+                  </p>
+                )}
+                {proj.link && <p className="text-sm text-blue-700 mt-1 break-words">{proj.link}</p>}
               </div>
             ))}
           </div>
@@ -1290,34 +1536,43 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 const MinimalTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
     <div className="bg-white p-12 max-w-4xl mx-auto">
-      <div className="mb-12">
-        <h1 className="text-5xl font-light mb-3 tracking-tight">{profile.personal.fullName}</h1>
-        <p className="text-gray-500 text-sm uppercase tracking-widest">
+      {/* Header */}
+      <div className="mb-10">
+        <h1 className="text-4xl font-light mb-2 tracking-tight text-gray-900">
+          {profile.personal.fullName}
+        </h1>
+        <p className="text-gray-600 text-sm uppercase tracking-widest">
           {profile.personal.email} · {profile.personal.phone} · {profile.personal.location}
         </p>
-        {(profile.personal.linkedin || profile.personal.portfolio || profile.personal.github) && (
-          <p className="text-blue-500 text-sm mt-2">
-            {[profile.personal.linkedin, profile.personal.portfolio, profile.personal.github].filter(Boolean).join(' · ')}
+        {(profile.personal.linkedin || profile.personal.github) && (
+          <p className="text-blue-600 text-sm mt-1">
+            {[profile.personal.linkedin, profile.personal.github]
+              .filter(Boolean)
+              .map(link => link.replace('https://', ''))
+              .join(' · ')}
           </p>
         )}
       </div>
 
-      <div className="space-y-10">
+      <div className="space-y-8">
+        {/* Experience */}
         {selectedJobs.length > 0 && (
           <div>
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Experience</h2>
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Experience</h2>
             {selectedJobs.map(job => (
-              <div key={job.id} className="mb-6 pb-6 border-b border-gray-200 last:border-0">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-xl font-medium text-gray-900">{job.title}</h3>
-                    <p className="text-base text-gray-600">{job.company}</p>
-                  </div>
-                  <p className="text-sm text-gray-500 whitespace-nowrap ml-4">{job.startDate} – {job.current ? 'Present' : job.endDate}</p>
+              <div key={job.id} className="mb-6 pb-6 border-b border-gray-200 last:border-0 last:pb-0">
+                <div className="flex justify-between items-baseline mb-2">
+                  <h3 className="text-lg font-medium text-gray-900">{job.title}</h3>
+                  <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
+                    {job.startDate} – {job.current ? 'Present' : job.endDate}
+                  </span>
                 </div>
-                <ul className="space-y-2 text-gray-700">
+                <p className="text-base text-gray-700 mb-3">{job.company}{job.location && ` · ${job.location}`}</p>
+                <ul className="space-y-2 text-gray-800 text-sm">
                   {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
-                    <li key={idx} className="pl-0">— {bullet}</li>
+                    <li key={idx} className="pl-4 relative before:content-['—'] before:absolute before:left-0 leading-relaxed">
+                      {bullet}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -1325,40 +1580,43 @@ const MinimalTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           </div>
         )}
 
+        {/* Education */}
         {profile.education.length > 0 && (
           <div>
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Education</h2>
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Education</h2>
             {profile.education.map(edu => (
               <div key={edu.id} className="mb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-medium text-gray-900">{edu.degree}</h3>
-                    <p className="text-base text-gray-600">{edu.major} · {edu.school}</p>
-                  </div>
-                  <p className="text-sm text-gray-500 whitespace-nowrap ml-4">{edu.graduationDate}</p>
+                <div className="flex justify-between items-baseline">
+                  <h3 className="text-lg font-medium text-gray-900">{edu.degree}</h3>
+                  <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
                 </div>
-                {edu.gpa && <p className="text-sm text-gray-500 mt-1">GPA: {edu.gpa}</p>}
+                <p className="text-base text-gray-700">{edu.major} · {edu.school}</p>
+                {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
               </div>
             ))}
           </div>
         )}
 
+        {/* Skills */}
         {displaySkills.length > 0 && (
           <div>
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Skills</h2>
-            <p className="text-gray-700 leading-relaxed">{displaySkills.join(' · ')}</p>
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Skills</h2>
+            <p className="text-gray-800 leading-relaxed">{displaySkills.join(' · ')}</p>
           </div>
         )}
 
+        {/* Projects */}
         {displayProjects.length > 0 && (
           <div>
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Projects</h2>
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Projects</h2>
             {displayProjects.map(proj => (
               <div key={proj.id} className="mb-4">
-                <h3 className="text-xl font-medium text-gray-900">{proj.name}</h3>
-                <p className="text-gray-700 mt-1">{proj.description}</p>
-                {proj.technologies && <p className="text-sm text-gray-500 mt-2">Technologies: {proj.technologies}</p>}
-                {proj.link && <p className="text-sm text-blue-500 mt-1">{proj.link}</p>}
+                <h3 className="text-lg font-medium text-gray-900">{proj.name}</h3>
+                <p className="text-gray-800 mt-1 leading-relaxed text-sm">{proj.description}</p>
+                {proj.technologies && (
+                  <p className="text-sm text-gray-600 mt-2">Technologies: {proj.technologies}</p>
+                )}
+                {proj.link && <p className="text-sm text-blue-600 mt-1 break-words">{proj.link}</p>}
               </div>
             ))}
           </div>
