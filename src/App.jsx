@@ -981,46 +981,78 @@ const SkillsStep = ({ profile, setProfile }) => {
     });
   };
 
-  const SkillSection = ({ title, cat, placeholder, color, inputRef }) => (
-    <div>
-      <label className="block text-sm text-slate-300 mb-2">{title}</label>
-      <div className="flex gap-2 mb-2">
-        <input
-          ref={inputRef}
-          type="text"
-          onKeyPress={(e) => { 
-            if (e.key === 'Enter') { 
-              e.preventDefault(); 
-              addSkill(cat, inputRef); 
-            } 
-          }}
-          className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-          placeholder={placeholder}
-        />
-        <button onClick={() => addSkill(cat, inputRef)} className={`px-4 py-2 ${color} text-white rounded-lg transition-colors`}>
-          <Plus className="w-4 h-4" />
-        </button>
+  // Color mapping for skill badges (Tailwind needs to see full class names)
+  const colorMap = {
+    'technical': {
+      button: 'bg-blue-500',
+      bg: 'bg-blue-500/20',
+      text: 'text-blue-100',
+      border: 'border-blue-400/30'
+    },
+    'soft': {
+      button: 'bg-cyan-400',
+      bg: 'bg-cyan-400/20',
+      text: 'text-cyan-100',
+      border: 'border-cyan-300/30'
+    },
+    'certifications': {
+      button: 'bg-green-500',
+      bg: 'bg-green-500/20',
+      text: 'text-green-100',
+      border: 'border-green-400/30'
+    },
+    'languages': {
+      button: 'bg-amber-400',
+      bg: 'bg-amber-400/20',
+      text: 'text-amber-100',
+      border: 'border-amber-300/30'
+    }
+  };
+
+  const SkillSection = ({ title, cat, placeholder, inputRef }) => {
+    const colors = colorMap[cat];
+
+    return (
+      <div>
+        <label className="block text-sm text-slate-300 mb-2">{title}</label>
+        <div className="flex gap-2 mb-2">
+          <input
+            ref={inputRef}
+            type="text"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addSkill(cat, inputRef);
+              }
+            }}
+            className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            placeholder={placeholder}
+          />
+          <button onClick={() => addSkill(cat, inputRef)} className={`px-4 py-2 ${colors.button} text-white rounded-lg transition-colors`}>
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {profile.skills[cat].map((skill, idx) => (
+            <span key={idx} className={`px-3 py-1 ${colors.bg} ${colors.text} rounded-full text-sm flex items-center gap-2 border ${colors.border}`}>
+              {skill}
+              <button onClick={() => removeSkill(cat, idx)} className="hover:opacity-80 transition-opacity">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {profile.skills[cat].map((skill, idx) => (
-          <span key={idx} className={`px-3 py-1 ${color}/20 ${color.replace('bg-', 'text-').replace('-500', '-100').replace('-400', '-100')} rounded-full text-sm flex items-center gap-2 border ${color.replace('bg-', 'border-').replace('-500', '-400').replace('-400', '-300')}/30`}>
-            {skill}
-            <button onClick={() => removeSkill(cat, idx)} className="hover:opacity-80 transition-opacity">
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
       <p className="text-slate-400 text-sm">Type a skill and press Enter or click + to add. List 10-15 skills most relevant to your target jobs.</p>
-      <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." color="bg-blue-500" inputRef={technicalInputRef} />
-      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." color="bg-cyan-400" inputRef={softInputRef} />
-      <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." color="bg-green-500" inputRef={certificationsInputRef} />
-      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." color="bg-amber-400" inputRef={languagesInputRef} />
+      <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." inputRef={technicalInputRef} />
+      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." inputRef={softInputRef} />
+      <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." inputRef={certificationsInputRef} />
+      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." inputRef={languagesInputRef} />
     </div>
   );
 };
