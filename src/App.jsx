@@ -350,37 +350,16 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50 hover:border-blue-500/50 transition-colors">
-              <Upload className="w-8 h-8 text-blue-400 mb-3" />
+            <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50 opacity-60 relative transition-colors">
+              <div className="absolute top-3 right-3 bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full border border-yellow-500/30">
+                🚧 Coming Soon
+              </div>
+              <Upload className="w-8 h-8 text-slate-500 mb-3" />
               <h3 className="text-lg font-semibold text-slate-200 mb-2">Upload Resume</h3>
-              <p className="text-slate-400 text-sm mb-4">AI extracts your info</p>
-              <label className="block">
-                <input 
-                  type="file" 
-                  accept=".pdf,.docx,.doc" 
-                  onChange={handleFileUpload} 
-                  disabled={isProcessingUpload}
-                  className="hidden" 
-                />
-                <div className={`px-4 py-3 ${isProcessingUpload ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'} text-white rounded-lg text-center transition-colors`}>
-                  {isProcessingUpload ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                      </svg>
-                      Processing...
-                    </span>
-                  ) : (
-                    'Choose File'
-                  )}
-                </div>
-              </label>
-              {isProcessingUpload && (
-                <p className="text-xs text-blue-400 mt-2 text-center">
-                  Extracting and parsing resume...
-                </p>
-              )}
+              <p className="text-slate-400 text-sm mb-4">This feature is under development</p>
+              <div className="px-4 py-3 bg-slate-600 cursor-not-allowed text-slate-400 rounded-lg text-center transition-colors">
+                Coming Soon
+              </div>
             </div>
 
             <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50 hover:border-purple-500/50 transition-colors">
@@ -1039,9 +1018,9 @@ const SkillsStep = ({ profile, setProfile }) => {
     <div className="space-y-6">
       <p className="text-slate-400 text-sm">Type a skill and press Enter or click + to add. List 10-15 skills most relevant to your target jobs.</p>
       <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." color="bg-blue-600" inputRef={technicalInputRef} />
-      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." color="bg-teal-600" inputRef={softInputRef} />
+      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." color="bg-cyan-500" inputRef={softInputRef} />
       <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." color="bg-green-600" inputRef={certificationsInputRef} />
-      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." color="bg-yellow-600" inputRef={languagesInputRef} />
+      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." color="bg-amber-500" inputRef={languagesInputRef} />
     </div>
   );
 };
@@ -1634,6 +1613,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [resumeName, setResumeName] = useState('');
 
+  // 🎯 Smart Local Keyword Matching Algorithm (No API needed!)
   const analyzeWithAI = async () => {
     if (!jobTarget.trim()) {
       alert('Please enter a job title or description');
@@ -1644,82 +1624,169 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
     setStep('analyzing');
 
     try {
-      const prompt = `You are a resume optimization expert. Analyze this job description and the candidate's profile, then rank their work experiences by relevance.
+      // Simulate processing time for better UX
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-JOB DESCRIPTION:
-${jobTarget}
+      // === STEP 1: Extract Keywords from Job Description ===
+      const extractKeywords = (text) => {
+        // Common stop words to filter out
+        const stopWords = new Set([
+          'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it',
+          'its', 'of', 'on', 'that', 'the', 'to', 'was', 'will', 'with', 'we', 'our', 'you', 'your',
+          'this', 'they', 'their', 'have', 'had', 'can', 'or', 'but', 'if', 'about', 'all', 'also',
+          'should', 'would', 'could', 'must', 'may', 'into', 'through', 'over', 'any', 'these',
+          'such', 'been', 'other', 'which', 'who', 'when', 'where', 'why', 'how', 'what'
+        ]);
 
-CANDIDATE PROFILE:
-${JSON.stringify(profile, null, 2)}
+        return text
+          .toLowerCase()
+          .replace(/[^\w\s+#]/g, ' ') // Keep + and # for tech terms like C++, C#
+          .split(/\s+/)
+          .filter(word => word.length > 2 && !stopWords.has(word))
+          .reduce((acc, word) => {
+            acc[word] = (acc[word] || 0) + 1;
+            return acc;
+          }, {});
+      };
 
-Return ONLY valid JSON in this exact format (no markdown, no backticks, no extra text):
-{
-  "rankedExperiences": [
-    {"id": 123, "relevanceScore": 95, "reason": "Direct match for role requirements"},
-    {"id": 456, "relevanceScore": 75, "reason": "Transferable skills"}
-  ],
-  "topSkills": ["Skill1", "Skill2", "Skill3", "Skill4", "Skill5", "Skill6", "Skill7", "Skill8"],
-  "atsScore": 85,
-  "keywordMatch": 90,
-  "authenticityScore": 88,
-  "suggestions": [
-    "Add specific metrics to bullet points",
-    "Include more technical keywords from job description"
-  ]
-}
+      const jobKeywords = extractKeywords(jobTarget);
+      const jobKeywordList = Object.keys(jobKeywords);
 
-IMPORTANT: Output ONLY the JSON object. No other text.`;
+      // === STEP 2: Score Each Work Experience ===
+      const scoreExperience = (experience) => {
+        const expText = `${experience.title} ${experience.company} ${experience.description}`.toLowerCase();
+        const expKeywords = extractKeywords(expText);
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          messages: [{ role: 'user', content: prompt }]
-        })
+        let matchScore = 0;
+        let matchedKeywords = [];
+
+        // Count keyword matches (weighted by frequency in job description)
+        for (const keyword of jobKeywordList) {
+          if (expText.includes(keyword)) {
+            const weight = jobKeywords[keyword];
+            matchScore += weight * 10; // Weight matches by importance
+            matchedKeywords.push(keyword);
+          }
+        }
+
+        // Bonus for title match
+        if (experience.title.toLowerCase().includes(jobTarget.split(' ')[0].toLowerCase())) {
+          matchScore += 30;
+        }
+
+        // Bonus for recent experience (within last 5 years)
+        const yearMatch = experience.duration.match(/(\d{4})/);
+        if (yearMatch) {
+          const year = parseInt(yearMatch[1]);
+          const currentYear = new Date().getFullYear();
+          if (currentYear - year <= 5) {
+            matchScore += 15;
+          }
+        }
+
+        // Normalize score to 0-100
+        const relevanceScore = Math.min(100, Math.max(20, matchScore));
+
+        return {
+          id: experience.id,
+          relevanceScore: Math.round(relevanceScore),
+          matchedKeywords: matchedKeywords.slice(0, 5),
+          reason: matchedKeywords.length > 0
+            ? `Matches ${matchedKeywords.length} key terms: ${matchedKeywords.slice(0, 3).join(', ')}`
+            : 'General professional experience'
+        };
+      };
+
+      // === STEP 3: Rank All Experiences ===
+      const rankedExperiences = profile.workExperience
+        .map(scoreExperience)
+        .sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+      // === STEP 4: Select Top Skills ===
+      const allSkills = [
+        ...profile.skills.technical,
+        ...profile.skills.soft,
+        ...profile.skills.certifications
+      ];
+
+      const skillScores = allSkills.map(skill => {
+        const skillLower = skill.toLowerCase();
+        let score = 0;
+
+        // Check if skill appears in job description
+        for (const keyword of jobKeywordList) {
+          if (skillLower.includes(keyword) || keyword.includes(skillLower)) {
+            score += 20;
+          }
+        }
+
+        // Prioritize technical skills
+        if (profile.skills.technical.includes(skill)) {
+          score += 10;
+        }
+
+        return { skill, score };
       });
 
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+      const topSkills = skillScores
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map(s => s.skill);
+
+      // If no matching skills, use top technical skills
+      const finalTopSkills = topSkills.length >= 6
+        ? topSkills
+        : profile.skills.technical.slice(0, 8);
+
+      // === STEP 5: Calculate ATS-Style Scores ===
+      const totalKeywords = jobKeywordList.length;
+      const matchedKeywordsInResume = new Set();
+
+      rankedExperiences.forEach(exp => {
+        exp.matchedKeywords?.forEach(kw => matchedKeywordsInResume.add(kw));
+      });
+
+      const keywordMatchPercent = totalKeywords > 0
+        ? Math.round((matchedKeywordsInResume.size / totalKeywords) * 100)
+        : 70;
+
+      const atsScore = Math.min(95, Math.max(60, keywordMatchPercent + 10));
+      const authenticityScore = 92; // High since we're using real profile data
+
+      // === STEP 6: Generate Helpful Suggestions ===
+      const suggestions = [];
+
+      if (keywordMatchPercent < 70) {
+        suggestions.push('Add more keywords from the job description to your bullet points');
       }
 
-      const data = await response.json();
-      let responseText = data.content[0].text;
-      
-      // Clean up markdown code blocks if present
-      responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      
-      const result = JSON.parse(responseText);
-      
+      if (rankedExperiences.length > 0 && rankedExperiences[0].relevanceScore < 80) {
+        suggestions.push('Consider adding more details to your most relevant role');
+      }
+
+      suggestions.push('Use specific metrics and numbers to quantify achievements');
+      suggestions.push('Tailor your bullet points to highlight relevant accomplishments');
+
+      if (finalTopSkills.length < 8) {
+        suggestions.push('Add more technical skills relevant to this position');
+      }
+
+      // === FINAL RESULT ===
+      const result = {
+        rankedExperiences,
+        topSkills: finalTopSkills,
+        atsScore,
+        keywordMatch: keywordMatchPercent,
+        authenticityScore,
+        suggestions: suggestions.slice(0, 4)
+      };
+
       setAnalysisResult(result);
       setStep('preview');
     } catch (error) {
-      console.error('AI Analysis Error:', error);
-      alert('AI analysis failed. Using fallback matching.');
-      
-      // Fallback logic
-      const mockResult = {
-        rankedExperiences: profile.workExperience.map((job, idx) => ({
-          id: job.id,
-          relevanceScore: Math.max(60, 100 - (idx * 15)),
-          reason: `Relevant experience in ${job.title}`
-        })),
-        topSkills: profile.skills.technical.slice(0, 8),
-        atsScore: 85,
-        keywordMatch: 90,
-        authenticityScore: 88,
-        suggestions: [
-          'Add specific metrics to bullet points',
-          'Include more technical keywords from job description',
-          'Highlight leadership experience'
-        ]
-      };
-
-      setAnalysisResult(mockResult);
-      setStep('preview');
+      console.error('Analysis Error:', error);
+      alert('Analysis failed. Please try again.');
+      setStep('input');
     } finally {
       setIsAnalyzing(false);
     }
@@ -1748,7 +1815,7 @@ IMPORTANT: Output ONLY the JSON object. No other text.`;
               <Sparkles className="w-8 h-8 text-blue-400" />
               <h2 className="text-2xl font-bold text-slate-200">Generate Targeted Resume</h2>
             </div>
-            <p className="text-slate-300 mb-6">AI will analyze the job and select your most relevant experiences.</p>
+            <p className="text-slate-300 mb-6">Smart keyword matching will analyze the job and select your most relevant experiences.</p>
 
             <div className="space-y-4">
               {/* ✅ TEMPLATE SELECTOR */}
@@ -1842,7 +1909,7 @@ IMPORTANT: Output ONLY the JSON object. No other text.`;
                   className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
                 >
                   <Sparkles className="w-5 h-5" />
-                  Analyze with AI
+                  Analyze & Match
                 </button>
               </div>
             </div>
@@ -1858,8 +1925,8 @@ IMPORTANT: Output ONLY the JSON object. No other text.`;
         <div className="bg-slate-800/50 backdrop-blur rounded-lg p-12 border border-slate-700/50 text-center">
           <Sparkles className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-pulse" />
           <h2 className="text-2xl font-bold text-slate-200 mb-2">Analyzing Job Requirements</h2>
-          <p className="text-slate-400">AI is matching your profile to the job...</p>
-          <p className="text-slate-500 text-sm mt-2">This may take a few moments</p>
+          <p className="text-slate-400">Matching your profile to the job description...</p>
+          <p className="text-slate-500 text-sm mt-2">Extracting keywords and ranking experiences</p>
         </div>
       </div>
     );
