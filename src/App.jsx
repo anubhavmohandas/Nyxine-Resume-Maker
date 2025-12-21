@@ -1003,7 +1003,7 @@ const SkillsStep = ({ profile, setProfile }) => {
       </div>
       <div className="flex flex-wrap gap-2">
         {profile.skills[cat].map((skill, idx) => (
-          <span key={idx} className={`px-3 py-1 ${color}/20 ${color.replace('bg-', 'text-').replace('-600', '-300')} rounded-full text-sm flex items-center gap-2 border ${color.replace('bg-', 'border-').replace('-600', '-500')}/30`}>
+          <span key={idx} className={`px-3 py-1 ${color}/20 ${color.replace('bg-', 'text-').replace('-500', '-100').replace('-400', '-100')} rounded-full text-sm flex items-center gap-2 border ${color.replace('bg-', 'border-').replace('-500', '-400').replace('-400', '-300')}/30`}>
             {skill}
             <button onClick={() => removeSkill(cat, idx)} className="hover:opacity-80 transition-opacity">
               <X className="w-3 h-3" />
