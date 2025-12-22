@@ -1637,6 +1637,324 @@ const MinimalTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
   );
 };
 
+// 🎨 NEW COLORFUL TEMPLATES
+
+const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+  return (
+    <div className="bg-white max-w-6xl mx-auto">
+      {/* Colorful Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-10">
+        <h1 className="text-4xl font-bold mb-3">{profile.personal.fullName}</h1>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-blue-100">
+          <span>✉ {profile.personal.email}</span>
+          <span>📱 {profile.personal.phone}</span>
+          <span>📍 {profile.personal.location}</span>
+        </div>
+        {(profile.personal.linkedin || profile.personal.github) && (
+          <div className="flex gap-4 mt-2 text-sm text-blue-100">
+            {profile.personal.linkedin && <span>🔗 {profile.personal.linkedin.replace('https://', '')}</span>}
+            {profile.personal.github && <span>💻 {profile.personal.github.replace('https://', '')}</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="p-10">
+        <div className="grid grid-cols-[1fr_300px] gap-8">
+          {/* Main Content */}
+          <div className="space-y-6">
+            {/* Experience */}
+            {selectedJobs.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-blue-600 mb-4 pb-2 border-b-2 border-blue-600">Experience</h2>
+                {selectedJobs.map(job => (
+                  <div key={job.id} className="mb-5">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <h3 className="text-lg font-bold text-gray-900">{job.title}</h3>
+                      <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
+                        {job.startDate} - {job.current ? 'Present' : job.endDate}
+                      </span>
+                    </div>
+                    <p className="text-base text-purple-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
+                    <ul className="list-none space-y-1.5 text-sm text-gray-800">
+                      {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
+                        <li key={idx} className="pl-5 relative before:content-['▸'] before:absolute before:left-0 before:text-blue-600 leading-relaxed">
+                          {bullet}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Projects */}
+            {displayProjects.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-blue-600 mb-4 pb-2 border-b-2 border-blue-600">Projects</h2>
+                {displayProjects.map(proj => (
+                  <div key={proj.id} className="mb-4">
+                    <h3 className="text-base font-bold text-gray-900">{proj.name}</h3>
+                    <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                    {proj.technologies && (
+                      <p className="text-xs text-purple-600 mt-1">
+                        <span className="font-semibold">Tech:</span> {proj.technologies}
+                      </p>
+                    )}
+                    {proj.link && <p className="text-xs text-blue-600 mt-1 break-words">{proj.link}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Skills */}
+            {displaySkills.length > 0 && (
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-5 rounded-lg border-l-4 border-blue-600">
+                <h2 className="text-lg font-bold text-blue-600 mb-3">Skills</h2>
+                <div className="space-y-2">
+                  {displaySkills.map((skill, idx) => (
+                    <div key={idx} className="bg-white px-3 py-1.5 rounded text-sm text-gray-800 shadow-sm">
+                      {skill}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Education */}
+            {profile.education.length > 0 && (
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-5 rounded-lg border-l-4 border-purple-600">
+                <h2 className="text-lg font-bold text-purple-600 mb-3">Education</h2>
+                {profile.education.map(edu => (
+                  <div key={edu.id} className="mb-3 last:mb-0">
+                    <div className="font-bold text-gray-900 text-sm">{edu.degree}</div>
+                    <div className="text-sm text-gray-700">{edu.major}</div>
+                    <div className="text-sm text-gray-600">{edu.school}</div>
+                    <div className="text-xs text-gray-500 mt-1">{edu.graduationDate}</div>
+                    {edu.gpa && <div className="text-xs text-gray-500">GPA: {edu.gpa}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+  return (
+    <div className="bg-white max-w-4xl mx-auto">
+      {/* Subtle Colored Header Bar */}
+      <div className="bg-gradient-to-r from-slate-700 to-slate-600 h-3"></div>
+
+      <div className="p-12">
+        {/* Header */}
+        <div className="text-center mb-8 pb-6 border-b-2 border-slate-600">
+          <h1 className="text-3xl font-bold text-slate-800 mb-3">{profile.personal.fullName}</h1>
+          <div className="text-sm text-gray-600 space-x-3">
+            <span>{profile.personal.email}</span>
+            <span>•</span>
+            <span>{profile.personal.phone}</span>
+            <span>•</span>
+            <span>{profile.personal.location}</span>
+          </div>
+          {(profile.personal.linkedin || profile.personal.github) && (
+            <p className="text-sm text-slate-600 mt-2">
+              {[profile.personal.linkedin, profile.personal.github]
+                .filter(Boolean)
+                .map(link => link.replace('https://', ''))
+                .join(' • ')}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          {/* Experience */}
+          {selectedJobs.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">EXPERIENCE</h2>
+              {selectedJobs.map(job => (
+                <div key={job.id} className="mb-5">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="text-base font-bold text-slate-800">{job.title}</h3>
+                    <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
+                      {job.startDate} – {job.current ? 'Present' : job.endDate}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 italic mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
+                  <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
+                    {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
+                      <li key={idx} className="leading-relaxed">{bullet}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Education */}
+          {profile.education.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">EDUCATION</h2>
+              {profile.education.map(edu => (
+                <div key={edu.id} className="mb-3">
+                  <div className="flex justify-between items-baseline">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-800">{edu.degree} in {edu.major}</h3>
+                      <p className="text-sm text-gray-700">{edu.school}{edu.location && `, ${edu.location}`}</p>
+                    </div>
+                    <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
+                  </div>
+                  {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Skills */}
+          {displaySkills.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">SKILLS</h2>
+              <div className="flex flex-wrap gap-2">
+                {displaySkills.map((skill, idx) => (
+                  <span key={idx} className="bg-slate-100 text-slate-700 px-3 py-1 rounded text-sm border border-slate-300">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Projects */}
+          {displayProjects.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">PROJECTS</h2>
+              {displayProjects.map(proj => (
+                <div key={proj.id} className="mb-4">
+                  <h3 className="text-base font-bold text-slate-800">{proj.name}</h3>
+                  <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                  {proj.technologies && (
+                    <p className="text-xs text-slate-600 mt-1">
+                      <span className="font-semibold">Technologies:</span> {proj.technologies}
+                    </p>
+                  )}
+                  {proj.link && <p className="text-xs text-slate-600 mt-1 break-words">{proj.link}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+  return (
+    <div className="bg-white max-w-6xl mx-auto">
+      <div className="grid grid-cols-[280px_1fr]">
+        {/* Dark Sidebar */}
+        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-8">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold mb-2 break-words">{profile.personal.fullName}</h1>
+            <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
+          </div>
+
+          <div className="space-y-6 text-sm">
+            <div>
+              <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Contact</h3>
+              <div className="space-y-2 text-slate-300">
+                <p className="break-words">{profile.personal.email}</p>
+                <p>{profile.personal.phone}</p>
+                <p>{profile.personal.location}</p>
+                {profile.personal.linkedin && <p className="text-cyan-300 break-words text-xs">{profile.personal.linkedin.replace('https://', '')}</p>}
+                {profile.personal.github && <p className="text-cyan-300 break-words text-xs">{profile.personal.github.replace('https://', '')}</p>}
+              </div>
+            </div>
+
+            {displaySkills.length > 0 && (
+              <div>
+                <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Skills</h3>
+                <div className="space-y-2">
+                  {displaySkills.map((skill, idx) => (
+                    <div key={idx} className="bg-slate-700/50 px-3 py-1.5 rounded text-slate-200 text-xs">
+                      {skill}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {profile.education.length > 0 && (
+              <div>
+                <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Education</h3>
+                {profile.education.map(edu => (
+                  <div key={edu.id} className="mb-4 last:mb-0">
+                    <div className="font-bold text-white text-sm">{edu.degree}</div>
+                    <div className="text-slate-300 text-xs">{edu.major}</div>
+                    <div className="text-slate-400 text-xs">{edu.school}</div>
+                    <div className="text-slate-500 text-xs mt-1">{edu.graduationDate}</div>
+                    {edu.gpa && <div className="text-slate-500 text-xs">GPA: {edu.gpa}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="p-10">
+          {selectedJobs.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-800 mb-5 pb-2 border-b-2 border-cyan-400">Experience</h2>
+              {selectedJobs.map(job => (
+                <div key={job.id} className="mb-6">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="text-lg font-bold text-slate-800">{job.title}</h3>
+                    <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
+                      {job.startDate} - {job.current ? 'Present' : job.endDate}
+                    </span>
+                  </div>
+                  <p className="text-base text-cyan-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
+                  <ul className="list-none space-y-1.5 text-sm text-gray-800">
+                    {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
+                      <li key={idx} className="pl-5 relative before:content-['→'] before:absolute before:left-0 before:text-cyan-500 leading-relaxed">
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {displayProjects.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold text-slate-800 mb-5 pb-2 border-b-2 border-cyan-400">Projects</h2>
+              {displayProjects.map(proj => (
+                <div key={proj.id} className="mb-5">
+                  <h3 className="text-base font-bold text-slate-800">{proj.name}</h3>
+                  <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                  {proj.technologies && (
+                    <p className="text-xs text-cyan-600 mt-1">
+                      <span className="font-semibold">Technologies:</span> {proj.technologies}
+                    </p>
+                  )}
+                  {proj.link && <p className="text-xs text-cyan-600 mt-1 break-words">{proj.link}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }) => {
   const [step, setStep] = useState('input');
   const [jobTarget, setJobTarget] = useState('');
@@ -1906,7 +2224,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                       <div className={`font-semibold ${selectedTemplate === 'modern' ? 'text-blue-300' : 'text-slate-300'}`}>
                         Modern
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Two-column layout</div>
+                      <div className="text-xs text-slate-400 mt-1">Two-column gray</div>
                     </div>
                   </button>
                   <button
@@ -1939,6 +2257,54 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Minimal
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Clean & spacious</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedTemplate('creative')}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      selectedTemplate === 'creative'
+                        ? 'border-purple-500 bg-purple-500/10'
+                        : 'border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">🎨</div>
+                      <div className={`font-semibold ${selectedTemplate === 'creative' ? 'text-purple-300' : 'text-slate-300'}`}>
+                        Creative
+                      </div>
+                      <div className="text-xs text-slate-400 mt-1">Colorful gradient</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedTemplate('professional')}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      selectedTemplate === 'professional'
+                        ? 'border-slate-500 bg-slate-500/10'
+                        : 'border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">💼</div>
+                      <div className={`font-semibold ${selectedTemplate === 'professional' ? 'text-slate-300' : 'text-slate-300'}`}>
+                        Professional
+                      </div>
+                      <div className="text-xs text-slate-400 mt-1">Subtle color bar</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedTemplate('bold')}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      selectedTemplate === 'bold'
+                        ? 'border-cyan-500 bg-cyan-500/10'
+                        : 'border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">⚡</div>
+                      <div className={`font-semibold ${selectedTemplate === 'bold' ? 'text-cyan-300' : 'text-slate-300'}`}>
+                        Bold
+                      </div>
+                      <div className="text-xs text-slate-400 mt-1">Dark sidebar</div>
                     </div>
                   </button>
                 </div>
@@ -2133,7 +2499,31 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
               />
             )}
             {selectedTemplate === 'minimal' && (
-              <MinimalTemplate 
+              <MinimalTemplate
+                profile={profile}
+                selectedJobs={selectedJobs}
+                displaySkills={displaySkills}
+                displayProjects={displayProjects}
+              />
+            )}
+            {selectedTemplate === 'creative' && (
+              <CreativeTemplate
+                profile={profile}
+                selectedJobs={selectedJobs}
+                displaySkills={displaySkills}
+                displayProjects={displayProjects}
+              />
+            )}
+            {selectedTemplate === 'professional' && (
+              <ProfessionalColorTemplate
+                profile={profile}
+                selectedJobs={selectedJobs}
+                displaySkills={displaySkills}
+                displayProjects={displayProjects}
+              />
+            )}
+            {selectedTemplate === 'bold' && (
+              <BoldTemplate
                 profile={profile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
