@@ -1544,95 +1544,116 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
   );
 };
 
-const MinimalTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-12 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-light mb-2 tracking-tight text-gray-900">
+    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
+      {/* Header - Simple and Clean */}
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold mb-2" style={{ color: '#000000' }}>
           {profile.personal.fullName}
         </h1>
-        <p className="text-gray-600 text-sm uppercase tracking-widest">
-          {profile.personal.email} · {profile.personal.phone} · {profile.personal.location}
+        <p className="text-sm" style={{ color: '#000000' }}>
+          {profile.personal.email} | {profile.personal.phone} | {profile.personal.location}
         </p>
         {(profile.personal.linkedin || profile.personal.github) && (
-          <p className="text-blue-600 text-sm mt-1">
+          <p className="text-sm mt-1" style={{ color: '#000000' }}>
             {[profile.personal.linkedin, profile.personal.github]
               .filter(Boolean)
               .map(link => link.replace('https://', ''))
-              .join(' · ')}
+              .join(' | ')}
           </p>
         )}
       </div>
 
-      <div className="space-y-8">
-        {/* Experience */}
-        {selectedJobs.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Experience</h2>
-            {selectedJobs.map(job => (
-              <div key={job.id} className="mb-6 pb-6 border-b border-gray-200 last:border-0 last:pb-0">
-                <div className="flex justify-between items-baseline mb-2">
-                  <h3 className="text-lg font-medium text-gray-900">{job.title}</h3>
-                  <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                    {job.startDate} – {job.current ? 'Present' : job.endDate}
-                  </span>
-                </div>
-                <p className="text-base text-gray-700 mb-3">{job.company}{job.location && ` · ${job.location}`}</p>
-                <ul className="space-y-2 text-gray-800 text-sm">
-                  {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
-                    <li key={idx} className="pl-4 relative before:content-['—'] before:absolute before:left-0 leading-relaxed">
-                      {bullet}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Education */}
-        {profile.education.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Education</h2>
-            {profile.education.map(edu => (
-              <div key={edu.id} className="mb-4">
-                <div className="flex justify-between items-baseline">
-                  <h3 className="text-lg font-medium text-gray-900">{edu.degree}</h3>
-                  <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
-                </div>
-                <p className="text-base text-gray-700">{edu.major} · {edu.school}</p>
-                {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Skills */}
-        {displaySkills.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Skills</h2>
-            <p className="text-gray-800 leading-relaxed">{displaySkills.join(' · ')}</p>
-          </div>
-        )}
-
-        {/* Projects */}
-        {displayProjects.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Projects</h2>
-            {displayProjects.map(proj => (
-              <div key={proj.id} className="mb-4">
-                <h3 className="text-lg font-medium text-gray-900">{proj.name}</h3>
-                <p className="text-gray-800 mt-1 leading-relaxed text-sm">{proj.description}</p>
-                {proj.technologies && (
-                  <p className="text-sm text-gray-600 mt-2">Technologies: {proj.technologies}</p>
-                )}
-                {proj.link && <p className="text-sm text-blue-600 mt-1 break-words">{proj.link}</p>}
-              </div>
-            ))}
-          </div>
-        )}
+      {/* Professional Summary/Objective */}
+      <div className="mb-6">
+        <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>PROFESSIONAL SUMMARY</h2>
+        <p className="text-sm leading-relaxed" style={{ color: '#000000' }}>
+          {profile.personal.summary ||
+           `Experienced professional with a strong background in ${profile.workExperience[0]?.title || 'various roles'}. Proven track record of delivering results and contributing to organizational success. Seeking to leverage expertise in ${displaySkills.slice(0, 3).join(', ')} to drive innovation and growth.`}
+        </p>
       </div>
+
+      {/* Skills - Bulleted List */}
+      {displaySkills.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>SKILLS</h2>
+          <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
+            {displaySkills.map((skill, idx) => (
+              <li key={idx} className="mb-1">{skill}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Work Experience */}
+      {selectedJobs.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>WORK EXPERIENCE</h2>
+          {selectedJobs.map(job => (
+            <div key={job.id} className="mb-4">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{job.title}</h3>
+                <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
+                  {job.startDate} - {job.current ? 'Present' : job.endDate}
+                </span>
+              </div>
+              <p className="text-sm mb-2" style={{ color: '#000000' }}>
+                {job.company}{job.location && `, ${job.location}`}
+              </p>
+              <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
+                {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
+                  <li key={idx} className="mb-1 leading-relaxed">{bullet}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Education */}
+      {profile.education.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>EDUCATION</h2>
+          {profile.education.map(edu => (
+            <div key={edu.id} className="mb-3">
+              <div className="flex justify-between items-baseline">
+                <div>
+                  <h3 className="text-sm font-bold" style={{ color: '#000000' }}>
+                    {edu.degree} in {edu.major}
+                  </h3>
+                  <p className="text-sm" style={{ color: '#000000' }}>
+                    {edu.school}{edu.location && `, ${edu.location}`}
+                  </p>
+                </div>
+                <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
+                  {edu.graduationDate}
+                </span>
+              </div>
+              {edu.gpa && <p className="text-sm mt-1" style={{ color: '#000000' }}>GPA: {edu.gpa}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Projects */}
+      {displayProjects.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>PROJECTS</h2>
+          {displayProjects.map(proj => (
+            <div key={proj.id} className="mb-3">
+              <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{proj.name}</h3>
+              <p className="text-sm mt-1 leading-relaxed" style={{ color: '#000000' }}>{proj.description}</p>
+              {proj.technologies && (
+                <p className="text-sm mt-1" style={{ color: '#000000' }}>
+                  Technologies: {proj.technologies}
+                </p>
+              )}
+              {proj.link && <p className="text-sm mt-1" style={{ color: '#000000' }}>{proj.link}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -2244,19 +2265,19 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                     </div>
                   </button>
                   <button
-                    onClick={() => setSelectedTemplate('minimal')}
+                    onClick={() => setSelectedTemplate('ats')}
                     className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedTemplate === 'minimal'
-                        ? 'border-blue-500 bg-blue-500/10'
+                      selectedTemplate === 'ats'
+                        ? 'border-green-500 bg-green-500/10'
                         : 'border-slate-600 hover:border-slate-500'
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-2xl mb-2">✨</div>
-                      <div className={`font-semibold ${selectedTemplate === 'minimal' ? 'text-blue-300' : 'text-slate-300'}`}>
-                        Minimal
+                      <div className="text-2xl mb-2">🎯</div>
+                      <div className={`font-semibold ${selectedTemplate === 'ats' ? 'text-green-300' : 'text-slate-300'}`}>
+                        ATS-Optimized
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Clean & spacious</div>
+                      <div className="text-xs text-slate-400 mt-1">For online systems</div>
                     </div>
                   </button>
                   <button
@@ -2498,8 +2519,8 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 displayProjects={displayProjects}
               />
             )}
-            {selectedTemplate === 'minimal' && (
-              <MinimalTemplate
+            {selectedTemplate === 'ats' && (
+              <ATSOptimizedTemplate
                 profile={profile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
