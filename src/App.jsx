@@ -1984,6 +1984,46 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [resumeName, setResumeName] = useState('');
 
+  // 📊 Template ATS Compatibility Scores
+  const templateCompatibility = {
+    'modern': {
+      score: 40,
+      label: 'Low',
+      color: 'red',
+      warning: 'Uses 2-column layout which may confuse ATS parsers. Best for direct email submissions.'
+    },
+    'classic': {
+      score: 75,
+      label: 'Good',
+      color: 'yellow',
+      warning: 'Traditional single-column format. Minor issues with serif font, but generally ATS-friendly.'
+    },
+    'creative': {
+      score: 20,
+      label: 'Poor',
+      color: 'red',
+      warning: 'Gradient colors, emojis, and 2-column layout will likely fail ATS parsing. Use for direct submissions only.'
+    },
+    'professional': {
+      score: 55,
+      label: 'Moderate',
+      color: 'yellow',
+      warning: 'Gradient header bar and colored borders may cause parsing issues. Better for human-reviewed applications.'
+    },
+    'bold': {
+      score: 15,
+      label: 'Poor',
+      color: 'red',
+      warning: 'Dark sidebar with white text will fail most ATS systems. Great for portfolio sites, not for online applications.'
+    },
+    'ats': {
+      score: 100,
+      label: 'Excellent',
+      color: 'green',
+      warning: null
+    }
+  };
+
   // 🎯 Smart Local Keyword Matching Algorithm (No API needed!)
   const analyzeWithAI = async () => {
     if (!jobTarget.trim()) {
@@ -2246,6 +2286,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Modern
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Two-column gray</div>
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${templateCompatibility.modern.color === 'red' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                        ATS: {templateCompatibility.modern.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2262,6 +2305,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Classic
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Traditional serif</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                        ATS: {templateCompatibility.classic.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2278,6 +2324,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         ATS-Optimized
                       </div>
                       <div className="text-xs text-slate-400 mt-1">For online systems</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-green-500/20 text-green-300">
+                        ATS: {templateCompatibility.ats.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2294,6 +2343,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Creative
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Colorful gradient</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
+                        ATS: {templateCompatibility.creative.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2310,6 +2362,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Professional
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Subtle color bar</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                        ATS: {templateCompatibility.professional.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2326,9 +2381,29 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Bold
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Dark sidebar</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
+                        ATS: {templateCompatibility.bold.score}%
+                      </div>
                     </div>
                   </button>
                 </div>
+
+                {/* Template Compatibility Warning */}
+                {templateCompatibility[selectedTemplate].warning && (
+                  <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-yellow-300 mb-1">
+                          ⚠️ Template Compatibility Notice
+                        </p>
+                        <p className="text-sm text-slate-300">
+                          {templateCompatibility[selectedTemplate].warning}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -2413,13 +2488,24 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-slate-200 mb-6">Resume Preview</h2>
 
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div className="grid md:grid-cols-4 gap-4 mb-6">
             <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
               <div className="text-center">
                 <div className={`text-4xl font-bold mb-2 ${analysisResult.atsScore >= 80 ? 'text-green-400' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {analysisResult.atsScore}%
                 </div>
-                <p className="text-slate-400">ATS Compatible</p>
+                <p className="text-slate-400 text-sm">Content Match</p>
+                <p className="text-slate-500 text-xs mt-1">Keywords & relevance</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+              <div className="text-center">
+                <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'text-green-400' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                  {templateCompatibility[selectedTemplate].score}%
+                </div>
+                <p className="text-slate-400 text-sm">Template ATS</p>
+                <p className="text-slate-500 text-xs mt-1">Format compatibility</p>
               </div>
             </div>
 
@@ -2428,7 +2514,8 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 <div className={`text-4xl font-bold mb-2 ${analysisResult.keywordMatch >= 80 ? 'text-green-400' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {analysisResult.keywordMatch}%
                 </div>
-                <p className="text-slate-400">Keyword Match</p>
+                <p className="text-slate-400 text-sm">Keyword Match</p>
+                <p className="text-slate-500 text-xs mt-1">Job description fit</p>
               </div>
             </div>
 
@@ -2437,7 +2524,8 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 <div className={`text-4xl font-bold mb-2 ${analysisResult.authenticityScore >= 80 ? 'text-green-400' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {analysisResult.authenticityScore}%
                 </div>
-                <p className="text-slate-400">Authenticity</p>
+                <p className="text-slate-400 text-sm">Authenticity</p>
+                <p className="text-slate-500 text-xs mt-1">Real profile data</p>
               </div>
             </div>
           </div>
