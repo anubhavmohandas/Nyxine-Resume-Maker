@@ -1544,95 +1544,116 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
   );
 };
 
-const MinimalTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-12 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-light mb-2 tracking-tight text-gray-900">
+    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
+      {/* Header - Simple and Clean */}
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold mb-2" style={{ color: '#000000' }}>
           {profile.personal.fullName}
         </h1>
-        <p className="text-gray-600 text-sm uppercase tracking-widest">
-          {profile.personal.email} · {profile.personal.phone} · {profile.personal.location}
+        <p className="text-sm" style={{ color: '#000000' }}>
+          {profile.personal.email} | {profile.personal.phone} | {profile.personal.location}
         </p>
         {(profile.personal.linkedin || profile.personal.github) && (
-          <p className="text-blue-600 text-sm mt-1">
+          <p className="text-sm mt-1" style={{ color: '#000000' }}>
             {[profile.personal.linkedin, profile.personal.github]
               .filter(Boolean)
               .map(link => link.replace('https://', ''))
-              .join(' · ')}
+              .join(' | ')}
           </p>
         )}
       </div>
 
-      <div className="space-y-8">
-        {/* Experience */}
-        {selectedJobs.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Experience</h2>
-            {selectedJobs.map(job => (
-              <div key={job.id} className="mb-6 pb-6 border-b border-gray-200 last:border-0 last:pb-0">
-                <div className="flex justify-between items-baseline mb-2">
-                  <h3 className="text-lg font-medium text-gray-900">{job.title}</h3>
-                  <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                    {job.startDate} – {job.current ? 'Present' : job.endDate}
-                  </span>
-                </div>
-                <p className="text-base text-gray-700 mb-3">{job.company}{job.location && ` · ${job.location}`}</p>
-                <ul className="space-y-2 text-gray-800 text-sm">
-                  {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
-                    <li key={idx} className="pl-4 relative before:content-['—'] before:absolute before:left-0 leading-relaxed">
-                      {bullet}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Education */}
-        {profile.education.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Education</h2>
-            {profile.education.map(edu => (
-              <div key={edu.id} className="mb-4">
-                <div className="flex justify-between items-baseline">
-                  <h3 className="text-lg font-medium text-gray-900">{edu.degree}</h3>
-                  <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
-                </div>
-                <p className="text-base text-gray-700">{edu.major} · {edu.school}</p>
-                {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Skills */}
-        {displaySkills.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Skills</h2>
-            <p className="text-gray-800 leading-relaxed">{displaySkills.join(' · ')}</p>
-          </div>
-        )}
-
-        {/* Projects */}
-        {displayProjects.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Projects</h2>
-            {displayProjects.map(proj => (
-              <div key={proj.id} className="mb-4">
-                <h3 className="text-lg font-medium text-gray-900">{proj.name}</h3>
-                <p className="text-gray-800 mt-1 leading-relaxed text-sm">{proj.description}</p>
-                {proj.technologies && (
-                  <p className="text-sm text-gray-600 mt-2">Technologies: {proj.technologies}</p>
-                )}
-                {proj.link && <p className="text-sm text-blue-600 mt-1 break-words">{proj.link}</p>}
-              </div>
-            ))}
-          </div>
-        )}
+      {/* Professional Summary/Objective */}
+      <div className="mb-6">
+        <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>PROFESSIONAL SUMMARY</h2>
+        <p className="text-sm leading-relaxed" style={{ color: '#000000' }}>
+          {profile.personal.summary ||
+           `Experienced professional with a strong background in ${profile.workExperience[0]?.title || 'various roles'}. Proven track record of delivering results and contributing to organizational success. Seeking to leverage expertise in ${displaySkills.slice(0, 3).join(', ')} to drive innovation and growth.`}
+        </p>
       </div>
+
+      {/* Skills - Bulleted List */}
+      {displaySkills.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>SKILLS</h2>
+          <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
+            {displaySkills.map((skill, idx) => (
+              <li key={idx} className="mb-1">{skill}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Work Experience */}
+      {selectedJobs.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>WORK EXPERIENCE</h2>
+          {selectedJobs.map(job => (
+            <div key={job.id} className="mb-4">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{job.title}</h3>
+                <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
+                  {job.startDate} - {job.current ? 'Present' : job.endDate}
+                </span>
+              </div>
+              <p className="text-sm mb-2" style={{ color: '#000000' }}>
+                {job.company}{job.location && `, ${job.location}`}
+              </p>
+              <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
+                {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
+                  <li key={idx} className="mb-1 leading-relaxed">{bullet}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Education */}
+      {profile.education.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>EDUCATION</h2>
+          {profile.education.map(edu => (
+            <div key={edu.id} className="mb-3">
+              <div className="flex justify-between items-baseline">
+                <div>
+                  <h3 className="text-sm font-bold" style={{ color: '#000000' }}>
+                    {edu.degree} in {edu.major}
+                  </h3>
+                  <p className="text-sm" style={{ color: '#000000' }}>
+                    {edu.school}{edu.location && `, ${edu.location}`}
+                  </p>
+                </div>
+                <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
+                  {edu.graduationDate}
+                </span>
+              </div>
+              {edu.gpa && <p className="text-sm mt-1" style={{ color: '#000000' }}>GPA: {edu.gpa}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Projects */}
+      {displayProjects.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>PROJECTS</h2>
+          {displayProjects.map(proj => (
+            <div key={proj.id} className="mb-3">
+              <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{proj.name}</h3>
+              <p className="text-sm mt-1 leading-relaxed" style={{ color: '#000000' }}>{proj.description}</p>
+              {proj.technologies && (
+                <p className="text-sm mt-1" style={{ color: '#000000' }}>
+                  Technologies: {proj.technologies}
+                </p>
+              )}
+              {proj.link && <p className="text-sm mt-1" style={{ color: '#000000' }}>{proj.link}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -1963,6 +1984,46 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [resumeName, setResumeName] = useState('');
 
+  // 📊 Template ATS Compatibility Scores
+  const templateCompatibility = {
+    'modern': {
+      score: 40,
+      label: 'Low',
+      color: 'red',
+      warning: 'Uses 2-column layout which may confuse ATS parsers. Best for direct email submissions.'
+    },
+    'classic': {
+      score: 75,
+      label: 'Good',
+      color: 'yellow',
+      warning: 'Traditional single-column format. Minor issues with serif font, but generally ATS-friendly.'
+    },
+    'creative': {
+      score: 20,
+      label: 'Poor',
+      color: 'red',
+      warning: 'Gradient colors, emojis, and 2-column layout will likely fail ATS parsing. Use for direct submissions only.'
+    },
+    'professional': {
+      score: 55,
+      label: 'Moderate',
+      color: 'yellow',
+      warning: 'Gradient header bar and colored borders may cause parsing issues. Better for human-reviewed applications.'
+    },
+    'bold': {
+      score: 15,
+      label: 'Poor',
+      color: 'red',
+      warning: 'Dark sidebar with white text will fail most ATS systems. Great for portfolio sites, not for online applications.'
+    },
+    'ats': {
+      score: 100,
+      label: 'Excellent',
+      color: 'green',
+      warning: null
+    }
+  };
+
   // 🎯 Smart Local Keyword Matching Algorithm (No API needed!)
   const analyzeWithAI = async () => {
     if (!jobTarget.trim()) {
@@ -2225,6 +2286,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Modern
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Two-column gray</div>
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${templateCompatibility.modern.color === 'red' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                        ATS: {templateCompatibility.modern.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2241,22 +2305,28 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Classic
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Traditional serif</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                        ATS: {templateCompatibility.classic.score}%
+                      </div>
                     </div>
                   </button>
                   <button
-                    onClick={() => setSelectedTemplate('minimal')}
+                    onClick={() => setSelectedTemplate('ats')}
                     className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedTemplate === 'minimal'
-                        ? 'border-blue-500 bg-blue-500/10'
+                      selectedTemplate === 'ats'
+                        ? 'border-green-500 bg-green-500/10'
                         : 'border-slate-600 hover:border-slate-500'
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-2xl mb-2">✨</div>
-                      <div className={`font-semibold ${selectedTemplate === 'minimal' ? 'text-blue-300' : 'text-slate-300'}`}>
-                        Minimal
+                      <div className="text-2xl mb-2">🎯</div>
+                      <div className={`font-semibold ${selectedTemplate === 'ats' ? 'text-green-300' : 'text-slate-300'}`}>
+                        ATS-Optimized
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Clean & spacious</div>
+                      <div className="text-xs text-slate-400 mt-1">For online systems</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-green-500/20 text-green-300">
+                        ATS: {templateCompatibility.ats.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2273,6 +2343,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Creative
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Colorful gradient</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
+                        ATS: {templateCompatibility.creative.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2289,6 +2362,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Professional
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Subtle color bar</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                        ATS: {templateCompatibility.professional.score}%
+                      </div>
                     </div>
                   </button>
                   <button
@@ -2305,9 +2381,29 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                         Bold
                       </div>
                       <div className="text-xs text-slate-400 mt-1">Dark sidebar</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
+                        ATS: {templateCompatibility.bold.score}%
+                      </div>
                     </div>
                   </button>
                 </div>
+
+                {/* Template Compatibility Warning */}
+                {templateCompatibility[selectedTemplate].warning && (
+                  <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-yellow-300 mb-1">
+                          ⚠️ Template Compatibility Notice
+                        </p>
+                        <p className="text-sm text-slate-300">
+                          {templateCompatibility[selectedTemplate].warning}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -2392,13 +2488,24 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-slate-200 mb-6">Resume Preview</h2>
 
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div className="grid md:grid-cols-4 gap-4 mb-6">
             <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
               <div className="text-center">
                 <div className={`text-4xl font-bold mb-2 ${analysisResult.atsScore >= 80 ? 'text-green-400' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {analysisResult.atsScore}%
                 </div>
-                <p className="text-slate-400">ATS Compatible</p>
+                <p className="text-slate-400 text-sm">Content Match</p>
+                <p className="text-slate-500 text-xs mt-1">Keywords & relevance</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+              <div className="text-center">
+                <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'text-green-400' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                  {templateCompatibility[selectedTemplate].score}%
+                </div>
+                <p className="text-slate-400 text-sm">Template ATS</p>
+                <p className="text-slate-500 text-xs mt-1">Format compatibility</p>
               </div>
             </div>
 
@@ -2407,7 +2514,8 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 <div className={`text-4xl font-bold mb-2 ${analysisResult.keywordMatch >= 80 ? 'text-green-400' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {analysisResult.keywordMatch}%
                 </div>
-                <p className="text-slate-400">Keyword Match</p>
+                <p className="text-slate-400 text-sm">Keyword Match</p>
+                <p className="text-slate-500 text-xs mt-1">Job description fit</p>
               </div>
             </div>
 
@@ -2416,7 +2524,8 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 <div className={`text-4xl font-bold mb-2 ${analysisResult.authenticityScore >= 80 ? 'text-green-400' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {analysisResult.authenticityScore}%
                 </div>
-                <p className="text-slate-400">Authenticity</p>
+                <p className="text-slate-400 text-sm">Authenticity</p>
+                <p className="text-slate-500 text-xs mt-1">Real profile data</p>
               </div>
             </div>
           </div>
@@ -2498,8 +2607,8 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 displayProjects={displayProjects}
               />
             )}
-            {selectedTemplate === 'minimal' && (
-              <MinimalTemplate
+            {selectedTemplate === 'ats' && (
+              <ATSOptimizedTemplate
                 profile={profile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
