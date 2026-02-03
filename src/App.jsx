@@ -2408,24 +2408,16 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Job Title or Role
+                  Job Title or Description
                 </label>
-                <input
-                  type="text"
-                  value={jobTarget}
-                  onChange={(e) => setJobTarget(e.target.value)}
-                  placeholder="e.g., Senior Software Engineer"
-                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all mb-4"
-                />
-                <p className="text-slate-400 text-sm mb-2">Or paste the full job description:</p>
                 <textarea
                   value={jobTarget}
                   onChange={(e) => setJobTarget(e.target.value)}
                   rows={8}
-                  placeholder="Paste full job description here for better AI matching..."
+                  placeholder="Enter job title (e.g., Senior Software Engineer) or paste the full job description for better matching..."
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
                 />
-                <p className="text-slate-500 text-xs mt-2">💡 More details = better AI matching</p>
+                <p className="text-slate-500 text-xs mt-2">💡 More details = better keyword matching</p>
               </div>
 
               <div className="flex gap-3 pt-4">
