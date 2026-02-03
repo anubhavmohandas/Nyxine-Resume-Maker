@@ -1,3 +1,4 @@
+// Nyxine Resume Maker - Updated Feb 3, 2026
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, ChevronLeft, ChevronRight, Download, AlertCircle, Check, X, Sparkles, Save } from 'lucide-react';
 
