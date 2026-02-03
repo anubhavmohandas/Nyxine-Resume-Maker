@@ -1568,7 +1568,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
 
       {/* Professional Summary/Objective */}
       <div className="mb-6">
-        <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>PROFESSIONAL SUMMARY</h2>
+        <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Summary</h2>
         <p className="text-sm leading-relaxed" style={{ color: '#000000' }}>
           {profile.personal.summary ||
            `Experienced professional with a strong background in ${profile.workExperience[0]?.title || 'various roles'}. Proven track record of delivering results and contributing to organizational success. Seeking to leverage expertise in ${displaySkills.slice(0, 3).join(', ')} to drive innovation and growth.`}
@@ -1578,7 +1578,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
       {/* Skills - Bulleted List */}
       {displaySkills.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>SKILLS</h2>
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Skills</h2>
           <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
             {displaySkills.map((skill, idx) => (
               <li key={idx} className="mb-1">{skill}</li>
@@ -1590,7 +1590,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
       {/* Work Experience */}
       {selectedJobs.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>WORK EXPERIENCE</h2>
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Work Experience</h2>
           {selectedJobs.map(job => (
             <div key={job.id} className="mb-4">
               <div className="flex justify-between items-baseline mb-1">
@@ -1615,7 +1615,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
       {/* Education */}
       {profile.education.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>EDUCATION</h2>
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Education</h2>
           {profile.education.map(edu => (
             <div key={edu.id} className="mb-3">
               <div className="flex justify-between items-baseline">
@@ -1640,7 +1640,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
       {/* Projects */}
       {displayProjects.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>PROJECTS</h2>
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Projects</h2>
           {displayProjects.map(proj => (
             <div key={proj.id} className="mb-3">
               <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{proj.name}</h3>
