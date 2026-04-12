@@ -35,10 +35,34 @@ const NyxineResumeMaker = () => {
     try {
       const profileData = localStorage.getItem('nyxine_profile');
       const resumesData = localStorage.getItem('nyxine_resumes');
-      if (profileData) setProfile(JSON.parse(profileData));
-      if (resumesData) setSavedResumes(JSON.parse(resumesData));
+
+      if (profileData) {
+        try {
+          const parsed = JSON.parse(profileData);
+          // Validate parsed data structure
+          if (parsed && typeof parsed === 'object' && parsed.personal) {
+            setProfile(parsed);
+          }
+        } catch (e) {
+          console.error('Invalid profile data, resetting');
+          localStorage.removeItem('nyxine_profile');
+        }
+      }
+
+      if (resumesData) {
+        try {
+          const parsed = JSON.parse(resumesData);
+          // Validate it's an array
+          if (Array.isArray(parsed)) {
+            setSavedResumes(parsed);
+          }
+        } catch (e) {
+          console.error('Invalid resumes data, resetting');
+          localStorage.removeItem('nyxine_resumes');
+        }
+      }
     } catch (error) {
-      console.log('No saved data found');
+      console.error('Storage load error:', error);
     }
   };
 
@@ -63,6 +87,13 @@ const NyxineResumeMaker = () => {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate file size (max 10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      alert('⚠️ File too large!\n\nMaximum file size: 10MB\nYour file: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB\n\nPlease upload a smaller file or use "Start Fresh" option.');
+      return;
+    }
 
     // Validate file type
     const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
@@ -2611,10 +2642,17 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 </label>
                 <textarea
                   value={jobTarget}
-                  onChange={(e) => setJobTarget(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Limit input to 50,000 characters to prevent DoS
+                    if (value.length <= 50000) {
+                      setJobTarget(value);
+                    }
+                  }}
                   rows={8}
                   placeholder="Enter job title (e.g., Senior Software Engineer) or paste the full job description for better matching..."
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
+                  maxLength={50000}
                 />
                 <p className="text-slate-500 text-xs mt-2">💡 More details = better keyword matching</p>
 
