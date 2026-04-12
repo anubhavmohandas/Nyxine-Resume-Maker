@@ -1356,7 +1356,7 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
 
 const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-10 max-w-6xl mx-auto">
+    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
       <div className="grid grid-cols-[300px_1fr] gap-8">
         {/* Left sidebar - Contact & Skills */}
         <div className="bg-gray-100 p-6 rounded-lg">
@@ -1450,7 +1450,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
 
 const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
       {/* Header */}
       <div className="text-center mb-6 pb-4 border-b-2 border-black">
         <h1 className="text-3xl font-bold mb-2 tracking-wide">{profile.personal.fullName.toUpperCase()}</h1>
@@ -1547,7 +1547,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 
 const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white px-16 py-12 max-w-5xl mx-auto text-black" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.15' }}>
+    <div className="bg-white px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-12 lg:px-16 max-w-5xl mx-auto text-black" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.15' }}>
       {/* Header */}
       <div className="text-center mb-6">
         <h1 className="font-bold mb-1.5" style={{ fontSize: '16pt', letterSpacing: '0.02em' }}>
@@ -1669,7 +1669,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 
 const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
+    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
       {/* Header - Simple and Clean */}
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold mb-2" style={{ color: '#000000' }}>
@@ -1787,7 +1787,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
   return (
     <div className="bg-white max-w-6xl mx-auto">
       {/* Colorful Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-10">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 md:p-8 lg:p-10">
         <h1 className="text-4xl font-bold mb-3">{profile.personal.fullName}</h1>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-blue-100">
           <span>✉ {profile.personal.email}</span>
@@ -1802,8 +1802,8 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
         )}
       </div>
 
-      <div className="p-10">
-        <div className="grid grid-cols-[1fr_300px] gap-8">
+      <div className="p-4 sm:p-6 md:p-8 lg:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 md:gap-8">
           {/* Main Content */}
           <div className="space-y-6">
             {/* Experience */}
@@ -1895,7 +1895,7 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
       {/* Subtle Colored Header Bar */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-600 h-3"></div>
 
-      <div className="p-12">
+      <div className="p-4 sm:p-6 md:p-10 lg:p-12">
         {/* Header */}
         <div className="text-center mb-8 pb-6 border-b-2 border-slate-600">
           <h1 className="text-3xl font-bold text-slate-800 mb-3">{profile.personal.fullName}</h1>
@@ -2000,9 +2000,9 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
 const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
     <div className="bg-white max-w-6xl mx-auto">
-      <div className="grid grid-cols-[280px_1fr]">
+      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
         {/* Dark Sidebar */}
-        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-8">
+        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-4 sm:p-6 md:p-8">
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-2 break-words">{profile.personal.fullName}</h1>
             <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
@@ -2051,7 +2051,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
         </div>
 
         {/* Main Content */}
-        <div className="p-10">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-10">
           {selectedJobs.length > 0 && (
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-slate-800 mb-5 pb-2 border-b-2 border-cyan-400">Experience</h2>
@@ -2451,7 +2451,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                 <label className="block text-sm font-medium text-slate-300 mb-3">
                   Choose Resume Template
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   <button
                     onClick={() => setSelectedTemplate('modern')}
                     className={`p-4 rounded-lg border-2 transition-all ${
@@ -2673,7 +2673,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   if (step === 'analyzing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 flex items-center justify-center">
-        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-12 border border-slate-700/50 text-center">
+        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 sm:p-8 md:p-12 border border-slate-700/50 text-center">
           <Sparkles className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-pulse" />
           <h2 className="text-2xl font-bold text-slate-200 mb-2">Analyzing Job Requirements</h2>
           <p className="text-slate-400">Matching your profile to the job description...</p>
@@ -2724,7 +2724,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             {analysisResult.fullResume ? 'Complete Resume Preview' : 'Resume Preview'}
           </h2>
 
-          <div className="grid md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
             {analysisResult.fullResume ? (
               <>
                 <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
@@ -2929,11 +2929,17 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
               Back
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={() => {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (isMobile) {
+                  alert('📱 Mobile PDF Download:\n\n1. Click OK to open print preview\n2. In the print dialog:\n   • iOS: Pinch-zoom the preview, tap Share → Save to Files\n   • Android: Select "Save as PDF" as printer\n3. Choose location and save\n\nAlternatively, take a screenshot of the resume for quick sharing!');
+                }
+                window.print();
+              }}
               className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
             >
               <Download className="w-5 h-5" />
-              Download PDF (Print)
+              Download PDF
             </button>
           </div>
         </div>
