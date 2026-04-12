@@ -1545,6 +1545,128 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
   );
 };
 
+const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+  return (
+    <div className="bg-white px-16 py-12 max-w-5xl mx-auto text-black" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.15' }}>
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h1 className="font-bold mb-1.5" style={{ fontSize: '16pt', letterSpacing: '0.02em' }}>
+          {profile.personal.fullName.toUpperCase()}
+        </h1>
+        <p style={{ fontSize: '9pt' }}>
+          {[
+            profile.personal.email,
+            profile.personal.phone,
+            profile.personal.location,
+            profile.personal.linkedin?.replace('https://', '').replace('www.', ''),
+            profile.personal.github?.replace('https://', '').replace('www.', '')
+          ].filter(Boolean).join(' • ')}
+        </p>
+      </div>
+
+      {/* Education */}
+      {profile.education.length > 0 && (
+        <div className="mb-4">
+          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>education</h2>
+          {profile.education.map(edu => (
+            <div key={edu.id} className="flex gap-3 mb-3.5">
+              <div className="flex-shrink-0 text-right" style={{ width: '80px', fontSize: '10pt' }}>
+                {edu.graduationDate || 'Present'}
+              </div>
+              <div className="flex-1" style={{ fontSize: '10pt' }}>
+                <div className="flex justify-between items-start mb-0.5">
+                  <h3 className="font-bold uppercase" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
+                    {edu.school}
+                  </h3>
+                  <span className="uppercase ml-4" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
+                    {edu.location}
+                  </span>
+                </div>
+                <p className="mb-0.5" style={{ fontSize: '10pt' }}>
+                  {edu.degree}{edu.major ? ` in ${edu.major}` : ''}
+                </p>
+                {edu.gpa && (
+                  <p style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Experience */}
+      {selectedJobs.length > 0 && (
+        <div className="mb-4">
+          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>experience</h2>
+          {selectedJobs.map(job => (
+            <div key={job.id} className="flex gap-3 mb-3.5">
+              <div className="flex-shrink-0 text-right" style={{ width: '80px', fontSize: '10pt' }}>
+                {job.startDate}-{job.current ? 'Present' : job.endDate}
+              </div>
+              <div className="flex-1" style={{ fontSize: '10pt' }}>
+                <div className="flex justify-between items-start mb-0.5">
+                  <h3 className="font-bold uppercase" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
+                    {job.company}
+                  </h3>
+                  <span className="uppercase ml-4" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
+                    {job.location}
+                  </span>
+                </div>
+                <p className="italic mb-1" style={{ fontSize: '10pt' }}>
+                  {job.title}
+                </p>
+                <ul className="space-y-0.5" style={{ fontSize: '10pt', lineHeight: '1.35', paddingLeft: '1.2em' }}>
+                  {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
+                    <li key={idx} className="pl-1">{bullet}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Projects */}
+      {displayProjects.length > 0 && (
+        <div className="mb-4">
+          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>projects</h2>
+          {displayProjects.map(proj => (
+            <div key={proj.id} className="flex gap-3 mb-3.5">
+              <div className="flex-shrink-0" style={{ width: '80px' }}></div>
+              <div className="flex-1" style={{ fontSize: '10pt' }}>
+                <h3 className="font-bold mb-0.5" style={{ fontSize: '10pt' }}>
+                  {proj.name}
+                </h3>
+                <p className="mb-1" style={{ fontSize: '10pt', lineHeight: '1.35' }}>
+                  {proj.description}
+                </p>
+                {proj.technologies && (
+                  <p className="italic" style={{ fontSize: '10pt' }}>
+                    Technologies: {proj.technologies}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Skills */}
+      {displaySkills.length > 0 && (
+        <div className="mb-4">
+          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>skills</h2>
+          <div className="flex gap-3">
+            <div className="flex-shrink-0" style={{ width: '80px' }}></div>
+            <div className="flex-1" style={{ fontSize: '10pt', lineHeight: '1.35' }}>
+              <p>{displaySkills.join(', ')}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
     <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
@@ -1984,6 +2106,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   const [analysisResult, setAnalysisResult] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [resumeName, setResumeName] = useState('');
+  const [includeAllItems, setIncludeAllItems] = useState(false);
 
   // 📊 Template ATS Compatibility Scores
   const templateCompatibility = {
@@ -2016,6 +2139,12 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
       label: 'Poor',
       color: 'red',
       warning: 'Dark sidebar with white text will fail most ATS systems. Great for portfolio sites, not for online applications.'
+    },
+    'harvard': {
+      score: 70,
+      label: 'Good',
+      color: 'yellow',
+      warning: 'Traditional Harvard Business School style. Serif font and tight spacing may cause minor parsing issues, but format is clean and widely recognized by recruiters.'
     },
     'ats': {
       score: 100,
@@ -2202,6 +2331,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
 
       // === FINAL RESULT ===
       const result = {
+        includeAllItems,
         rankedExperiences,
         topSkills: finalTopSkills,
         atsScore,
@@ -2218,6 +2348,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
 
       // Fallback with simple mock data so it still works
       const fallbackResult = {
+        includeAllItems,
         rankedExperiences: (profile.workExperience || []).map((job, idx) => ({
           id: job.id || Date.now() + idx,
           relevanceScore: Math.max(60, 100 - (idx * 15)),
@@ -2379,6 +2510,25 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                     </div>
                   </button>
                   <button
+                    onClick={() => setSelectedTemplate('harvard')}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      selectedTemplate === 'harvard'
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">🎓</div>
+                      <div className={`font-semibold ${selectedTemplate === 'harvard' ? 'text-amber-300' : 'text-slate-300'}`}>
+                        Harvard
+                      </div>
+                      <div className="text-xs text-slate-400 mt-1">Business school style</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                        ATS: {templateCompatibility.harvard.score}%
+                      </div>
+                    </div>
+                  </button>
+                  <button
                     onClick={() => setSelectedTemplate('creative')}
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'creative'
@@ -2467,6 +2617,23 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
                 />
                 <p className="text-slate-500 text-xs mt-2">💡 More details = better keyword matching</p>
+
+                <label className="flex items-start gap-3 mt-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={includeAllItems}
+                    onChange={(e) => setIncludeAllItems(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <div>
+                    <span className="text-sm text-slate-300 group-hover:text-slate-200 transition-colors">
+                      Include all experiences and projects (don't filter by relevance)
+                    </span>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Show everything while still calculating match scores for insights
+                    </p>
+                  </div>
+                </label>
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -2517,9 +2684,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   }
 
   if (step === 'preview' && analysisResult) {
-    // Full resume: include ALL experiences in original (reverse-chrono) order
-    // Matched resume: filter by relevance score >= 60, sort by score
-    const selectedJobs = analysisResult.fullResume
+    // Full resume OR includeAllItems: include ALL experiences in original (reverse-chrono) order
+    // Matched resume with filtering: filter by relevance score >= 60, sort by score
+    const selectedJobs = analysisResult.fullResume || analysisResult.includeAllItems
       ? [...(profile.workExperience || [])]
       : (profile.workExperience || [])
           .filter(job => {
@@ -2532,9 +2699,9 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             return scoreB - scoreA;
           });
 
-    // Full resume: all skills across all categories
+    // Full resume OR includeAllItems: all skills across all categories
     // Matched resume: job-targeted top skills, with fallback
-    const displaySkills = analysisResult.fullResume
+    const displaySkills = analysisResult.fullResume || analysisResult.includeAllItems
       ? [
           ...(Array.isArray(profile.skills?.technical) ? profile.skills.technical : []),
           ...(Array.isArray(profile.skills?.soft) ? profile.skills.soft : []),
@@ -2545,8 +2712,8 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
           ? analysisResult.topSkills
           : [...(profile.skills?.technical || []), ...(profile.skills?.soft || [])].slice(0, 10));
 
-    // Full resume: all projects; matched: top 2
-    const displayProjects = analysisResult.fullResume
+    // Full resume OR includeAllItems: all projects; matched: top 2
+    const displayProjects = analysisResult.fullResume || analysisResult.includeAllItems
       ? [...(profile.projects || [])]
       : (profile.projects || []).slice(0, 2);
 
@@ -2705,7 +2872,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
               />
             )}
             {selectedTemplate === 'classic' && (
-              <ClassicTemplate 
+              <ClassicTemplate
+                profile={profile}
+                selectedJobs={selectedJobs}
+                displaySkills={displaySkills}
+                displayProjects={displayProjects}
+              />
+            )}
+            {selectedTemplate === 'harvard' && (
+              <HarvardTemplate
                 profile={profile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
