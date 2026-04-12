@@ -2241,6 +2241,54 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
     }
   };
 
+  // Generate a complete resume with ALL profile data (no job filtering)
+  const generateFullResume = async () => {
+    setIsAnalyzing(true);
+    setStep('analyzing');
+
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const allSkills = [
+      ...( Array.isArray(profile.skills?.technical) ? profile.skills.technical : []),
+      ...( Array.isArray(profile.skills?.soft) ? profile.skills.soft : []),
+      ...( Array.isArray(profile.skills?.certifications) ? profile.skills.certifications : []),
+      ...( Array.isArray(profile.skills?.languages) ? profile.skills.languages : []),
+    ];
+
+    const totalSections = [
+      profile.workExperience?.length > 0,
+      profile.education?.length > 0,
+      allSkills.length > 0,
+      profile.projects?.length > 0,
+      !!profile.personal?.summary,
+    ].filter(Boolean).length;
+
+    const completeness = Math.round((totalSections / 5) * 100);
+
+    setAnalysisResult({
+      fullResume: true,
+      completeness,
+      rankedExperiences: (profile.workExperience || []).map(exp => ({
+        id: exp.id,
+        relevanceScore: 100,
+        matchedKeywords: [],
+        reason: 'Full resume - all experiences included'
+      })),
+      topSkills: allSkills,
+      atsScore: 0,
+      keywordMatch: 0,
+      authenticityScore: 100,
+      suggestions: [
+        'Add a job description to get targeted keyword matching',
+        'Use the ATS-Optimized template when applying through online portals',
+        'Customize your resume for each application for best results'
+      ]
+    });
+
+    setIsAnalyzing(false);
+    setStep('preview');
+  };
+
   const saveResume = () => {
     const name = resumeName.trim() || `Resume - ${new Date().toLocaleDateString()}`;
     const newResume = {
@@ -2429,13 +2477,25 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
                   Cancel
                 </button>
                 <button
+                  onClick={generateFullResume}
+                  className="px-6 py-3 bg-slate-600 hover:bg-slate-500 text-slate-200 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                  title="Include all your experiences, skills and projects — no filtering"
+                >
+                  <FileText className="w-5 h-5" />
+                  Full Resume
+                </button>
+                <button
                   onClick={analyzeWithAI}
-                  className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                  disabled={!jobTarget.trim()}
+                  className={`flex-1 px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${jobTarget.trim() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600/40 text-blue-300 cursor-not-allowed'}`}
                 >
                   <Sparkles className="w-5 h-5" />
                   Analyze & Match
                 </button>
               </div>
+              {!jobTarget.trim() && (
+                <p className="text-slate-500 text-xs text-center">Enter a job description to enable smart matching, or click <span className="text-slate-300">Full Resume</span> to include everything.</p>
+              )}
             </div>
           </div>
         </div>
@@ -2457,77 +2517,129 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   }
 
   if (step === 'preview' && analysisResult) {
-    const selectedJobs = profile.workExperience
-      .filter(job => {
-        const rank = analysisResult.rankedExperiences.find(r => r.id === job.id);
-        return rank && rank.relevanceScore >= 60;
-      })
-      .sort((a, b) => {
-        const scoreA = analysisResult.rankedExperiences.find(r => r.id === a.id)?.relevanceScore || 0;
-        const scoreB = analysisResult.rankedExperiences.find(r => r.id === b.id)?.relevanceScore || 0;
-        return scoreB - scoreA;
-      });
+    // Full resume: include ALL experiences in original (reverse-chrono) order
+    // Matched resume: filter by relevance score >= 60, sort by score
+    const selectedJobs = analysisResult.fullResume
+      ? [...(profile.workExperience || [])]
+      : (profile.workExperience || [])
+          .filter(job => {
+            const rank = analysisResult.rankedExperiences.find(r => r.id === job.id);
+            return rank && rank.relevanceScore >= 60;
+          })
+          .sort((a, b) => {
+            const scoreA = analysisResult.rankedExperiences.find(r => r.id === a.id)?.relevanceScore || 0;
+            const scoreB = analysisResult.rankedExperiences.find(r => r.id === b.id)?.relevanceScore || 0;
+            return scoreB - scoreA;
+          });
 
-    // 🔧 FIX #4: Skills fallback if AI doesn't return topSkills
-    const displaySkills = analysisResult.topSkills && analysisResult.topSkills.length > 0 
-      ? analysisResult.topSkills 
-      : [...profile.skills.technical, ...profile.skills.soft].slice(0, 10);
+    // Full resume: all skills across all categories
+    // Matched resume: job-targeted top skills, with fallback
+    const displaySkills = analysisResult.fullResume
+      ? [
+          ...(Array.isArray(profile.skills?.technical) ? profile.skills.technical : []),
+          ...(Array.isArray(profile.skills?.soft) ? profile.skills.soft : []),
+          ...(Array.isArray(profile.skills?.certifications) ? profile.skills.certifications : []),
+          ...(Array.isArray(profile.skills?.languages) ? profile.skills.languages : []),
+        ]
+      : (analysisResult.topSkills && analysisResult.topSkills.length > 0
+          ? analysisResult.topSkills
+          : [...(profile.skills?.technical || []), ...(profile.skills?.soft || [])].slice(0, 10));
 
-    // 🔧 FIX #3: Show projects in preview
-    const displayProjects = profile.projects.slice(0, 2);
+    // Full resume: all projects; matched: top 2
+    const displayProjects = analysisResult.fullResume
+      ? [...(profile.projects || [])]
+      : (profile.projects || []).slice(0, 2);
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-slate-200 mb-6">Resume Preview</h2>
+          <h2 className="text-3xl font-bold text-slate-200 mb-6">
+            {analysisResult.fullResume ? 'Complete Resume Preview' : 'Resume Preview'}
+          </h2>
 
           <div className="grid md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
-              <div className="text-center">
-                <div className={`text-4xl font-bold mb-2 ${analysisResult.atsScore >= 80 ? 'text-green-400' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                  {analysisResult.atsScore}%
+            {analysisResult.fullResume ? (
+              <>
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold mb-2 text-blue-400">{selectedJobs.length}</div>
+                    <p className="text-slate-400 text-sm">Experiences</p>
+                    <p className="text-slate-500 text-xs mt-1">All included</p>
+                  </div>
                 </div>
-                <p className="text-slate-400 text-sm">Content Match</p>
-                <p className="text-slate-500 text-xs mt-1">Keywords & relevance</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
-              <div className="text-center">
-                <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'text-green-400' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                  {templateCompatibility[selectedTemplate].score}%
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'text-green-400' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {templateCompatibility[selectedTemplate].score}%
+                    </div>
+                    <p className="text-slate-400 text-sm">Template ATS</p>
+                    <p className="text-slate-500 text-xs mt-1">Format compatibility</p>
+                  </div>
                 </div>
-                <p className="text-slate-400 text-sm">Template ATS</p>
-                <p className="text-slate-500 text-xs mt-1">Format compatibility</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
-              <div className="text-center">
-                <div className={`text-4xl font-bold mb-2 ${analysisResult.keywordMatch >= 80 ? 'text-green-400' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                  {analysisResult.keywordMatch}%
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold mb-2 text-blue-400">{displaySkills.length}</div>
+                    <p className="text-slate-400 text-sm">Skills</p>
+                    <p className="text-slate-500 text-xs mt-1">All categories</p>
+                  </div>
                 </div>
-                <p className="text-slate-400 text-sm">Keyword Match</p>
-                <p className="text-slate-500 text-xs mt-1">Job description fit</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
-              <div className="text-center">
-                <div className={`text-4xl font-bold mb-2 ${analysisResult.authenticityScore >= 80 ? 'text-green-400' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                  {analysisResult.authenticityScore}%
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.completeness >= 80 ? 'text-green-400' : analysisResult.completeness >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {analysisResult.completeness}%
+                    </div>
+                    <p className="text-slate-400 text-sm">Profile Complete</p>
+                    <p className="text-slate-500 text-xs mt-1">Sections filled</p>
+                  </div>
                 </div>
-                <p className="text-slate-400 text-sm">Authenticity</p>
-                <p className="text-slate-500 text-xs mt-1">Real profile data</p>
-              </div>
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.atsScore >= 80 ? 'text-green-400' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {analysisResult.atsScore}%
+                    </div>
+                    <p className="text-slate-400 text-sm">Content Match</p>
+                    <p className="text-slate-500 text-xs mt-1">Keywords & relevance</p>
+                  </div>
+                </div>
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'text-green-400' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {templateCompatibility[selectedTemplate].score}%
+                    </div>
+                    <p className="text-slate-400 text-sm">Template ATS</p>
+                    <p className="text-slate-500 text-xs mt-1">Format compatibility</p>
+                  </div>
+                </div>
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.keywordMatch >= 80 ? 'text-green-400' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {analysisResult.keywordMatch}%
+                    </div>
+                    <p className="text-slate-400 text-sm">Keyword Match</p>
+                    <p className="text-slate-500 text-xs mt-1">Job description fit</p>
+                  </div>
+                </div>
+                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                  <div className="text-center">
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.authenticityScore >= 80 ? 'text-green-400' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {analysisResult.authenticityScore}%
+                    </div>
+                    <p className="text-slate-400 text-sm">Authenticity</p>
+                    <p className="text-slate-500 text-xs mt-1">Real profile data</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {analysisResult.suggestions && analysisResult.suggestions.length > 0 && (
             <div className="bg-blue-600/10 border border-blue-500/30 rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-blue-300 mb-3 flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
-                AI Suggestions
+                {analysisResult.fullResume ? 'Tips' : 'AI Suggestions'}
               </h3>
               <ul className="space-y-2 text-slate-300">
                 {analysisResult.suggestions.map((suggestion, idx) => (
