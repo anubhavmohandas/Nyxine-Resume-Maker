@@ -2,6 +2,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, ChevronLeft, ChevronRight, Download, AlertCircle, Check, X, Sparkles, Save } from 'lucide-react';
 
+// ─── Date Sorting Utilities ───────────────────────────────────────────────────
+// Converts YYYY-MM date strings into a sortable integer.
+// Current jobs get the highest value so they always appear first.
+const parseDateForSort = (dateStr, isCurrent = false) => {
+  if (isCurrent) return 999999; // "Present" always on top
+  if (!dateStr || dateStr.trim() === '') return 0; // No date → bottom
+  const match = dateStr.match(/^(\d{4})-(\d{2})$/);
+  if (match) return parseInt(match[1]) * 100 + parseInt(match[2]); // YYYY-MM
+  const yearOnly = dateStr.match(/^(\d{4})$/);
+  if (yearOnly) return parseInt(yearOnly[1]) * 100; // YYYY only
+  return 0;
+};
+
+// Returns a new sorted array (newest → oldest). Does not mutate the original.
+const sortChronologically = (items, dateKey, currentKey = null) => {
+  if (!Array.isArray(items) || items.length <= 1) return items;
+  return [...items].sort((a, b) => {
+    const da = parseDateForSort(a[dateKey], currentKey && a[currentKey]);
+    const db = parseDateForSort(b[dateKey], currentKey && b[currentKey]);
+    return db - da;
+  });
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const NyxineResumeMaker = () => {
   const [currentView, setCurrentView] = useState('landing');
   const [currentStep, setCurrentStep] = useState(0);
@@ -677,6 +701,8 @@ const WorkExperienceStep = ({ profile, setProfile }) => {
     }));
   };
 
+  const sortedJobs = sortChronologically(profile.workExperience, 'startDate', 'current');
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -693,7 +719,14 @@ const WorkExperienceStep = ({ profile, setProfile }) => {
         </div>
       )}
 
-      {profile.workExperience.map((job, idx) => (
+      {profile.workExperience.length > 1 && (
+        <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-600/40">
+          <span>🔃</span>
+          <span>Auto-sorted by date — newest job first. Add them in any order you like.</span>
+        </div>
+      )}
+
+      {sortedJobs.map((job, idx) => (
         <JobForm key={job.id} job={job} idx={idx} setProfile={setProfile} removeJob={removeJob} />
       ))}
 
@@ -864,6 +897,8 @@ const EducationStep = ({ profile, setProfile }) => {
     }));
   };
 
+  const sortedEdu = sortChronologically(profile.education, 'graduationDate');
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between">
@@ -880,7 +915,14 @@ const EducationStep = ({ profile, setProfile }) => {
         </div>
       )}
 
-      {profile.education.map((edu, idx) => (
+      {profile.education.length > 1 && (
+        <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-600/40">
+          <span>🔃</span>
+          <span>Auto-sorted by date — most recent degree first. Add them in any order you like.</span>
+        </div>
+      )}
+
+      {sortedEdu.map((edu, idx) => (
         <EduForm key={edu.id} edu={edu} idx={idx} setProfile={setProfile} removeEdu={removeEdu} />
       ))}
     </div>
@@ -2722,10 +2764,10 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
   }
 
   if (step === 'preview' && analysisResult) {
-    // Full resume OR includeAllItems: include ALL experiences in original (reverse-chrono) order
-    // Matched resume with filtering: filter by relevance score >= 60, sort by score
+    // Full resume / includeAllItems → date-sorted (newest first)
+    // Analyzed + filtered → sort by relevance score (highest first), date as tiebreaker
     const selectedJobs = analysisResult.fullResume || analysisResult.includeAllItems
-      ? [...(profile.workExperience || [])]
+      ? sortChronologically(profile.workExperience || [], 'startDate', 'current')
       : (profile.workExperience || [])
           .filter(job => {
             const rank = analysisResult.rankedExperiences.find(r => r.id === job.id);
@@ -2734,11 +2776,10 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
           .sort((a, b) => {
             const scoreA = analysisResult.rankedExperiences.find(r => r.id === a.id)?.relevanceScore || 0;
             const scoreB = analysisResult.rankedExperiences.find(r => r.id === b.id)?.relevanceScore || 0;
-            return scoreB - scoreA;
+            if (scoreB !== scoreA) return scoreB - scoreA;
+            return parseDateForSort(b.startDate, b.current) - parseDateForSort(a.startDate, a.current);
           });
 
-    // Full resume OR includeAllItems: all skills across all categories
-    // Matched resume: job-targeted top skills, with fallback
     const displaySkills = analysisResult.fullResume || analysisResult.includeAllItems
       ? [
           ...(Array.isArray(profile.skills?.technical) ? profile.skills.technical : []),
@@ -2750,10 +2791,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
           ? analysisResult.topSkills
           : [...(profile.skills?.technical || []), ...(profile.skills?.soft || [])].slice(0, 10));
 
-    // Full resume OR includeAllItems: all projects; matched: top 2
     const displayProjects = analysisResult.fullResume || analysisResult.includeAllItems
       ? [...(profile.projects || [])]
       : (profile.projects || []).slice(0, 2);
+
+    // Education always sorted newest-first across all templates
+    const sortedProfile = {
+      ...profile,
+      education: sortChronologically(profile.education || [], 'graduationDate'),
+    };
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
@@ -2899,11 +2945,11 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             }
           `}</style>
 
-          {/* ✅ TEMPLATE-BASED RENDERING */}
+          {/* ✅ TEMPLATE-BASED RENDERING — sortedProfile ensures education is newest-first */}
           <div className="rounded-lg shadow-2xl mb-6 print:shadow-none overflow-hidden" id="resume-preview">
             {selectedTemplate === 'modern' && (
-              <ModernTemplate 
-                profile={profile}
+              <ModernTemplate
+                profile={sortedProfile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
@@ -2911,7 +2957,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             )}
             {selectedTemplate === 'classic' && (
               <ClassicTemplate
-                profile={profile}
+                profile={sortedProfile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
@@ -2919,7 +2965,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             )}
             {selectedTemplate === 'harvard' && (
               <HarvardTemplate
-                profile={profile}
+                profile={sortedProfile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
@@ -2927,7 +2973,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             )}
             {selectedTemplate === 'ats' && (
               <ATSOptimizedTemplate
-                profile={profile}
+                profile={sortedProfile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
@@ -2935,7 +2981,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             )}
             {selectedTemplate === 'creative' && (
               <CreativeTemplate
-                profile={profile}
+                profile={sortedProfile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
@@ -2943,7 +2989,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             )}
             {selectedTemplate === 'professional' && (
               <ProfessionalColorTemplate
-                profile={profile}
+                profile={sortedProfile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
@@ -2951,7 +2997,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
             )}
             {selectedTemplate === 'bold' && (
               <BoldTemplate
-                profile={profile}
+                profile={sortedProfile}
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
@@ -2970,7 +3016,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
               onClick={() => {
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 if (isMobile) {
-                  alert('📱 Mobile PDF Download:\n\n1. Click OK to open print preview\n2. In the print dialog:\n   • iOS: Pinch-zoom the preview, tap Share → Save to Files\n   • Android: Select "Save as PDF" as printer\n3. Choose location and save\n\nAlternatively, take a screenshot of the resume for quick sharing!');
+                  alert('📱 Mobile PDF Download:\n\n1. Click OK to open print preview\n2. In the print dialog:\n   • iOS: tap Share → Save to Files\n   • Android: Select "Save as PDF" as printer\n3. Choose location and save');
                 }
                 window.print();
               }}
