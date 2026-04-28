@@ -39,6 +39,7 @@ const NyxineResumeMaker = () => {
     additional: { volunteer: '', awards: '', publications: '' }
   });
   const [savedResumes, setSavedResumes] = useState([]);
+  const [savedResumeToLoad, setSavedResumeToLoad] = useState(null);
   const [isProcessingUpload, setIsProcessingUpload] = useState(false);
   const saveTimeoutRef = useRef(null);
 
@@ -362,12 +363,12 @@ IMPORTANT RULES:
   }
 
   if (currentView === 'dashboard') {
-    return <DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} exportData={exportData} importData={importData} clearAllData={clearAllData} />;
+    return <DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} />;
   }
 
   if (currentView === 'generate') {
     // 🔧 FIX #1: Added missing profile prop
-    return <GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} />;
+    return <GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} />;
   }
 
   return null;
@@ -1307,7 +1308,7 @@ const AdditionalStep = ({ profile, setProfile }) => {
   );
 };
 
-const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView, exportData, importData, clearAllData }) => {
+const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView, setSavedResumeToLoad, exportData, importData, clearAllData }) => {
   const deleteResume = (index) => {
     if (window.confirm('Delete this resume?')) {
       setSavedResumes(prev => prev.filter((_, i) => i !== index));
@@ -1386,7 +1387,11 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
                       <p className="text-slate-400 text-xs">{resume.date}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button className="text-blue-400 hover:text-blue-300 transition-colors">
+                      <button
+                        onClick={() => { setSavedResumeToLoad(resume); setCurrentView('generate'); }}
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                        title="Open & download this resume"
+                      >
                         <Download className="w-4 h-4" />
                       </button>
                       <button onClick={() => deleteResume(idx)} className="text-red-400 hover:text-red-300 transition-colors">
@@ -1766,7 +1771,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
         <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Summary</h2>
         <p className="text-sm leading-relaxed" style={{ color: '#000000' }}>
           {profile.personal.summary ||
-           `Experienced professional with a strong background in ${profile.workExperience[0]?.title || 'various roles'}. Proven track record of delivering results and contributing to organizational success. Seeking to leverage expertise in ${displaySkills.slice(0, 3).join(', ')} to drive innovation and growth.`}
+           `Experienced professional with a strong background in ${profile.workExperience[0]?.title || 'various roles'}. Proven track record of delivering results and contributing to organizational success. Seeking to leverage expertise in ${(displaySkills || []).slice(0, 3).join(', ')} to drive innovation and growth.`}
         </p>
       </div>
 
@@ -1858,9 +1863,9 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
 
 const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white max-w-6xl mx-auto">
+    <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed">
       {/* Colorful Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 md:p-8 lg:p-10">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 md:p-8 lg:p-10 print:p-8">
         <h1 className="text-4xl font-bold mb-3">{profile.personal.fullName}</h1>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-blue-100">
           <span>✉ {profile.personal.email}</span>
@@ -1875,8 +1880,8 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
         )}
       </div>
 
-      <div className="p-4 sm:p-6 md:p-8 lg:p-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 md:gap-8">
+      <div className="p-4 sm:p-6 md:p-8 lg:p-10 print:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] print:grid-cols-[1fr_300px] gap-6 print:gap-6">
           {/* Main Content */}
           <div className="space-y-6">
             {/* Experience */}
@@ -2072,10 +2077,10 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
 
 const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
+    <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed">
+      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] print:grid-cols-[280px_1fr]">
         {/* Dark Sidebar */}
-        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-4 sm:p-6 md:p-8">
+        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-4 sm:p-6 md:p-8 print:p-8">
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-2 break-words">{profile.personal.fullName}</h1>
             <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
@@ -2124,7 +2129,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
         </div>
 
         {/* Main Content */}
-        <div className="p-4 sm:p-6 md:p-8 lg:p-10">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-10 print:p-8">
           {selectedJobs.length > 0 && (
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-slate-800 mb-5 pb-2 border-b-2 border-cyan-400">Experience</h2>
@@ -2172,14 +2177,18 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
   );
 };
 
-const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }) => {
-  const [step, setStep] = useState('input');
-  const [jobTarget, setJobTarget] = useState('');
+const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad }) => {
+  const [step, setStep] = useState(() => savedResumeToLoad ? 'preview' : 'input');
+  const [jobTarget, setJobTarget] = useState(() => savedResumeToLoad?.jobTarget || '');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState('modern');
+  const [analysisResult, setAnalysisResult] = useState(() => savedResumeToLoad?.analysisResult || null);
+  const [selectedTemplate, setSelectedTemplate] = useState(() => savedResumeToLoad?.template || 'modern');
   const [resumeName, setResumeName] = useState('');
   const [includeAllItems, setIncludeAllItems] = useState(false);
+
+  useEffect(() => {
+    if (savedResumeToLoad) setSavedResumeToLoad(null);
+  }, []);
 
   // 📊 Template ATS Compatibility Scores
   const templateCompatibility = {
@@ -2999,6 +3008,11 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
               #resume-preview > div {
                 page-break-inside: auto !important;
                 break-inside: auto !important;
+              }
+
+              /* Full-bleed templates: remove outer padding so header/sidebar fills to @page margin */
+              #resume-preview > .print-full-bleed {
+                padding: 0 !important;
               }
             }
           `}</style>
