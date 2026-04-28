@@ -1585,6 +1585,9 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
 };
 
 const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
+  const techSkills = (profile.skills?.technical || []).filter(s => displaySkills.includes(s));
+  const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
+  const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
     <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
       {/* Header */}
@@ -1656,12 +1659,20 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
         )}
 
         {/* Skills */}
-        {displaySkills.length > 0 && (
+        {(techSkills.length > 0 || softSkills.length > 0 || langSkills.length > 0) && (
           <div>
-            <h2 className="text-lg font-bold text-center mb-3 tracking-wide">SKILLS</h2>
-            <p className="text-sm text-center leading-relaxed">
-              {displaySkills.join(' • ')}
-            </p>
+            <h2 className="text-lg font-bold text-center mb-3 tracking-wide border-b border-gray-400 pb-1">SKILLS</h2>
+            <div className="text-sm leading-relaxed space-y-1">
+              {techSkills.length > 0 && (
+                <p><span className="font-bold">Technical: </span>{techSkills.join(' · ')}</p>
+              )}
+              {softSkills.length > 0 && (
+                <p><span className="font-bold">Professional: </span>{softSkills.join(' · ')}</p>
+              )}
+              {langSkills.length > 0 && (
+                <p><span className="font-bold">Languages: </span>{langSkills.join(' · ')}</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -1700,58 +1711,59 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 };
 
 const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
+  const techSkills = (profile.skills?.technical || []).filter(s => displaySkills.includes(s));
+  const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
+  const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
+
+  const headingStyle = {
+    fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase',
+    letterSpacing: '0.06em', borderBottom: '1px solid #000',
+    paddingBottom: '2px', marginBottom: '8px',
+  };
+  const colDate = { width: '84px', flexShrink: 0, textAlign: 'right', fontSize: '10pt', paddingTop: '1px' };
+  const colBody = { flex: 1, fontSize: '10pt' };
+
   return (
-    <div className="bg-white px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-12 lg:px-16 max-w-5xl mx-auto text-black print:px-0 print:py-0 print:max-w-none" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.15' }}>
+    <div style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.4', color: '#000' }}>
       {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="font-bold mb-1.5" style={{ fontSize: '16pt', letterSpacing: '0.02em' }}>
+      <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+        <h1 style={{ fontSize: '17pt', fontWeight: 'bold', letterSpacing: '0.04em', marginBottom: '4px' }}>
           {profile.personal.fullName.toUpperCase()}
         </h1>
-        <p style={{ fontSize: '9pt' }}>
+        <p style={{ fontSize: '9.5pt' }}>
           {[
             profile.personal.email,
             profile.personal.phone,
             profile.personal.location,
-            profile.personal.linkedin?.replace('https://', '').replace('www.', ''),
-            profile.personal.github?.replace('https://', '').replace('www.', '')
-          ].filter(Boolean).join(' • ')}
+            profile.personal.linkedin?.replace('https://','').replace('www.',''),
+            profile.personal.github?.replace('https://','').replace('www.',''),
+          ].filter(Boolean).join(' | ')}
         </p>
       </div>
+      <hr style={{ border: 'none', borderTop: '1px solid #000', marginBottom: '10px' }} />
 
       {/* Summary */}
       {profile.personal.summary && (
-        <div className="mb-4 resume-entry">
-          <h2 className="mb-2" style={{ fontSize: '10.5pt', fontWeight: '600' }}>summary</h2>
-          <div className="flex gap-3">
-            <div className="flex-shrink-0" style={{ width: '80px' }}></div>
-            <p className="flex-1 text-justify" style={{ fontSize: '10pt', lineHeight: '1.5' }}>{profile.personal.summary}</p>
-          </div>
+        <div style={{ marginBottom: '10px' }} className="resume-entry">
+          <h2 style={headingStyle}>Summary</h2>
+          <p style={{ fontSize: '10pt', lineHeight: '1.45', textAlign: 'justify' }}>{profile.personal.summary}</p>
         </div>
       )}
+
       {/* Education */}
       {profile.education.length > 0 && (
-        <div className="mb-4">
-          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>education</h2>
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={headingStyle}>Education</h2>
           {profile.education.map(edu => (
-            <div key={edu.id} className="flex gap-3 mb-3.5 resume-entry">
-              <div className="flex-shrink-0 text-right" style={{ width: '80px', fontSize: '10pt' }}>
-                {edu.graduationDate || 'Present'}
-              </div>
-              <div className="flex-1" style={{ fontSize: '10pt' }}>
-                <div className="flex justify-between items-start mb-0.5">
-                  <h3 className="font-bold uppercase" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
-                    {edu.school}
-                  </h3>
-                  <span className="uppercase ml-4" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
-                    {edu.location}
-                  </span>
+            <div key={edu.id} style={{ display: 'flex', gap: '12px', marginBottom: '8px' }} className="resume-entry">
+              <div style={colDate}>{edu.graduationDate || 'Present'}</div>
+              <div style={colBody}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1px' }}>
+                  <span style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.01em' }}>{edu.school}</span>
+                  {edu.location && <span style={{ textTransform: 'uppercase', marginLeft: '10px', flexShrink: 0 }}>{edu.location}</span>}
                 </div>
-                <p className="mb-0.5" style={{ fontSize: '10pt' }}>
-                  {edu.degree}{edu.major ? ` in ${edu.major}` : ''}
-                </p>
-                {edu.gpa && (
-                  <p style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</p>
-                )}
+                <p style={{ marginBottom: '1px' }}>{edu.degree}{edu.major ? ` in ${edu.major}` : ''}</p>
+                {edu.gpa && <p>GPA: {edu.gpa}</p>}
               </div>
             </div>
           ))}
@@ -1760,28 +1772,20 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 
       {/* Experience */}
       {selectedJobs.length > 0 && (
-        <div className="mb-4">
-          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>experience</h2>
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={headingStyle}>Experience</h2>
           {selectedJobs.map(job => (
-            <div key={job.id} className="flex gap-3 mb-3.5 resume-entry">
-              <div className="flex-shrink-0 text-right" style={{ width: '80px', fontSize: '10pt' }}>
-                {job.startDate}-{job.current ? 'Present' : job.endDate}
-              </div>
-              <div className="flex-1" style={{ fontSize: '10pt' }}>
-                <div className="flex justify-between items-start mb-0.5">
-                  <h3 className="font-bold uppercase" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
-                    {job.company}
-                  </h3>
-                  <span className="uppercase ml-4" style={{ fontSize: '10pt', letterSpacing: '0.01em' }}>
-                    {job.location}
-                  </span>
+            <div key={job.id} style={{ display: 'flex', gap: '12px', marginBottom: '10px' }} className="resume-entry">
+              <div style={colDate}>{job.startDate}–{job.current ? 'Present' : job.endDate}</div>
+              <div style={colBody}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1px' }}>
+                  <span style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.01em' }}>{job.company}</span>
+                  {job.location && <span style={{ textTransform: 'uppercase', marginLeft: '10px', flexShrink: 0 }}>{job.location}</span>}
                 </div>
-                <p className="italic mb-1" style={{ fontSize: '10pt' }}>
-                  {job.title}
-                </p>
-                <ul className="space-y-0.5" style={{ fontSize: '10pt', lineHeight: '1.35', paddingLeft: '1.2em' }}>
+                <p style={{ fontStyle: 'italic', marginBottom: '3px' }}>{job.title}</p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '1.4em', lineHeight: '1.4' }}>
                   {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
-                    <li key={idx} className="pl-1">{bullet}</li>
+                    <li key={idx} style={{ marginBottom: '2px' }}>{bullet}</li>
                   ))}
                 </ul>
               </div>
@@ -1792,23 +1796,16 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 
       {/* Projects */}
       {displayProjects.length > 0 && (
-        <div className="mb-4">
-          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>projects</h2>
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={headingStyle}>Projects</h2>
           {displayProjects.map(proj => (
-            <div key={proj.id} className="flex gap-3 mb-3.5 resume-entry">
-              <div className="flex-shrink-0" style={{ width: '80px' }}></div>
-              <div className="flex-1" style={{ fontSize: '10pt' }}>
-                <h3 className="font-bold mb-0.5" style={{ fontSize: '10pt' }}>
-                  {proj.name}
-                </h3>
-                <p className="mb-1" style={{ fontSize: '10pt', lineHeight: '1.35' }}>
-                  {proj.description}
-                </p>
-                {proj.technologies && (
-                  <p className="italic" style={{ fontSize: '10pt' }}>
-                    Technologies: {proj.technologies}
-                  </p>
-                )}
+            <div key={proj.id} style={{ display: 'flex', gap: '12px', marginBottom: '8px' }} className="resume-entry">
+              <div style={{ ...colDate, textAlign: 'left' }}></div>
+              <div style={colBody}>
+                <p style={{ fontWeight: 'bold', marginBottom: '2px' }}>{proj.name}</p>
+                <p style={{ lineHeight: '1.4', marginBottom: '2px', textAlign: 'justify' }}>{proj.description}</p>
+                {proj.technologies && <p style={{ fontStyle: 'italic' }}>Technologies: {proj.technologies}</p>}
+                {proj.link && <p style={{ fontSize: '9.5pt' }}>{proj.link}</p>}
               </div>
             </div>
           ))}
@@ -1816,24 +1813,28 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
       )}
 
       {/* Skills */}
-      {displaySkills.length > 0 && (
-        <div className="mb-4">
-          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>skills</h2>
-          <div className="flex gap-3">
-            <div className="flex-shrink-0" style={{ width: '80px' }}></div>
-            <div className="flex-1" style={{ fontSize: '10pt', lineHeight: '1.35' }}>
-              <p>{displaySkills.join(', ')}</p>
+      {(techSkills.length > 0 || softSkills.length > 0 || langSkills.length > 0) && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={headingStyle}>Skills</h2>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ ...colDate, textAlign: 'left' }}></div>
+            <div style={{ ...colBody, lineHeight: '1.6' }}>
+              {techSkills.length > 0 && <p style={{ marginBottom: '2px' }}><strong>Technical: </strong>{techSkills.join(', ')}</p>}
+              {softSkills.length > 0 && <p style={{ marginBottom: '2px' }}><strong>Professional: </strong>{softSkills.join(', ')}</p>}
+              {langSkills.length > 0 && <p><strong>Languages: </strong>{langSkills.join(', ')}</p>}
             </div>
           </div>
         </div>
       )}
+
+      {/* Certifications */}
       {displayCerts.length > 0 && (
-        <div className="mb-4">
-          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>certifications</h2>
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={headingStyle}>Certifications</h2>
           {displayCerts.map((cert, idx) => (
-            <div key={idx} className="flex gap-3 mb-1.5 resume-entry">
-              <div className="flex-shrink-0" style={{ width: '80px' }}></div>
-              <p className="flex-1" style={{ fontSize: '10pt' }}>{cert}</p>
+            <div key={idx} style={{ display: 'flex', gap: '12px', marginBottom: '4px' }} className="resume-entry">
+              <div style={{ ...colDate, textAlign: 'left' }}></div>
+              <p style={colBody}>{cert}</p>
             </div>
           ))}
         </div>
@@ -1843,6 +1844,9 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 };
 
 const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
+  const techSkills = (profile.skills?.technical || []).filter(s => displaySkills.includes(s));
+  const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
+  const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
     <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
       {/* Header - Simple and Clean */}
@@ -1872,14 +1876,20 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
       )}
 
       {/* Skills - Bulleted List */}
-      {displaySkills.length > 0 && (
+      {(techSkills.length > 0 || softSkills.length > 0 || langSkills.length > 0) && (
         <div className="mb-6">
           <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Skills</h2>
-          <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
-            {displaySkills.map((skill, idx) => (
-              <li key={idx} className="mb-1">{skill}</li>
-            ))}
-          </ul>
+          <div className="text-sm space-y-1" style={{ color: '#000000' }}>
+            {techSkills.length > 0 && (
+              <p><span className="font-semibold">Technical Skills: </span>{techSkills.join(' • ')}</p>
+            )}
+            {softSkills.length > 0 && (
+              <p><span className="font-semibold">Professional Skills: </span>{softSkills.join(' • ')}</p>
+            )}
+            {langSkills.length > 0 && (
+              <p><span className="font-semibold">Languages: </span>{langSkills.join(' • ')}</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -2092,6 +2102,9 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
 };
 
 const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
+  const techSkills = (profile.skills?.technical || []).filter(s => displaySkills.includes(s));
+  const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
+  const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
     <div className="bg-white max-w-4xl mx-auto print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.5' }}>
       {/* Subtle Colored Header Bar */}
@@ -2170,15 +2183,40 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
           )}
 
           {/* Skills */}
-          {displaySkills.length > 0 && (
+          {(techSkills.length > 0 || softSkills.length > 0 || langSkills.length > 0) && (
             <div>
               <h2 className="text-sm font-bold text-slate-700 mb-3 pb-1.5 border-b-2 border-slate-600 tracking-widest">SKILLS</h2>
-              <div className="flex flex-wrap gap-2">
-                {displaySkills.map((skill, idx) => (
-                  <span key={idx} className="bg-slate-100 text-slate-700 px-3 py-1 rounded text-sm border border-slate-300">
-                    {skill}
-                  </span>
-                ))}
+              <div className="space-y-3">
+                {techSkills.length > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">Technical</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {techSkills.map((skill, idx) => (
+                        <span key={idx} className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded text-xs border border-slate-300">{skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {softSkills.length > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">Professional</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {softSkills.map((skill, idx) => (
+                        <span key={idx} className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded text-xs border border-slate-300">{skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {langSkills.length > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">Languages</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {langSkills.map((skill, idx) => (
+                        <span key={idx} className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded text-xs border border-slate-300">{skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
