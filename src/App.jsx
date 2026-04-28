@@ -1464,7 +1464,7 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
 
 const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none">
+    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4' }}>
       <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-8 print:gap-6">
         {/* Left sidebar - Contact & Skills */}
         <div className="bg-gray-100 p-6 rounded-lg">
@@ -1497,7 +1497,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
             <div>
               <h2 className="text-sm font-bold text-gray-900 mb-2 pb-1 border-b border-gray-300">EDUCATION</h2>
               {profile.education.map(edu => (
-                <div key={edu.id} className="mb-3 text-xs">
+                <div key={edu.id} className="mb-3 text-xs resume-entry">
                   <div className="font-bold text-gray-900">{edu.degree}</div>
                   <div className="text-gray-700 font-medium">{edu.major}</div>
                   <div className="text-gray-600">{edu.school}</div>
@@ -1515,7 +1515,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
             <div className="mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">EXPERIENCE</h2>
               {selectedJobs.map(job => (
-                <div key={job.id} className="mb-5">
+                <div key={job.id} className="mb-5 resume-entry">
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
                     <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
@@ -1537,9 +1537,9 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">PROJECTS</h2>
               {displayProjects.map(proj => (
-                <div key={proj.id} className="mb-4">
+                <div key={proj.id} className="mb-4 resume-entry">
                   <h3 className="text-base font-bold text-gray-900">{proj.name}</h3>
-                  <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                  <p className="text-sm text-gray-800 mt-1 leading-relaxed text-justify">{proj.description}</p>
                   {proj.technologies && (
                     <p className="text-xs text-gray-600 mt-1">
                       <span className="font-semibold">Technologies:</span> {proj.technologies}
@@ -1561,7 +1561,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
     <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
       {/* Header */}
       <div className="text-center mb-6 pb-4 border-b-2 border-black">
-        <h1 className="text-3xl font-bold mb-2 tracking-wide">{profile.personal.fullName.toUpperCase()}</h1>
+        <h1 className="font-bold mb-2 tracking-wide" style={{ fontSize: '16pt' }}>{profile.personal.fullName.toUpperCase()}</h1>
         <p className="text-sm text-gray-700">
           {profile.personal.email} | {profile.personal.phone} | {profile.personal.location}
         </p>
@@ -1581,7 +1581,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           <div>
             <h2 className="text-lg font-bold text-center mb-3 tracking-wide">PROFESSIONAL EXPERIENCE</h2>
             {selectedJobs.map(job => (
-              <div key={job.id} className="mb-4">
+              <div key={job.id} className="mb-4 resume-entry">
                 <div className="flex justify-between items-baseline mb-1">
                   <div>
                     <h3 className="text-base font-bold">{job.title}</h3>
@@ -1606,7 +1606,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           <div>
             <h2 className="text-lg font-bold text-center mb-3 tracking-wide">EDUCATION</h2>
             {profile.education.map(edu => (
-              <div key={edu.id} className="mb-3">
+              <div key={edu.id} className="mb-3 resume-entry">
                 <div className="flex justify-between items-baseline">
                   <div>
                     <h3 className="text-base font-bold">{edu.degree} in {edu.major}</h3>
@@ -1635,9 +1635,9 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           <div>
             <h2 className="text-lg font-bold text-center mb-3 tracking-wide">PROJECTS</h2>
             {displayProjects.map(proj => (
-              <div key={proj.id} className="mb-3">
+              <div key={proj.id} className="mb-3 resume-entry">
                 <h3 className="text-base font-bold">{proj.name}</h3>
-                <p className="text-sm mt-1 leading-relaxed">{proj.description}</p>
+                <p className="text-sm mt-1 leading-relaxed text-justify">{proj.description}</p>
                 {proj.technologies && (
                   <p className="text-sm text-gray-700 mt-1">
                     <span className="font-semibold">Technologies:</span> {proj.technologies}
@@ -1677,7 +1677,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
         <div className="mb-4">
           <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>education</h2>
           {profile.education.map(edu => (
-            <div key={edu.id} className="flex gap-3 mb-3.5">
+            <div key={edu.id} className="flex gap-3 mb-3.5 resume-entry">
               <div className="flex-shrink-0 text-right" style={{ width: '80px', fontSize: '10pt' }}>
                 {edu.graduationDate || 'Present'}
               </div>
@@ -1707,7 +1707,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
         <div className="mb-4">
           <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>experience</h2>
           {selectedJobs.map(job => (
-            <div key={job.id} className="flex gap-3 mb-3.5">
+            <div key={job.id} className="flex gap-3 mb-3.5 resume-entry">
               <div className="flex-shrink-0 text-right" style={{ width: '80px', fontSize: '10pt' }}>
                 {job.startDate}-{job.current ? 'Present' : job.endDate}
               </div>
@@ -1739,7 +1739,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
         <div className="mb-4">
           <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>projects</h2>
           {displayProjects.map(proj => (
-            <div key={proj.id} className="flex gap-3 mb-3.5">
+            <div key={proj.id} className="flex gap-3 mb-3.5 resume-entry">
               <div className="flex-shrink-0" style={{ width: '80px' }}></div>
               <div className="flex-1" style={{ fontSize: '10pt' }}>
                 <h3 className="font-bold mb-0.5" style={{ fontSize: '10pt' }}>
@@ -1799,7 +1799,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
       {/* Professional Summary/Objective */}
       <div className="mb-6">
         <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Summary</h2>
-        <p className="text-sm leading-relaxed" style={{ color: '#000000' }}>
+        <p className="text-sm leading-relaxed text-justify" style={{ color: '#000000' }}>
           {profile.personal.summary ||
            `Experienced professional with a strong background in ${profile.workExperience[0]?.title || 'various roles'}. Proven track record of delivering results and contributing to organizational success. Seeking to leverage expertise in ${(displaySkills || []).slice(0, 3).join(', ')} to drive innovation and growth.`}
         </p>
@@ -1822,7 +1822,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
         <div className="mb-6">
           <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Work Experience</h2>
           {selectedJobs.map(job => (
-            <div key={job.id} className="mb-4">
+            <div key={job.id} className="mb-4 resume-entry">
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{job.title}</h3>
                 <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
@@ -1847,7 +1847,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
         <div className="mb-6">
           <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Education</h2>
           {profile.education.map(edu => (
-            <div key={edu.id} className="mb-3">
+            <div key={edu.id} className="mb-3 resume-entry">
               <div className="flex justify-between items-baseline">
                 <div>
                   <h3 className="text-sm font-bold" style={{ color: '#000000' }}>
@@ -1872,9 +1872,9 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
         <div className="mb-6">
           <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Projects</h2>
           {displayProjects.map(proj => (
-            <div key={proj.id} className="mb-3">
+            <div key={proj.id} className="mb-3 resume-entry">
               <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{proj.name}</h3>
-              <p className="text-sm mt-1 leading-relaxed" style={{ color: '#000000' }}>{proj.description}</p>
+              <p className="text-sm mt-1 leading-relaxed text-justify" style={{ color: '#000000' }}>{proj.description}</p>
               {proj.technologies && (
                 <p className="text-sm mt-1" style={{ color: '#000000' }}>
                   Technologies: {proj.technologies}
@@ -1893,10 +1893,10 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
 
 const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed">
+    <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt' }}>
       {/* Colorful Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 md:p-8 lg:p-10 print:p-8">
-        <h1 className="text-4xl font-bold mb-3">{profile.personal.fullName}</h1>
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 print:p-8">
+        <h1 className="font-bold mb-3" style={{ fontSize: '20pt' }}>{profile.personal.fullName}</h1>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-blue-100">
           <span>✉ {profile.personal.email}</span>
           <span>📱 {profile.personal.phone}</span>
@@ -1910,18 +1910,18 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
         )}
       </div>
 
-      <div className="p-4 sm:p-6 md:p-8 lg:p-10 print:p-8">
+      <div className="p-8 print:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] print:grid-cols-[1fr_300px] gap-6 print:gap-6">
           {/* Main Content */}
           <div className="space-y-6">
             {/* Experience */}
             {selectedJobs.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-blue-600 mb-4 pb-2 border-b-2 border-blue-600">Experience</h2>
+                <h2 className="text-base font-bold text-blue-600 mb-3 pb-1.5 border-b-2 border-blue-600 uppercase tracking-wide">Experience</h2>
                 {selectedJobs.map(job => (
-                  <div key={job.id} className="mb-5">
+                  <div key={job.id} className="mb-5 resume-entry">
                     <div className="flex justify-between items-baseline mb-1">
-                      <h3 className="text-lg font-bold text-gray-900">{job.title}</h3>
+                      <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
                       <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
                         {job.startDate} - {job.current ? 'Present' : job.endDate}
                       </span>
@@ -1942,11 +1942,11 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
             {/* Projects */}
             {displayProjects.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-blue-600 mb-4 pb-2 border-b-2 border-blue-600">Projects</h2>
+                <h2 className="text-base font-bold text-blue-600 mb-3 pb-1.5 border-b-2 border-blue-600 uppercase tracking-wide">Projects</h2>
                 {displayProjects.map(proj => (
-                  <div key={proj.id} className="mb-4">
+                  <div key={proj.id} className="mb-4 resume-entry">
                     <h3 className="text-base font-bold text-gray-900">{proj.name}</h3>
-                    <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                    <p className="text-sm text-gray-800 mt-1 leading-relaxed text-justify">{proj.description}</p>
                     {proj.technologies && (
                       <p className="text-xs text-purple-600 mt-1">
                         <span className="font-semibold">Tech:</span> {proj.technologies}
@@ -1999,14 +1999,14 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
 
 const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white max-w-4xl mx-auto print:max-w-none">
+    <div className="bg-white max-w-4xl mx-auto print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.5' }}>
       {/* Subtle Colored Header Bar */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-600 h-3"></div>
 
-      <div className="p-4 sm:p-6 md:p-10 lg:p-12 print:p-0">
+      <div className="p-0 print:p-0">
         {/* Header */}
         <div className="text-center mb-8 pb-6 border-b-2 border-slate-600">
-          <h1 className="text-3xl font-bold text-slate-800 mb-3">{profile.personal.fullName}</h1>
+          <h1 className="font-bold text-slate-800 mb-3" style={{ fontSize: '16pt' }}>{profile.personal.fullName}</h1>
           <div className="text-sm text-gray-600 space-x-3">
             <span>{profile.personal.email}</span>
             <span>•</span>
@@ -2028,11 +2028,11 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
           {/* Experience */}
           {selectedJobs.length > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">EXPERIENCE</h2>
+              <h2 className="text-sm font-bold text-slate-700 mb-3 pb-1.5 border-b-2 border-slate-600 tracking-widest">EXPERIENCE</h2>
               {selectedJobs.map(job => (
-                <div key={job.id} className="mb-5">
+                <div key={job.id} className="mb-5 resume-entry">
                   <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="text-base font-bold text-slate-800">{job.title}</h3>
+                    <h3 className="text-sm font-bold text-slate-800">{job.title}</h3>
                     <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
                       {job.startDate} – {job.current ? 'Present' : job.endDate}
                     </span>
@@ -2051,12 +2051,12 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
           {/* Education */}
           {profile.education.length > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">EDUCATION</h2>
+              <h2 className="text-sm font-bold text-slate-700 mb-3 pb-1.5 border-b-2 border-slate-600 tracking-widest">EDUCATION</h2>
               {profile.education.map(edu => (
-                <div key={edu.id} className="mb-3">
+                <div key={edu.id} className="mb-3 resume-entry">
                   <div className="flex justify-between items-baseline">
                     <div>
-                      <h3 className="text-base font-bold text-slate-800">{edu.degree} in {edu.major}</h3>
+                      <h3 className="text-sm font-bold text-slate-800">{edu.degree} in {edu.major}</h3>
                       <p className="text-sm text-gray-700">{edu.school}{edu.location && `, ${edu.location}`}</p>
                     </div>
                     <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
@@ -2070,7 +2070,7 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
           {/* Skills */}
           {displaySkills.length > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">SKILLS</h2>
+              <h2 className="text-sm font-bold text-slate-700 mb-3 pb-1.5 border-b-2 border-slate-600 tracking-widest">SKILLS</h2>
               <div className="flex flex-wrap gap-2">
                 {displaySkills.map((skill, idx) => (
                   <span key={idx} className="bg-slate-100 text-slate-700 px-3 py-1 rounded text-sm border border-slate-300">
@@ -2084,11 +2084,11 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
           {/* Projects */}
           {displayProjects.length > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-slate-700 mb-4 pb-2 border-b-2 border-slate-600">PROJECTS</h2>
+              <h2 className="text-sm font-bold text-slate-700 mb-3 pb-1.5 border-b-2 border-slate-600 tracking-widest">PROJECTS</h2>
               {displayProjects.map(proj => (
-                <div key={proj.id} className="mb-4">
-                  <h3 className="text-base font-bold text-slate-800">{proj.name}</h3>
-                  <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                <div key={proj.id} className="mb-4 resume-entry">
+                  <h3 className="text-sm font-bold text-slate-800">{proj.name}</h3>
+                  <p className="text-sm text-gray-800 mt-1 leading-relaxed text-justify">{proj.description}</p>
                   {proj.technologies && (
                     <p className="text-xs text-slate-600 mt-1">
                       <span className="font-semibold">Technologies:</span> {proj.technologies}
@@ -2110,7 +2110,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
     <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed">
       <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] print:grid-cols-[280px_1fr]">
         {/* Dark Sidebar */}
-        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-4 sm:p-6 md:p-8 print:p-8">
+        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-8 print:p-8" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif' }}>
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-2 break-words">{profile.personal.fullName}</h1>
             <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
@@ -2145,7 +2145,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
               <div>
                 <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Education</h3>
                 {profile.education.map(edu => (
-                  <div key={edu.id} className="mb-4 last:mb-0">
+                  <div key={edu.id} className="mb-4 last:mb-0 resume-entry">
                     <div className="font-bold text-white text-sm">{edu.degree}</div>
                     <div className="text-slate-300 text-xs">{edu.major}</div>
                     <div className="text-slate-400 text-xs">{edu.school}</div>
@@ -2159,14 +2159,14 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
         </div>
 
         {/* Main Content */}
-        <div className="p-4 sm:p-6 md:p-8 lg:p-10 print:p-8">
+        <div className="p-8 print:p-8" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.5' }}>
           {selectedJobs.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-5 pb-2 border-b-2 border-cyan-400">Experience</h2>
+              <h2 className="text-sm font-bold text-slate-800 mb-4 pb-1.5 border-b-2 border-cyan-400 uppercase tracking-widest">Experience</h2>
               {selectedJobs.map(job => (
-                <div key={job.id} className="mb-6">
+                <div key={job.id} className="mb-6 resume-entry">
                   <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="text-lg font-bold text-slate-800">{job.title}</h3>
+                    <h3 className="text-base font-bold text-slate-800">{job.title}</h3>
                     <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
                       {job.startDate} - {job.current ? 'Present' : job.endDate}
                     </span>
@@ -2186,11 +2186,11 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
 
           {displayProjects.length > 0 && (
             <div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-5 pb-2 border-b-2 border-cyan-400">Projects</h2>
+              <h2 className="text-sm font-bold text-slate-800 mb-4 pb-1.5 border-b-2 border-cyan-400 uppercase tracking-widest">Projects</h2>
               {displayProjects.map(proj => (
-                <div key={proj.id} className="mb-5">
-                  <h3 className="text-base font-bold text-slate-800">{proj.name}</h3>
-                  <p className="text-sm text-gray-800 mt-1 leading-relaxed">{proj.description}</p>
+                <div key={proj.id} className="mb-5 resume-entry">
+                  <h3 className="text-sm font-bold text-slate-800">{proj.name}</h3>
+                  <p className="text-sm text-gray-800 mt-1 leading-relaxed text-justify">{proj.description}</p>
                   {proj.technologies && (
                     <p className="text-xs text-cyan-600 mt-1">
                       <span className="font-semibold">Technologies:</span> {proj.technologies}
