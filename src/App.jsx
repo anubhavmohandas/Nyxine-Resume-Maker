@@ -2966,10 +2966,20 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
 
           {/* 🔧 FIX #2: Print-specific styling */}
           <style>{`
+            /* ── A4 preview: zero out each template's own wrapper padding/margin/max-width.
+               The #resume-preview container now provides the 0.75in margins so template
+               outer divs must not add their own. Applies in both preview and print. */
+            #resume-preview > div {
+              padding: 0 !important;
+              margin: 0 !important;
+              max-width: 100% !important;
+              width: 100% !important;
+            }
+
             @media print {
               /* Page setup — 0.75in is standard resume margin.
-                 Templates control their own internal padding via print: Tailwind variants.
-                 Do NOT add padding here or it double-stacks with @page margin. */
+                 The A4 preview wrapper already mirrors this in-browser.
+                 Do NOT add padding here or it double-stacks with wrapper padding. */
               @page {
                 size: A4;
                 margin: 0.75in;
@@ -3048,11 +3058,36 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
               #resume-preview > .print-full-bleed {
                 padding: 0 !important;
               }
+
+              /* Prevent job / education entries from splitting mid-entry across pages */
+              #resume-preview .resume-entry {
+                page-break-inside: avoid;
+                break-inside: avoid;
+              }
             }
           `}</style>
 
-          {/* ✅ TEMPLATE-BASED RENDERING — sortedProfile ensures education is newest-first */}
-          <div className="rounded-lg shadow-2xl mb-6 overflow-hidden print:shadow-none print:overflow-visible print:rounded-none print:mb-0" id="resume-preview">
+          {/* ✅ TEMPLATE-BASED RENDERING — A4 page preview (794×1123px at 96dpi)
+               Width is fixed to A4 so preview === PDF. Scrolls horizontally on
+               small viewports. Full-bleed templates (Creative/Bold) use 0 padding
+               so their headers/sidebars run edge-to-edge. All others get 0.75in
+               padding to mirror the @page margin the PDF engine applies. */}
+          <div className="overflow-x-auto mb-6 print:mb-0 print:overflow-visible">
+          <div
+            id="resume-preview"
+            className="print:shadow-none print:rounded-none print:p-0"
+            style={{
+              width: '794px',
+              minHeight: '1123px',
+              margin: '0 auto',
+              background: 'white',
+              borderRadius: '3px',
+              boxShadow: '0 4px 40px rgba(0,0,0,0.35)',
+              padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold') ? '0' : '0.75in',
+              boxSizing: 'border-box',
+              overflow: 'hidden',
+            }}
+          >
             {selectedTemplate === 'modern' && (
               <ModernTemplate
                 profile={sortedProfile}
@@ -3109,7 +3144,8 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 displayProjects={displayProjects}
               />
             )}
-          </div>
+          </div>{/* end #resume-preview */}
+          </div>{/* end overflow-x-auto scroll wrapper */}
 
           <div className="flex gap-3 no-print">
             <button
