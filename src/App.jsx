@@ -44,7 +44,7 @@ const NyxineResumeMaker = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showStorageWarning, setShowStorageWarning] = useState(true);
   const [profile, setProfile] = useState({
-    personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '' },
+    personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '', summary: '' },
     workExperience: [],
     education: [],
     skills: { technical: [], soft: [], certifications: [], languages: [] },
@@ -356,7 +356,7 @@ IMPORTANT RULES:
   const clearAllData = () => {
     if (window.confirm('Are you sure you want to delete all data? This cannot be undone.')) {
       setProfile({
-        personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '' },
+        personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '', summary: '' },
         workExperience: [],
         education: [],
         skills: { technical: [], soft: [], certifications: [], languages: [] },
@@ -668,6 +668,18 @@ const PersonalInfoStep = ({ profile, setProfile }) => {
           className="w-full px-4 py-2 ny-input rounded-lg transition-all"
           placeholder="San Francisco, CA"
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium ny-text-2 mb-2">Professional Summary</label>
+        <textarea
+          value={local.summary || ''}
+          onChange={(e) => setLocal(prev => ({ ...prev, summary: e.target.value }))}
+          className="w-full px-4 py-2 ny-input rounded-lg transition-all resize-none"
+          rows={3}
+          placeholder="3–4 lines: who you are, your key strengths, and what you bring to the role..."
+          maxLength={500}
+        />
+        <p className="text-xs ny-text-3 mt-1">{(local.summary || '').length}/500 characters</p>
       </div>
       <div className="grid md:grid-cols-3 gap-4">
         <div>
@@ -1462,7 +1474,7 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
 
 // ✅ RESUME TEMPLATES
 
-const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
   return (
     <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4' }}>
       <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-8 print:gap-6">
@@ -1509,8 +1521,14 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
           )}
         </div>
 
-        {/* Right main content - Experience & Projects */}
+        {/* Right main content - Summary, Experience & Projects */}
         <div>
+          {profile.personal.summary && (
+            <div className="mb-5 resume-entry">
+              <h2 className="text-sm font-bold text-gray-900 mb-1.5 pb-1 border-b-2 border-gray-800 uppercase tracking-widest">Summary</h2>
+              <p className="text-sm text-gray-800 leading-relaxed text-justify">{profile.personal.summary}</p>
+            </div>
+          )}
           {selectedJobs.length > 0 && (
             <div className="mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">EXPERIENCE</h2>
@@ -1534,7 +1552,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
           )}
 
           {displayProjects.length > 0 && (
-            <div>
+            <div className="mb-5">
               <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">PROJECTS</h2>
               {displayProjects.map(proj => (
                 <div key={proj.id} className="mb-4 resume-entry">
@@ -1550,13 +1568,23 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
               ))}
             </div>
           )}
+          {displayCerts.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">CERTIFICATIONS</h2>
+              <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
+                {displayCerts.map((cert, idx) => (
+                  <li key={idx} className="leading-relaxed">{cert}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
   return (
     <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
       {/* Header */}
@@ -1576,6 +1604,13 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
       </div>
 
       <div className="space-y-5">
+        {/* Summary */}
+        {profile.personal.summary && (
+          <div className="resume-entry">
+            <h2 className="text-base font-bold text-center mb-2 tracking-wide">PROFESSIONAL SUMMARY</h2>
+            <p className="text-sm leading-relaxed text-justify">{profile.personal.summary}</p>
+          </div>
+        )}
         {/* Experience */}
         {selectedJobs.length > 0 && (
           <div>
@@ -1648,12 +1683,23 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
             ))}
           </div>
         )}
+        {/* Certifications */}
+        {displayCerts.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-center mb-3 tracking-wide">CERTIFICATIONS</h2>
+            <ul className="list-disc ml-6 space-y-1 text-sm">
+              {displayCerts.map((cert, idx) => (
+                <li key={idx} className="leading-relaxed">{cert}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
   return (
     <div className="bg-white px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-12 lg:px-16 max-w-5xl mx-auto text-black print:px-0 print:py-0 print:max-w-none" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.15' }}>
       {/* Header */}
@@ -1672,6 +1718,16 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
         </p>
       </div>
 
+      {/* Summary */}
+      {profile.personal.summary && (
+        <div className="mb-4 resume-entry">
+          <h2 className="mb-2" style={{ fontSize: '10.5pt', fontWeight: '600' }}>summary</h2>
+          <div className="flex gap-3">
+            <div className="flex-shrink-0" style={{ width: '80px' }}></div>
+            <p className="flex-1 text-justify" style={{ fontSize: '10pt', lineHeight: '1.5' }}>{profile.personal.summary}</p>
+          </div>
+        </div>
+      )}
       {/* Education */}
       {profile.education.length > 0 && (
         <div className="mb-4">
@@ -1771,11 +1827,22 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           </div>
         </div>
       )}
+      {displayCerts.length > 0 && (
+        <div className="mb-4">
+          <h2 className="mb-2.5" style={{ fontSize: '10.5pt', fontWeight: '600' }}>certifications</h2>
+          {displayCerts.map((cert, idx) => (
+            <div key={idx} className="flex gap-3 mb-1.5 resume-entry">
+              <div className="flex-shrink-0" style={{ width: '80px' }}></div>
+              <p className="flex-1" style={{ fontSize: '10pt' }}>{cert}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
   return (
     <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
       {/* Header - Simple and Clean */}
@@ -1796,14 +1863,13 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
         )}
       </div>
 
-      {/* Professional Summary/Objective */}
-      <div className="mb-6">
-        <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Summary</h2>
-        <p className="text-sm leading-relaxed text-justify" style={{ color: '#000000' }}>
-          {profile.personal.summary ||
-           `Experienced professional with a strong background in ${profile.workExperience[0]?.title || 'various roles'}. Proven track record of delivering results and contributing to organizational success. Seeking to leverage expertise in ${(displaySkills || []).slice(0, 3).join(', ')} to drive innovation and growth.`}
-        </p>
-      </div>
+      {/* Professional Summary */}
+      {profile.personal.summary && (
+        <div className="mb-6 resume-entry">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Summary</h2>
+          <p className="text-sm leading-relaxed text-justify" style={{ color: '#000000' }}>{profile.personal.summary}</p>
+        </div>
+      )}
 
       {/* Skills - Bulleted List */}
       {displaySkills.length > 0 && (
@@ -1885,13 +1951,23 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
           ))}
         </div>
       )}
+      {displayCerts.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>Certifications</h2>
+          <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
+            {displayCerts.map((cert, idx) => (
+              <li key={idx} className="mb-1 leading-relaxed">{cert}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
 
 // 🎨 NEW COLORFUL TEMPLATES
 
-const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
   return (
     <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt' }}>
       {/* Colorful Header */}
@@ -1914,6 +1990,14 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] print:grid-cols-[1fr_300px] gap-6 print:gap-6">
           {/* Main Content */}
           <div className="space-y-6">
+            {/* Professional Summary */}
+            {profile.personal.summary && (
+              <div className="resume-entry">
+                <h2 className="text-base font-bold text-blue-600 mb-2 pb-1.5 border-b-2 border-blue-600 uppercase tracking-wide">Summary</h2>
+                <p className="text-sm text-gray-800 leading-relaxed text-justify">{profile.personal.summary}</p>
+              </div>
+            )}
+
             {/* Experience */}
             {selectedJobs.length > 0 && (
               <div>
@@ -1957,30 +2041,40 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                 ))}
               </div>
             )}
+
+            {/* Certifications */}
+            {displayCerts.length > 0 && (
+              <div>
+                <h2 className="text-base font-bold text-blue-600 mb-3 pb-1.5 border-b-2 border-blue-600 uppercase tracking-wide">Certifications</h2>
+                <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
+                  {displayCerts.map((cert, idx) => (
+                    <li key={idx} className="leading-relaxed">{cert}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Skills */}
             {displaySkills.length > 0 && (
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-5 rounded-lg border-l-4 border-blue-600">
-                <h2 className="text-lg font-bold text-blue-600 mb-3">Skills</h2>
-                <div className="space-y-2">
+              <div>
+                <h2 className="text-base font-bold text-blue-600 mb-3 pb-1 border-b-2 border-blue-600 uppercase tracking-wide">Skills</h2>
+                <ul className="list-disc ml-4 space-y-1">
                   {displaySkills.map((skill, idx) => (
-                    <div key={idx} className="bg-white px-3 py-1.5 rounded text-sm text-gray-800 border border-blue-100">
-                      {skill}
-                    </div>
+                    <li key={idx} className="text-sm text-gray-800">{skill}</li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
             {/* Education */}
             {profile.education.length > 0 && (
-              <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-5 rounded-lg border-l-4 border-purple-600">
-                <h2 className="text-lg font-bold text-purple-600 mb-3">Education</h2>
+              <div>
+                <h2 className="text-base font-bold text-purple-600 mb-3 pb-1 border-b-2 border-purple-600 uppercase tracking-wide">Education</h2>
                 {profile.education.map(edu => (
-                  <div key={edu.id} className="mb-3 last:mb-0">
+                  <div key={edu.id} className="mb-4 last:mb-0 resume-entry">
                     <div className="font-bold text-gray-900 text-sm">{edu.degree}</div>
                     <div className="text-sm text-gray-700">{edu.major}</div>
                     <div className="text-sm text-gray-600">{edu.school}</div>
@@ -1997,7 +2091,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
   );
 };
 
-const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
   return (
     <div className="bg-white max-w-4xl mx-auto print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.5' }}>
       {/* Subtle Colored Header Bar */}
@@ -2025,6 +2119,14 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
         </div>
 
         <div className="space-y-6">
+          {/* Professional Summary */}
+          {profile.personal.summary && (
+            <div className="resume-entry">
+              <h2 className="text-sm font-bold text-slate-700 mb-2 pb-1.5 border-b-2 border-slate-600 tracking-widest">PROFESSIONAL SUMMARY</h2>
+              <p className="text-sm text-gray-800 leading-relaxed text-justify">{profile.personal.summary}</p>
+            </div>
+          )}
+
           {/* Experience */}
           {selectedJobs.length > 0 && (
             <div>
@@ -2099,18 +2201,30 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
               ))}
             </div>
           )}
+
+          {/* Certifications */}
+          {displayCerts.length > 0 && (
+            <div>
+              <h2 className="text-sm font-bold text-slate-700 mb-3 pb-1.5 border-b-2 border-slate-600 tracking-widest">CERTIFICATIONS</h2>
+              <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
+                {displayCerts.map((cert, idx) => (
+                  <li key={idx} className="leading-relaxed">{cert}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
+const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
   return (
-    <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed">
+    <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed" style={{ background: 'linear-gradient(to right, #1e293b 280px, white 280px)' }}>
       <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] print:grid-cols-[280px_1fr]">
         {/* Dark Sidebar */}
-        <div className="bg-gradient-to-b from-slate-800 to-slate-900 text-white p-8 print:p-8" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif' }}>
+        <div className="text-white p-8 print:p-8" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', backgroundColor: 'transparent' }}>
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-2 break-words">{profile.personal.fullName}</h1>
             <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
@@ -2160,6 +2274,14 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
 
         {/* Main Content */}
         <div className="p-8 print:p-8" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.5' }}>
+          {/* Professional Summary */}
+          {profile.personal.summary && (
+            <div className="mb-8 resume-entry">
+              <h2 className="text-sm font-bold text-slate-800 mb-3 pb-1.5 border-b-2 border-cyan-400 uppercase tracking-widest">Summary</h2>
+              <p className="text-sm text-gray-800 leading-relaxed text-justify">{profile.personal.summary}</p>
+            </div>
+          )}
+
           {selectedJobs.length > 0 && (
             <div className="mb-8">
               <h2 className="text-sm font-bold text-slate-800 mb-4 pb-1.5 border-b-2 border-cyan-400 uppercase tracking-widest">Experience</h2>
@@ -2199,6 +2321,18 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
                   {proj.link && <p className="text-xs text-cyan-600 mt-1 break-words">{proj.link}</p>}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Certifications */}
+          {displayCerts.length > 0 && (
+            <div>
+              <h2 className="text-sm font-bold text-slate-800 mb-4 pb-1.5 border-b-2 border-cyan-400 uppercase tracking-widest">Certifications</h2>
+              <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
+                {displayCerts.map((cert, idx) => (
+                  <li key={idx} className="leading-relaxed">{cert}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
@@ -2824,12 +2958,16 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
       ? [
           ...(Array.isArray(profile.skills?.technical) ? profile.skills.technical : []),
           ...(Array.isArray(profile.skills?.soft) ? profile.skills.soft : []),
-          ...(Array.isArray(profile.skills?.certifications) ? profile.skills.certifications : []),
           ...(Array.isArray(profile.skills?.languages) ? profile.skills.languages : []),
         ]
       : (analysisResult.topSkills && analysisResult.topSkills.length > 0
           ? analysisResult.topSkills
           : [...(profile.skills?.technical || []), ...(profile.skills?.soft || [])].slice(0, 10));
+
+    // Certifications always shown in full — they are their own closing section
+    const displayCerts = Array.isArray(profile.skills?.certifications)
+      ? profile.skills.certifications
+      : [];
 
     const displayProjects = analysisResult.fullResume || analysisResult.includeAllItems
       ? [...(profile.projects || [])]
@@ -3094,6 +3232,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
+                displayCerts={displayCerts}
               />
             )}
             {selectedTemplate === 'classic' && (
@@ -3102,6 +3241,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
+                displayCerts={displayCerts}
               />
             )}
             {selectedTemplate === 'harvard' && (
@@ -3110,6 +3250,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
+                displayCerts={displayCerts}
               />
             )}
             {selectedTemplate === 'ats' && (
@@ -3118,6 +3259,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
+                displayCerts={displayCerts}
               />
             )}
             {selectedTemplate === 'creative' && (
@@ -3126,6 +3268,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
+                displayCerts={displayCerts}
               />
             )}
             {selectedTemplate === 'professional' && (
@@ -3134,6 +3277,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
+                displayCerts={displayCerts}
               />
             )}
             {selectedTemplate === 'bold' && (
@@ -3142,6 +3286,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 selectedJobs={selectedJobs}
                 displaySkills={displaySkills}
                 displayProjects={displayProjects}
+                displayCerts={displayCerts}
               />
             )}
           </div>{/* end #resume-preview */}

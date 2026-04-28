@@ -2,8 +2,8 @@
 
 /* ══════════════════════════════════════════════════════════════════════════
    NYXINE — Deep Ocean Design System
-   Two modes: Dark (default) = midnight navy + electric cyan
-              Light           = ice blue + deep navy
+   Two modes: Dark (default) = charcoal navy + muted teal
+              Light           = neutral white + slate
    All color tokens live here. Nothing hardcoded in components.
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -11,25 +11,25 @@
   /* ── Dark mode (default) ────────────────────────────────────────────── */
 
   /* Backgrounds */
-  --ny-bg:              #050C18;   /* True midnight navy — NOT slate-900    */
-  --ny-surface:         #091525;   /* Slightly elevated background           */
-  --ny-card:            rgba(10, 22, 42, 0.72);  /* Glassmorphism card       */
-  --ny-subcard:         rgba(8, 18, 36, 0.80);   /* Form / sub-panel surface */
+  --ny-bg:              #080C14;   /* Charcoal dark — less blue, more neutral */
+  --ny-surface:         #0D1220;   /* Slightly elevated background            */
+  --ny-card:            rgba(14, 20, 36, 0.78);  /* Glassmorphism card        */
+  --ny-subcard:         rgba(10, 16, 30, 0.85);  /* Form / sub-panel surface  */
 
   /* Borders */
-  --ny-border:          rgba(0, 200, 255, 0.10);
-  --ny-border-strong:   rgba(0, 200, 255, 0.20);
+  --ny-border:          rgba(80, 140, 180, 0.12);
+  --ny-border-strong:   rgba(80, 140, 180, 0.22);
 
-  /* Accent — Electric Cyan */
-  --ny-accent:          #00C8FF;
-  --ny-accent-btn:      #0088CC;   /* Slightly muted for button BG           */
-  --ny-accent-dim:      rgba(0, 200, 255, 0.10);
-  --ny-accent-glow:     rgba(0, 200, 255, 0.06);
+  /* Accent — Muted Teal (not neon cyan) */
+  --ny-accent:          #3B9DC4;
+  --ny-accent-btn:      #1A7EA0;   /* Button BG — professional, not electric  */
+  --ny-accent-dim:      rgba(59, 157, 196, 0.12);
+  --ny-accent-glow:     rgba(59, 157, 196, 0.05);
 
   /* Text */
-  --ny-text-1:          #CCE8FF;   /* Primary — ice white with blue tint     */
-  --ny-text-2:          #5B8FAA;   /* Secondary — muted ocean blue           */
-  --ny-text-3:          #2E5570;   /* Muted — very dim                       */
+  --ny-text-1:          #D4E6F1;   /* Primary — cool off-white                */
+  --ny-text-2:          #5C8DA8;   /* Secondary — muted slate-blue            */
+  --ny-text-3:          #334D60;   /* Muted — very dim                        */
 
   /* Semantic colours */
   --ny-success:         #00D68F;
@@ -56,22 +56,22 @@
 
 /* ── Light mode ─────────────────────────────────────────────────────────── */
 [data-theme="light"] {
-  --ny-bg:              #EEF5FF;
-  --ny-surface:         #E2EDFF;
-  --ny-card:            rgba(255, 255, 255, 0.90);
-  --ny-subcard:         rgba(240, 248, 255, 0.95);
+  --ny-bg:              #F4F6F9;
+  --ny-surface:         #EAECF2;
+  --ny-card:            rgba(255, 255, 255, 0.92);
+  --ny-subcard:         rgba(246, 248, 252, 0.96);
 
-  --ny-border:          rgba(0, 60, 180, 0.10);
-  --ny-border-strong:   rgba(0, 60, 180, 0.22);
+  --ny-border:          rgba(60, 80, 120, 0.12);
+  --ny-border-strong:   rgba(60, 80, 120, 0.22);
 
-  --ny-accent:          #0044CC;
-  --ny-accent-btn:      #0044CC;
-  --ny-accent-dim:      rgba(0, 68, 204, 0.08);
-  --ny-accent-glow:     rgba(0, 68, 204, 0.04);
+  --ny-accent:          #1A6FA0;
+  --ny-accent-btn:      #155F8A;
+  --ny-accent-dim:      rgba(26, 111, 160, 0.09);
+  --ny-accent-glow:     rgba(26, 111, 160, 0.04);
 
-  --ny-text-1:          #061020;
-  --ny-text-2:          #2B5080;
-  --ny-text-3:          #6080A8;
+  --ny-text-1:          #0F1C2A;
+  --ny-text-2:          #3A5A78;
+  --ny-text-3:          #7090AA;
 
   --ny-success:         #007A50;
   --ny-success-btn:     #006040;
@@ -102,10 +102,10 @@
   /* ── Page background ─────────────────────────────────────────────────── */
   .ny-bg {
     background-color: var(--ny-bg);
-    /* Subtle radial aurora glow — different from flat slate-900 */
+    /* Very subtle depth — no neon glow */
     background-image:
-      radial-gradient(ellipse 130% 55% at 50% -5%,  rgba(0, 200, 255, 0.06) 0%, transparent 68%),
-      radial-gradient(ellipse 70%  40% at 85%  110%, rgba(0,  85, 238, 0.05) 0%, transparent 65%);
+      radial-gradient(ellipse 130% 55% at 50% -5%,  rgba(59, 157, 196, 0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 70%  40% at 85%  110%, rgba(26,  90, 160, 0.03) 0%, transparent 65%);
     min-height: 100vh;
   }
 
@@ -204,9 +204,9 @@
     color:            var(--ny-warning);
   }
 
-  /* ── Logo gradient — not the generic blue-purple-pink ───────────────── */
+  /* ── Logo gradient — professional teal-to-indigo ────────────────────── */
   .ny-logo-gradient {
-    background: linear-gradient(130deg, #00C8FF 0%, #0066EE 48%, #7744FF 100%);
+    background: linear-gradient(130deg, #3B9DC4 0%, #2563EB 50%, #7C3AED 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -214,7 +214,7 @@
 
   /* ── Section heading gradient ───────────────────────────────────────── */
   .ny-heading-gradient {
-    background: linear-gradient(130deg, var(--ny-accent) 0%, #6688FF 100%);
+    background: linear-gradient(130deg, var(--ny-accent) 0%, #4F6EE0 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
