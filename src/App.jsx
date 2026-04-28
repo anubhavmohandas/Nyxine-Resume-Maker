@@ -2927,26 +2927,84 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes }
           {/* 🔧 FIX #2: Print-specific styling */}
           <style>{`
             @media print {
+              /* Page setup */
+              @page {
+                size: A4;
+                margin: 0.5in;
+              }
+
+              /* Hide everything except resume */
               body * {
                 visibility: hidden;
               }
+
               #resume-preview, #resume-preview * {
                 visibility: visible;
               }
+
               #resume-preview {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                overflow: visible !important;
+                max-width: none !important;
               }
+
+              /* Remove responsive padding - use print-friendly spacing */
+              #resume-preview > div {
+                padding: 0.5in !important;
+                margin: 0 !important;
+                max-width: none !important;
+              }
+
+              /* Hide print buttons and UI elements */
               .no-print {
                 display: none !important;
+              }
+
+              /* Prevent orphaned headings */
+              h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+              }
+
+              /* Remove decorative elements */
+              * {
+                box-shadow: none !important;
+                text-shadow: none !important;
+              }
+
+              /* Ensure backgrounds print for gradient templates */
+              body {
+                background: white !important;
+              }
+
+              * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+
+              /* Remove any overflow/height constraints */
+              #resume-preview, #resume-preview * {
+                overflow: visible !important;
+                max-height: none !important;
+                min-height: 0 !important;
+              }
+
+              /* Allow natural page flow - CRITICAL FIX */
+              #resume-preview > div {
+                page-break-inside: auto !important;
+                break-inside: auto !important;
               }
             }
           `}</style>
 
           {/* ✅ TEMPLATE-BASED RENDERING — sortedProfile ensures education is newest-first */}
-          <div className="rounded-lg shadow-2xl mb-6 print:shadow-none overflow-hidden" id="resume-preview">
+          <div className="rounded-lg shadow-2xl mb-6 print:shadow-none print:overflow-visible overflow-hidden" id="resume-preview">
             {selectedTemplate === 'modern' && (
               <ModernTemplate
                 profile={sortedProfile}
