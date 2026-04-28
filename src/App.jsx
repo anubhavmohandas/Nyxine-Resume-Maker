@@ -34,7 +34,7 @@ const NyxineResumeMaker = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    try { localStorage.setItem('nyxine_theme', theme); } catch {}
+    try { localStorage.setItem('nyxine_theme', theme); } catch { /* storage unavailable */ }
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
@@ -53,7 +53,7 @@ const NyxineResumeMaker = () => {
   });
   const [savedResumes, setSavedResumes] = useState([]);
   const [savedResumeToLoad, setSavedResumeToLoad] = useState(null);
-  const [isProcessingUpload, setIsProcessingUpload] = useState(false);
+  const [, setIsProcessingUpload] = useState(false); // value unused until Upload ships
   const saveTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -67,6 +67,7 @@ const NyxineResumeMaker = () => {
         saveToStorage();
       }, 2000);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile, savedResumes, currentView]);
 
   const loadFromStorage = () => {
@@ -81,7 +82,7 @@ const NyxineResumeMaker = () => {
           if (parsed && typeof parsed === 'object' && parsed.personal) {
             setProfile(parsed);
           }
-        } catch (e) {
+        } catch {
           console.error('Invalid profile data, resetting');
           localStorage.removeItem('nyxine_profile');
         }
@@ -94,7 +95,7 @@ const NyxineResumeMaker = () => {
           if (Array.isArray(parsed)) {
             setSavedResumes(parsed);
           }
-        } catch (e) {
+        } catch {
           console.error('Invalid resumes data, resetting');
           localStorage.removeItem('nyxine_resumes');
         }
@@ -122,6 +123,7 @@ const NyxineResumeMaker = () => {
     { name: 'Additional', icon: Award }
   ];
 
+  // eslint-disable-next-line no-unused-vars -- wired up when Upload feature ships
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -344,7 +346,7 @@ IMPORTANT RULES:
         if (data.profile) setProfile(data.profile);
         if (data.savedResumes) setSavedResumes(data.savedResumes);
         alert('Data imported successfully!');
-      } catch (error) {
+      } catch {
         alert('Import failed. Please check the file format.');
       }
     };
@@ -383,7 +385,7 @@ IMPORTANT RULES:
   );
 
   if (currentView === 'landing') {
-    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} handleFileUpload={handleFileUpload} profile={profile} savedResumes={savedResumes} isProcessingUpload={isProcessingUpload} /><ThemeToggle /></>;
+    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} /><ThemeToggle /></>;
   }
 
   if (currentView === 'wizard') {
@@ -401,7 +403,7 @@ IMPORTANT RULES:
   return null;
 };
 
-const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, handleFileUpload, profile, savedResumes, isProcessingUpload }) => {
+const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes }) => {
   return (
     <div className="min-h-screen ny-bg flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
@@ -534,7 +536,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
         }
         return true;
         
-      case 3: // Skills
+      case 3: { // Skills
         const totalSkills = profile.skills.technical.length + profile.skills.soft.length;
         if (totalSkills === 0) {
           return window.confirm('No skills added. Continue anyway?');
@@ -543,6 +545,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
           return window.confirm('Only ' + totalSkills + ' skill(s) added. Recommended: at least 5-10 skills. Continue anyway?');
         }
         return true;
+      }
         
       default:
         return true;
@@ -2204,10 +2207,10 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
   );
 };
 
-const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad }) => {
+const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad }) => {
   const [step, setStep] = useState(() => savedResumeToLoad ? 'preview' : 'input');
   const [jobTarget, setJobTarget] = useState(() => savedResumeToLoad?.jobTarget || '');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(() => savedResumeToLoad?.analysisResult || null);
   const [selectedTemplate, setSelectedTemplate] = useState(() => savedResumeToLoad?.template || 'modern');
   const [resumeName, setResumeName] = useState('');
@@ -2215,6 +2218,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
 
   useEffect(() => {
     if (savedResumeToLoad) setSavedResumeToLoad(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 📊 Template ATS Compatibility Scores
@@ -2660,13 +2664,13 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     onClick={() => setSelectedTemplate('professional')}
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'professional'
-                        ? 'border-slate-500 bg-slate-500/10'
+                        ? 'border-[var(--ny-accent)] bg-[var(--ny-accent-dim)]'
                         : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">💼</div>
-                      <div className={`font-semibold ${selectedTemplate === 'professional' ? 'ny-text-2' : 'ny-text-2'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'professional' ? 'ny-accent' : 'ny-text-2'}`}>
                         Professional
                       </div>
                       <div className="text-xs ny-text-2 mt-1">Subtle color bar</div>
@@ -2761,7 +2765,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                 </button>
                 <button
                   onClick={generateFullResume}
-                  className="px-6 py-3 bg-slate-600 hover:bg-slate-500 ny-text-1 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                  className="px-6 py-3 ny-btn-secondary rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
                   title="Include all your experiences, skills and projects — no filtering"
                 >
                   <FileText className="w-5 h-5" />
