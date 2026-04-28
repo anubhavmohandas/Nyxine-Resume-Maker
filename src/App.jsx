@@ -1407,7 +1407,7 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
                 <span className="font-semibold">{profile.projects.length}</span>
               </div>
             </div>
-            <button onClick={() => setCurrentView('wizard')} className="w-full px-4 py-2 ny-btn-primary rounded-lg">
+            <button onClick={() => setCurrentView('wizard')} className="w-full px-4 py-2 ny-btn-secondary rounded-lg">
               Edit Profile
             </button>
           </div>
@@ -1453,10 +1453,10 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
         <div className="ny-card rounded-lg p-6 border ny-border">
           <h2 className="text-lg font-semibold ny-text-1 mb-4">Quick Actions</h2>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => setCurrentView('generate')} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2">
+            <button onClick={() => setCurrentView('generate')} className="px-4 py-2 ny-btn-success rounded-lg flex items-center gap-2">
               <Sparkles className="w-4 h-4" />Generate Resume
             </button>
-            <button onClick={() => setCurrentView('wizard')} className="px-4 py-2 ny-btn-primary rounded-lg">
+            <button onClick={() => setCurrentView('wizard')} className="px-4 py-2 ny-btn-secondary rounded-lg">
               Edit Profile
             </button>
             <button onClick={exportData} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
@@ -3115,12 +3115,13 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
             }
 
             @media print {
-              /* Page setup — 0.75in is standard resume margin.
-                 The A4 preview wrapper already mirrors this in-browser.
-                 Do NOT add padding here or it double-stacks with wrapper padding. */
+              /* Zero @page margin — the A4 wrapper's inline padding IS the margin.
+                 This allows full-bleed templates (Creative, Bold) to print edge-to-edge
+                 with no white border. Non-full-bleed templates retain their 0.75in
+                 wrapper padding which survives into print. */
               @page {
                 size: A4;
-                margin: 0.75in;
+                margin: 0;
               }
 
               /* Hide everything except resume */
@@ -3137,18 +3138,18 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 left: 0;
                 top: 0;
                 width: 100%;
+                /* margin zeroed — but DO NOT override padding here.
+                   The inline padding (0.75in for standard, 0 for full-bleed)
+                   is what provides content margins in the PDF. */
                 margin: 0 !important;
-                padding: 0 !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
                 overflow: visible !important;
                 max-width: none !important;
               }
 
-              /* Normalize template wrapper divs:
-                 - NO padding here (was 0.5in — caused double-margin vs @page).
-                 - Each template sets its own print: padding via Tailwind.
-                 - max-width: none ensures templates fill the full printable width. */
+              /* Zero only the template's own outer wrapper div — NOT #resume-preview.
+                 The wrapper's padding is the margin. Template divs must not add their own. */
               #resume-preview > div {
                 padding: 0 !important;
                 margin: 0 !important;
