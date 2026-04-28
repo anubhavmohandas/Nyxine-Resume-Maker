@@ -1,6 +1,6 @@
 // Nyxine Resume Maker - Updated Feb 3, 2026
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, ChevronLeft, ChevronRight, Download, AlertCircle, Check, X, Sparkles, Save } from 'lucide-react';
+import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, ChevronLeft, ChevronRight, Download, AlertCircle, Check, X, Sparkles, Save, Sun, Moon } from 'lucide-react';
 
 // ─── Date Sorting Utilities ───────────────────────────────────────────────────
 // Converts YYYY-MM date strings into a sortable integer.
@@ -27,6 +27,19 @@ const sortChronologically = (items, dateKey, currentKey = null) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NyxineResumeMaker = () => {
+  // ── Theme: dark (default) or light ──────────────────────────────────────
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem('nyxine_theme') || 'dark'; } catch { return 'dark'; }
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('nyxine_theme', theme); } catch {}
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  // ────────────────────────────────────────────────────────────────────────
+
   const [currentView, setCurrentView] = useState('landing');
   const [currentStep, setCurrentStep] = useState(0);
   const [showStorageWarning, setShowStorageWarning] = useState(true);
@@ -354,21 +367,35 @@ IMPORTANT RULES:
     }
   };
 
+  // ── Floating theme toggle — visible on every screen, hidden in print ───
+  const ThemeToggle = () => (
+    <button
+      onClick={toggleTheme}
+      className="no-print fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full ny-theme-toggle border flex items-center justify-center"
+      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label="Toggle theme"
+    >
+      {theme === 'dark'
+        ? <Sun  className="w-5 h-5" style={{ color: 'var(--ny-accent)' }} />
+        : <Moon className="w-5 h-5" style={{ color: 'var(--ny-accent)' }} />
+      }
+    </button>
+  );
+
   if (currentView === 'landing') {
-    return <LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} handleFileUpload={handleFileUpload} profile={profile} savedResumes={savedResumes} isProcessingUpload={isProcessingUpload} />;
+    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} handleFileUpload={handleFileUpload} profile={profile} savedResumes={savedResumes} isProcessingUpload={isProcessingUpload} /><ThemeToggle /></>;
   }
 
   if (currentView === 'wizard') {
-    return <WizardView currentStep={currentStep} setCurrentStep={setCurrentStep} steps={steps} profile={profile} setProfile={setProfile} setCurrentView={setCurrentView} />;
+    return <><WizardView currentStep={currentStep} setCurrentStep={setCurrentStep} steps={steps} profile={profile} setProfile={setProfile} setCurrentView={setCurrentView} /><ThemeToggle /></>;
   }
 
   if (currentView === 'dashboard') {
-    return <DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} />;
+    return <><DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} /><ThemeToggle /></>;
   }
 
   if (currentView === 'generate') {
-    // 🔧 FIX #1: Added missing profile prop
-    return <GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} />;
+    return <><GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} /><ThemeToggle /></>;
   }
 
   return null;
@@ -376,69 +403,69 @@ IMPORTANT RULES:
 
 const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, handleFileUpload, profile, savedResumes, isProcessingUpload }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+    <div className="min-h-screen ny-bg flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         {showStorageWarning && (
-          <div className="mb-6 bg-slate-800/50 border border-blue-500/30 rounded-lg p-6 backdrop-blur">
+          <div className="mb-6 ny-card border ny-border rounded-lg p-6">
             <div className="flex items-start gap-4">
-              <AlertCircle className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
+              <AlertCircle className="w-6 h-6 ny-accent flex-shrink-0 mt-1" />
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-blue-300 mb-2">Your Data Stays Private</h3>
-                <div className="space-y-2 text-slate-300 text-sm">
-                  <p className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Stored locally in your browser</p>
-                  <p className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />Nothing sent to external servers</p>
+                <h3 className="text-lg font-semibold ny-accent mb-2">Your Data Stays Private</h3>
+                <div className="space-y-2 ny-text-2 text-sm">
+                  <p className="flex items-center gap-2"><Check className="w-4 h-4 ny-success-text" />Stored locally in your browser</p>
+                  <p className="flex items-center gap-2"><Check className="w-4 h-4 ny-success-text" />Nothing sent to external servers</p>
                   <p className="flex items-center gap-2"><AlertCircle className="w-4 h-4 text-yellow-400" />Clearing browser cache deletes data</p>
                   <p className="flex items-center gap-2"><AlertCircle className="w-4 h-4 text-yellow-400" />Won't sync across different browsers</p>
-                  <p className="text-blue-300 mt-3">💡 Export regularly to backup your work</p>
+                  <p className="ny-accent mt-3">💡 Export regularly to backup your work</p>
                 </div>
               </div>
-              <button onClick={() => setShowStorageWarning(false)} className="text-slate-400 hover:text-slate-300">
+              <button onClick={() => setShowStorageWarning(false)} className="ny-text-2 hover:ny-text-2">
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
         )}
 
-        <div className="bg-slate-800/50 backdrop-blur rounded-2xl shadow-2xl p-8 border border-slate-700/50">
+        <div className="ny-card rounded-2xl shadow-2xl p-8 border ny-border">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">NYXINE</h1>
-            <p className="text-xl text-slate-300">Smart Resume Builder</p>
-            <p className="text-slate-400 mt-2">Enter once. Generate targeted resumes. Stay authentic.</p>
+            <h1 className="text-5xl font-bold ny-logo-gradient mb-4">NYXINE</h1>
+            <p className="text-xl ny-text-2">Smart Resume Builder</p>
+            <p className="ny-text-2 mt-2">Enter once. Generate targeted resumes. Stay authentic.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50 opacity-60 relative transition-colors">
-              <div className="absolute top-3 right-3 bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full border border-yellow-500/30">
+            <div className="ny-subcard rounded-lg p-6 border ny-border-strong opacity-60 relative transition-colors">
+              <div className="absolute top-3 right-3 ny-badge-warning text-xs px-2 py-1 rounded-full border">
                 🚧 Coming Soon
               </div>
-              <Upload className="w-8 h-8 text-slate-500 mb-3" />
-              <h3 className="text-lg font-semibold text-slate-200 mb-2">Upload Resume</h3>
-              <p className="text-slate-400 text-sm mb-4">This feature is under development</p>
-              <div className="px-4 py-3 bg-slate-600 cursor-not-allowed text-slate-400 rounded-lg text-center transition-colors">
+              <Upload className="w-8 h-8 ny-text-3 mb-3" />
+              <h3 className="text-lg font-semibold ny-text-1 mb-2">Upload Resume</h3>
+              <p className="ny-text-2 text-sm mb-4">This feature is under development</p>
+              <div className="px-4 py-3 ny-subcard cursor-not-allowed ny-text-3 rounded-lg text-center">
                 Coming Soon
               </div>
             </div>
 
-            <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50 hover:border-purple-500/50 transition-colors">
+            <div className="ny-subcard rounded-lg p-6 border ny-border-strong hover:border-purple-500/50 transition-colors">
               <FileText className="w-8 h-8 text-purple-400 mb-3" />
-              <h3 className="text-lg font-semibold text-slate-200 mb-2">Start Fresh</h3>
-              <p className="text-slate-400 text-sm mb-4">Build step by step</p>
-              <button onClick={() => { setCurrentView('wizard'); setCurrentStep(0); }} className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+              <h3 className="text-lg font-semibold ny-text-1 mb-2">Start Fresh</h3>
+              <p className="ny-text-2 text-sm mb-4">Build step by step</p>
+              <button onClick={() => { setCurrentView('wizard'); setCurrentStep(0); }} className="w-full px-4 py-3 ny-btn-primary rounded-lg">
                 Begin
               </button>
             </div>
           </div>
 
           {(profile.personal.fullName || savedResumes.length > 0) && (
-            <div className="text-center pt-4 border-t border-slate-700">
-              <button onClick={() => setCurrentView('dashboard')} className="text-blue-400 hover:text-blue-300 flex items-center gap-2 mx-auto transition-colors">
+            <div className="text-center pt-4 border-t ny-divider">
+              <button onClick={() => setCurrentView('dashboard')} className="ny-accent hover:opacity-80 flex items-center gap-2 mx-auto">
                 <FileText className="w-4 h-4" />Continue to Dashboard
               </button>
             </div>
           )}
         </div>
 
-        <div className="text-center mt-6 text-slate-500 text-sm">
+        <div className="text-center mt-6 ny-text-3 text-sm">
           <p>Open Source • Privacy First • AI-Powered</p>
         </div>
       </div>
@@ -523,31 +550,31 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen ny-bg p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 mb-6 border border-slate-700/50">
+        <div className="ny-card rounded-lg p-6 mb-6 border ny-border">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-200">Build Your Profile</h2>
-            <span className="text-slate-400 text-sm">{currentStep + 1} of {steps.length}</span>
+            <h2 className="text-lg font-semibold ny-text-1">Build Your Profile</h2>
+            <span className="ny-text-2 text-sm">{currentStep + 1} of {steps.length}</span>
           </div>
           <div className="flex gap-2">
             {steps.map((step, idx) => (
-              <div key={idx} className={`flex-1 h-2 rounded-full transition-all ${idx < currentStep ? 'bg-green-500' : idx === currentStep ? 'bg-blue-500' : 'bg-slate-700'}`} />
+              <div key={idx} className={`flex-1 h-2 rounded-full transition-all ${idx < currentStep ? 'ny-progress-done' : idx === currentStep ? 'ny-progress-active' : 'ny-progress-pending'}`} />
             ))}
           </div>
           <div className="flex justify-between mt-3">
             {steps.map((step, idx) => (
-              <div key={idx} className={`text-xs ${idx === currentStep ? 'text-blue-400 font-semibold' : idx < currentStep ? 'text-green-400' : 'text-slate-500'}`}>
+              <div key={idx} className={`text-xs ${idx === currentStep ? 'ny-accent font-semibold' : idx < currentStep ? 'ny-success-text' : 'ny-text-3'}`}>
                 {step.name}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-8 border border-slate-700/50">
+        <div className="ny-card rounded-lg p-8 border ny-border">
           <div className="flex items-center gap-3 mb-6">
-            <CurrentStepIcon className="w-8 h-8 text-blue-400" />
-            <h2 className="text-2xl font-bold text-slate-200">{steps[currentStep].name}</h2>
+            <CurrentStepIcon className="w-8 h-8 ny-accent" />
+            <h2 className="text-2xl font-bold ny-text-1">{steps[currentStep].name}</h2>
           </div>
 
           {currentStep === 0 && <PersonalInfoStep profile={profile} setProfile={setProfile} />}
@@ -557,8 +584,8 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
           {currentStep === 4 && <ProjectsStep profile={profile} setProfile={setProfile} />}
           {currentStep === 5 && <AdditionalStep profile={profile} setProfile={setProfile} />}
 
-          <div className="flex justify-between mt-8 pt-6 border-t border-slate-700">
-            <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : setCurrentView('landing')} className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-2 transition-colors">
+          <div className="flex justify-between mt-8 pt-6 border-t ny-divider">
+            <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : setCurrentView('landing')} className="px-6 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
               <ChevronLeft className="w-4 h-4" />{currentStep === 0 ? 'Back' : 'Previous'}
             </button>
             {currentStep < steps.length - 1 ? (
@@ -566,7 +593,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
                 if (validateStep(currentStep)) {
                   setCurrentStep(currentStep + 1);
                 }
-              }} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors">
+              }} className="px-6 py-2 ny-btn-primary rounded-lg flex items-center gap-2">
                 Next<ChevronRight className="w-4 h-4" />
               </button>
             ) : (
@@ -574,7 +601,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
                 if (validateStep(currentStep)) {
                   setCurrentView('dashboard');
                 }
-              }} className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 transition-colors">
+              }} className="px-6 py-2 ny-btn-success rounded-lg flex items-center gap-2">
                 <Check className="w-4 h-4" />Complete
               </button>
             )}
@@ -598,80 +625,80 @@ const PersonalInfoStep = ({ profile, setProfile }) => {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">Full Name *</label>
+        <label className="block text-sm font-medium ny-text-2 mb-2">Full Name *</label>
         <input
           type="text"
           value={local.fullName}
           onChange={(e) => setLocal(prev => ({ ...prev, fullName: e.target.value }))}
-          className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          className="w-full px-4 py-2 ny-input rounded-lg transition-all"
           placeholder="John Doe"
         />
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Email *</label>
+          <label className="block text-sm font-medium ny-text-2 mb-2">Email *</label>
           <input
             type="email"
             value={local.email}
             onChange={(e) => setLocal(prev => ({ ...prev, email: e.target.value }))}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             placeholder="john@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Phone *</label>
+          <label className="block text-sm font-medium ny-text-2 mb-2">Phone *</label>
           <input
             type="tel"
             value={local.phone}
             onChange={(e) => setLocal(prev => ({ ...prev, phone: e.target.value }))}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             placeholder="+1 (555) 123-4567"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">Location (City, State) *</label>
+        <label className="block text-sm font-medium ny-text-2 mb-2">Location (City, State) *</label>
         <input
           type="text"
           value={local.location}
           onChange={(e) => setLocal(prev => ({ ...prev, location: e.target.value }))}
-          className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          className="w-full px-4 py-2 ny-input rounded-lg transition-all"
           placeholder="San Francisco, CA"
         />
       </div>
       <div className="grid md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-2">LinkedIn</label>
+          <label className="block text-sm font-medium ny-text-2 mb-2">LinkedIn</label>
           <input
             type="url"
             value={local.linkedin}
             onChange={(e) => setLocal(prev => ({ ...prev, linkedin: e.target.value }))}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             placeholder="linkedin.com/in/..."
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-2">Portfolio</label>
+          <label className="block text-sm font-medium ny-text-2 mb-2">Portfolio</label>
           <input
             type="url"
             value={local.portfolio}
             onChange={(e) => setLocal(prev => ({ ...prev, portfolio: e.target.value }))}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             placeholder="yoursite.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-2">GitHub</label>
+          <label className="block text-sm font-medium ny-text-2 mb-2">GitHub</label>
           <input
             type="url"
             value={local.github}
             onChange={(e) => setLocal(prev => ({ ...prev, github: e.target.value }))}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             placeholder="github.com/..."
           />
         </div>
       </div>
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-sm text-slate-300">
+      <div className="ny-info-box border rounded-lg p-3 text-sm">
         💡 <strong>Tip:</strong> No photo needed - not recommended for US/Canada resumes
       </div>
     </div>
@@ -707,21 +734,21 @@ const WorkExperienceStep = ({ profile, setProfile }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <p className="text-slate-400 text-sm">Add all work experiences (we'll filter by job later)</p>
-        <button onClick={addJob} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors">
+        <p className="ny-text-2 text-sm">Add all work experiences (we'll filter by job later)</p>
+        <button onClick={addJob} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2">
           <Plus className="w-4 h-4" />Add Job
         </button>
       </div>
 
       {profile.workExperience.length === 0 && (
-        <div className="text-center py-12 text-slate-400">
+        <div className="text-center py-12 ny-text-2">
           <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>No work experience yet. Click "Add Job" to start.</p>
         </div>
       )}
 
       {profile.workExperience.length > 1 && (
-        <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-600/40">
+        <div className="flex items-center gap-2 text-xs ny-text-2 ny-subcard rounded-lg px-3 py-2 border ny-border">
           <span>🔃</span>
           <span>Auto-sorted by date — newest job first. Add them in any order you like.</span>
         </div>
@@ -732,7 +759,7 @@ const WorkExperienceStep = ({ profile, setProfile }) => {
       ))}
 
       {profile.workExperience.length > 0 && (
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-sm text-slate-300">
+        <div className="ny-info-box border rounded-lg p-3 text-sm">
           💡 <strong>Pro Tip:</strong> Include specific numbers (e.g., "Trained 50+ students" instead of "Trained students")
         </div>
       )}
@@ -764,10 +791,10 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
   };
 
   return (
-    <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50">
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-200">Job #{idx + 1}</h3>
-        <button onClick={() => removeJob(job.id)} className="text-red-400 hover:text-red-300 transition-colors">
+        <h3 className="text-lg font-semibold ny-text-1">Job #{idx + 1}</h3>
+        <button onClick={() => removeJob(job.id)} className="ny-danger-text hover:opacity-80">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -775,22 +802,22 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
       <div className="space-y-4">
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Job Title *</label>
+            <label className="block text-sm ny-text-2 mb-2">Job Title *</label>
             <input
               type="text"
               value={local.title}
               onChange={(e) => setLocal(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="Software Engineer"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Company *</label>
+            <label className="block text-sm ny-text-2 mb-2">Company *</label>
             <input
               type="text"
               value={local.company}
               onChange={(e) => setLocal(prev => ({ ...prev, company: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="Tech Corp"
             />
           </div>
@@ -798,35 +825,35 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
 
         <div className="grid md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Location</label>
+            <label className="block text-sm ny-text-2 mb-2">Location</label>
             <input
               type="text"
               value={local.location}
               onChange={(e) => setLocal(prev => ({ ...prev, location: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="San Francisco, CA"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Start Date</label>
+            <label className="block text-sm ny-text-2 mb-2">Start Date</label>
             <input
               type="month"
               value={local.startDate}
               onChange={(e) => setLocal(prev => ({ ...prev, startDate: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-300 mb-2">End Date</label>
+            <label className="block text-sm ny-text-2 mb-2">End Date</label>
             <div className="flex gap-2">
               <input
                 type="month"
                 value={local.endDate}
                 onChange={(e) => setLocal(prev => ({ ...prev, endDate: e.target.value }))}
                 disabled={local.current}
-                className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50"
+                className="flex-1 px-4 py-2 ny-input rounded-lg transition-all disabled:opacity-50"
               />
-              <label className="flex items-center gap-1 text-slate-300 text-sm whitespace-nowrap">
+              <label className="flex items-center gap-1 ny-text-2 text-sm whitespace-nowrap">
                 <input
                   type="checkbox"
                   checked={local.current}
@@ -841,8 +868,8 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
 
         <div>
           <div className="flex justify-between mb-2">
-            <label className="block text-sm text-slate-300">Achievements & Responsibilities</label>
-            <button onClick={addBullet} className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 transition-colors">
+            <label className="block text-sm ny-text-2">Achievements & Responsibilities</label>
+            <button onClick={addBullet} className="ny-accent hover:ny-accent text-sm flex items-center gap-1 transition-colors">
               <Plus className="w-3 h-3" />Add Point
             </button>
           </div>
@@ -857,18 +884,18 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
                     newBullets[bulletIdx] = e.target.value;
                     setLocal(prev => ({ ...prev, bullets: newBullets }));
                   }}
-                  className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="flex-1 px-4 py-2 ny-input rounded-lg transition-all"
                   placeholder="Led team of 5 engineers to deliver..."
                 />
                 {local.bullets.length > 1 && (
-                  <button onClick={() => removeBullet(bulletIdx)} className="text-red-400 hover:text-red-300 transition-colors">
+                  <button onClick={() => removeBullet(bulletIdx)} className="ny-danger-text hover:opacity-80">
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
             ))}
           </div>
-          <p className="text-xs text-slate-500 mt-2">💡 Include numbers (e.g., "Increased sales by 30%")</p>
+          <p className="text-xs ny-text-3 mt-2">💡 Include numbers (e.g., "Increased sales by 30%")</p>
         </div>
       </div>
     </div>
@@ -903,21 +930,21 @@ const EducationStep = ({ profile, setProfile }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between">
-        <p className="text-slate-400 text-sm">Add your education history</p>
-        <button onClick={addEdu} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors">
+        <p className="ny-text-2 text-sm">Add your education history</p>
+        <button onClick={addEdu} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2">
           <Plus className="w-4 h-4" />Add Education
         </button>
       </div>
 
       {profile.education.length === 0 && (
-        <div className="text-center py-12 text-slate-400">
+        <div className="text-center py-12 ny-text-2">
           <GraduationCap className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>No education yet. Click "Add Education" to start.</p>
         </div>
       )}
 
       {profile.education.length > 1 && (
-        <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-600/40">
+        <div className="flex items-center gap-2 text-xs ny-text-2 ny-subcard rounded-lg px-3 py-2 border ny-border">
           <span>🔃</span>
           <span>Auto-sorted by date — most recent degree first. Add them in any order you like.</span>
         </div>
@@ -944,10 +971,10 @@ const EduForm = ({ edu, idx, setProfile, removeEdu }) => {
   }, [local, edu.id, setProfile]);
 
   return (
-    <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50">
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-200">Education #{idx + 1}</h3>
-        <button onClick={() => removeEdu(edu.id)} className="text-red-400 hover:text-red-300 transition-colors">
+        <h3 className="text-lg font-semibold ny-text-1">Education #{idx + 1}</h3>
+        <button onClick={() => removeEdu(edu.id)} className="ny-danger-text hover:opacity-80">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -955,22 +982,22 @@ const EduForm = ({ edu, idx, setProfile, removeEdu }) => {
       <div className="space-y-4">
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Degree *</label>
+            <label className="block text-sm ny-text-2 mb-2">Degree *</label>
             <input
               type="text"
               value={local.degree}
               onChange={(e) => setLocal(prev => ({ ...prev, degree: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="Bachelor of Science"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Major *</label>
+            <label className="block text-sm ny-text-2 mb-2">Major *</label>
             <input
               type="text"
               value={local.major}
               onChange={(e) => setLocal(prev => ({ ...prev, major: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="Computer Science"
             />
           </div>
@@ -978,22 +1005,22 @@ const EduForm = ({ edu, idx, setProfile, removeEdu }) => {
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">School *</label>
+            <label className="block text-sm ny-text-2 mb-2">School *</label>
             <input
               type="text"
               value={local.school}
               onChange={(e) => setLocal(prev => ({ ...prev, school: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="University of California"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Location</label>
+            <label className="block text-sm ny-text-2 mb-2">Location</label>
             <input
               type="text"
               value={local.location}
               onChange={(e) => setLocal(prev => ({ ...prev, location: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="Berkeley, CA"
             />
           </div>
@@ -1001,21 +1028,21 @@ const EduForm = ({ edu, idx, setProfile, removeEdu }) => {
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Graduation Date</label>
+            <label className="block text-sm ny-text-2 mb-2">Graduation Date</label>
             <input
               type="month"
               value={local.graduationDate}
               onChange={(e) => setLocal(prev => ({ ...prev, graduationDate: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-2">GPA (optional)</label>
+            <label className="block text-sm ny-text-2 mb-2">GPA (optional)</label>
             <input
               type="text"
               value={local.gpa}
               onChange={(e) => setLocal(prev => ({ ...prev, gpa: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="3.8/4.0"
             />
           </div>
@@ -1089,7 +1116,7 @@ const SkillsStep = ({ profile, setProfile }) => {
 
     return (
       <div>
-        <label className="block text-sm text-slate-300 mb-2">{title}</label>
+        <label className="block text-sm ny-text-2 mb-2">{title}</label>
         <div className="flex gap-2 mb-2">
           <input
             ref={inputRef}
@@ -1100,7 +1127,7 @@ const SkillsStep = ({ profile, setProfile }) => {
                 addSkill(cat, inputRef);
               }
             }}
-            className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="flex-1 px-4 py-2 ny-input rounded-lg transition-all"
             placeholder={placeholder}
           />
           <button onClick={() => addSkill(cat, inputRef)} className={`px-4 py-2 ${colors.button} text-white rounded-lg transition-colors`}>
@@ -1123,7 +1150,7 @@ const SkillsStep = ({ profile, setProfile }) => {
 
   return (
     <div className="space-y-6">
-      <p className="text-slate-400 text-sm">Type a skill and press Enter or click + to add. List 10-15 skills most relevant to your target jobs.</p>
+      <p className="ny-text-2 text-sm">Type a skill and press Enter or click + to add. List 10-15 skills most relevant to your target jobs.</p>
       <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." inputRef={technicalInputRef} />
       <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." inputRef={softInputRef} />
       <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." inputRef={certificationsInputRef} />
@@ -1156,14 +1183,14 @@ const ProjectsStep = ({ profile, setProfile }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between">
-        <p className="text-slate-400 text-sm">Showcase your projects (optional but recommended)</p>
-        <button onClick={addProject} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors">
+        <p className="ny-text-2 text-sm">Showcase your projects (optional but recommended)</p>
+        <button onClick={addProject} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2">
           <Plus className="w-4 h-4" />Add Project
         </button>
       </div>
 
       {profile.projects.length === 0 && (
-        <div className="text-center py-12 text-slate-400">
+        <div className="text-center py-12 ny-text-2">
           <Code className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>No projects yet. Click "Add Project" to showcase your work.</p>
         </div>
@@ -1190,55 +1217,55 @@ const ProjectForm = ({ proj, idx, setProfile, removeProject }) => {
   }, [local, proj.id, setProfile]);
 
   return (
-    <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/50">
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-200">Project #{idx + 1}</h3>
-        <button onClick={() => removeProject(proj.id)} className="text-red-400 hover:text-red-300 transition-colors">
+        <h3 className="text-lg font-semibold ny-text-1">Project #{idx + 1}</h3>
+        <button onClick={() => removeProject(proj.id)} className="ny-danger-text hover:opacity-80">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm text-slate-300 mb-2">Project Name *</label>
+          <label className="block text-sm ny-text-2 mb-2">Project Name *</label>
           <input
             type="text"
             value={local.name}
             onChange={(e) => setLocal(prev => ({ ...prev, name: e.target.value }))}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             placeholder="E-commerce Platform"
           />
         </div>
 
         <div>
-          <label className="block text-sm text-slate-300 mb-2">Description *</label>
+          <label className="block text-sm ny-text-2 mb-2">Description *</label>
           <textarea
             value={local.description}
             onChange={(e) => setLocal(prev => ({ ...prev, description: e.target.value }))}
             rows={3}
-            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all resize-y"
             placeholder="Built a full-stack e-commerce platform with payment integration..."
           />
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Technologies Used</label>
+            <label className="block text-sm ny-text-2 mb-2">Technologies Used</label>
             <input
               type="text"
               value={local.technologies}
               onChange={(e) => setLocal(prev => ({ ...prev, technologies: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="React, Node.js, MongoDB, AWS"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-2">Link (optional)</label>
+            <label className="block text-sm ny-text-2 mb-2">Link (optional)</label>
             <input
               type="url"
               value={local.link}
               onChange={(e) => setLocal(prev => ({ ...prev, link: e.target.value }))}
-              className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
               placeholder="github.com/username/project"
             />
           </div>
@@ -1260,47 +1287,47 @@ const AdditionalStep = ({ profile, setProfile }) => {
 
   return (
     <div className="space-y-6">
-      <p className="text-slate-400 text-sm">All optional - add if relevant to your career</p>
+      <p className="ny-text-2 text-sm">All optional - add if relevant to your career</p>
       
       <div>
-        <label className="block text-sm text-slate-400 mb-2">Volunteer Work</label>
+        <label className="block text-sm ny-text-2 mb-2">Volunteer Work</label>
         <textarea
           value={local.volunteer}
           onChange={(e) => setLocal(prev => ({ ...prev, volunteer: e.target.value }))}
           rows={3}
-          className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
+          className="w-full px-4 py-2 ny-input rounded-lg transition-all resize-y"
           placeholder="Volunteer software instructor at local community center..."
         />
       </div>
 
       <div>
-        <label className="block text-sm text-slate-400 mb-2">Awards & Honors</label>
+        <label className="block text-sm ny-text-2 mb-2">Awards & Honors</label>
         <textarea
           value={local.awards}
           onChange={(e) => setLocal(prev => ({ ...prev, awards: e.target.value }))}
           rows={3}
-          className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
+          className="w-full px-4 py-2 ny-input rounded-lg transition-all resize-y"
           placeholder="Employee of the Year 2023, Hackathon Winner..."
         />
       </div>
 
       <div>
-        <label className="block text-sm text-slate-400 mb-2">Publications</label>
+        <label className="block text-sm ny-text-2 mb-2">Publications</label>
         <textarea
           value={local.publications}
           onChange={(e) => setLocal(prev => ({ ...prev, publications: e.target.value }))}
           rows={3}
-          className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
+          className="w-full px-4 py-2 ny-input rounded-lg transition-all resize-y"
           placeholder="Research paper on machine learning published in..."
         />
       </div>
 
-      <div className="bg-green-600/10 border border-green-500/30 rounded-lg p-4">
+      <div className="ny-success-box border rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+          <Check className="w-5 h-5 ny-success-text flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="text-green-300 font-semibold mb-1">Profile Almost Complete! 🎉</h3>
-            <p className="text-slate-300 text-sm">Next: Generate targeted resumes with AI filtering</p>
+            <h3 className="ny-success-text font-semibold mb-1">Profile Almost Complete! 🎉</h3>
+            <p className="ny-text-2 text-sm">Next: Generate targeted resumes with AI filtering</p>
           </div>
         </div>
       </div>
@@ -1316,85 +1343,85 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen ny-bg p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-4 mb-6 border border-slate-700/50 flex items-center justify-between">
-          <div className="flex items-center gap-3 text-sm text-slate-400">
+        <div className="ny-card rounded-lg p-4 mb-6 border ny-border flex items-center justify-between">
+          <div className="flex items-center gap-3 text-sm ny-text-2">
             <AlertCircle className="w-4 h-4" />
             <span>💾 Data stored locally in your browser</span>
           </div>
           <div className="flex gap-2">
-            <button onClick={exportData} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-sm flex items-center gap-2 transition-colors">
+            <button onClick={exportData} className="px-4 py-2 ny-btn-secondary rounded text-sm flex items-center gap-2">
               <Download className="w-4 h-4" />Export
             </button>
-            <label className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-sm flex items-center gap-2 cursor-pointer transition-colors">
+            <label className="px-4 py-2 ny-btn-secondary rounded text-sm flex items-center gap-2 cursor-pointer">
               <Upload className="w-4 h-4" />Import
               <input type="file" accept=".json" onChange={importData} className="hidden" />
             </label>
           </div>
         </div>
 
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-8">Dashboard</h1>
+        <h1 className="text-4xl font-bold ny-heading-gradient mb-8">Dashboard</h1>
 
         <div className="grid md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
-            <h2 className="text-xl font-semibold text-slate-200 mb-4">Master Profile</h2>
-            <div className="space-y-3 text-slate-300 mb-6">
+          <div className="ny-card rounded-lg p-6 border ny-border">
+            <h2 className="text-xl font-semibold ny-text-1 mb-4">Master Profile</h2>
+            <div className="space-y-3 ny-text-2 mb-6">
               <div className="flex justify-between">
-                <span className="text-slate-400">Name:</span>
+                <span className="ny-text-2">Name:</span>
                 <span className="font-medium">{profile.personal.fullName || 'Not set'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Email:</span>
+                <span className="ny-text-2">Email:</span>
                 <span>{profile.personal.email || 'Not set'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Work Experiences:</span>
+                <span className="ny-text-2">Work Experiences:</span>
                 <span className="font-semibold">{profile.workExperience.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Education:</span>
+                <span className="ny-text-2">Education:</span>
                 <span className="font-semibold">{profile.education.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Skills:</span>
+                <span className="ny-text-2">Skills:</span>
                 <span className="font-semibold">{profile.skills.technical.length + profile.skills.soft.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Projects:</span>
+                <span className="ny-text-2">Projects:</span>
                 <span className="font-semibold">{profile.projects.length}</span>
               </div>
             </div>
-            <button onClick={() => setCurrentView('wizard')} className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+            <button onClick={() => setCurrentView('wizard')} className="w-full px-4 py-2 ny-btn-primary rounded-lg">
               Edit Profile
             </button>
           </div>
 
-          <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
-            <h2 className="text-xl font-semibold text-slate-200 mb-4">Saved Resumes</h2>
+          <div className="ny-card rounded-lg p-6 border ny-border">
+            <h2 className="text-xl font-semibold ny-text-1 mb-4">Saved Resumes</h2>
             {savedResumes.length === 0 ? (
               <div className="text-center py-6 mb-4">
-                <FileText className="w-12 h-12 mx-auto mb-3 opacity-50 text-slate-500" />
-                <p className="text-slate-400 text-sm">No resumes yet</p>
-                <p className="text-slate-500 text-xs mt-1">Generate your first targeted resume!</p>
+                <FileText className="w-12 h-12 mx-auto mb-3 opacity-50 ny-text-3" />
+                <p className="ny-text-2 text-sm">No resumes yet</p>
+                <p className="ny-text-3 text-xs mt-1">Generate your first targeted resume!</p>
               </div>
             ) : (
               <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
                 {savedResumes.map((resume, idx) => (
-                  <div key={idx} className="bg-slate-700/30 p-3 rounded-lg flex justify-between items-center border border-slate-600/50">
+                  <div key={idx} className="ny-subcard rounded-lg p-3 flex justify-between items-center border ny-border-strong">
                     <div>
-                      <p className="text-slate-200 font-medium">{resume.name}</p>
-                      <p className="text-slate-400 text-xs">{resume.date}</p>
+                      <p className="ny-text-1 font-medium">{resume.name}</p>
+                      <p className="ny-text-2 text-xs">{resume.date}</p>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => { setSavedResumeToLoad(resume); setCurrentView('generate'); }}
-                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                        className="ny-accent hover:opacity-80"
                         title="Open & download this resume"
                       >
                         <Download className="w-4 h-4" />
                       </button>
-                      <button onClick={() => deleteResume(idx)} className="text-red-400 hover:text-red-300 transition-colors">
+                      <button onClick={() => deleteResume(idx)} className="ny-danger-text hover:opacity-80">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -1402,25 +1429,25 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
                 ))}
               </div>
             )}
-            <button onClick={() => setCurrentView('generate')} className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <button onClick={() => setCurrentView('generate')} className="w-full px-4 py-2 ny-btn-success rounded-lg flex items-center justify-center gap-2">
               <Sparkles className="w-4 h-4" />Generate New Resume
             </button>
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
-          <h2 className="text-lg font-semibold text-slate-200 mb-4">Quick Actions</h2>
+        <div className="ny-card rounded-lg p-6 border ny-border">
+          <h2 className="text-lg font-semibold ny-text-1 mb-4">Quick Actions</h2>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => setCurrentView('generate')} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors">
+            <button onClick={() => setCurrentView('generate')} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2">
               <Sparkles className="w-4 h-4" />Generate Resume
             </button>
-            <button onClick={() => setCurrentView('wizard')} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+            <button onClick={() => setCurrentView('wizard')} className="px-4 py-2 ny-btn-primary rounded-lg">
               Edit Profile
             </button>
-            <button onClick={exportData} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-2 transition-colors">
+            <button onClick={exportData} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
               <Download className="w-4 h-4" />Export Backup
             </button>
-            <button onClick={clearAllData} className="px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-colors">
+            <button onClick={clearAllData} className="px-4 py-2 ny-btn-danger rounded-lg">
               Clear All Data
             </button>
           </div>
@@ -1434,8 +1461,8 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
 
 const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
-      <div className="grid grid-cols-[300px_1fr] gap-8">
+    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none">
+      <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-8 print:gap-6">
         {/* Left sidebar - Contact & Skills */}
         <div className="bg-gray-100 p-6 rounded-lg">
           <div className="mb-6">
@@ -1528,7 +1555,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects 
 
 const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
       {/* Header */}
       <div className="text-center mb-6 pb-4 border-b-2 border-black">
         <h1 className="text-3xl font-bold mb-2 tracking-wide">{profile.personal.fullName.toUpperCase()}</h1>
@@ -1625,7 +1652,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 
 const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-12 lg:px-16 max-w-5xl mx-auto text-black" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.15' }}>
+    <div className="bg-white px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-12 lg:px-16 max-w-5xl mx-auto text-black print:px-0 print:py-0 print:max-w-none" style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.15' }}>
       {/* Header */}
       <div className="text-center mb-6">
         <h1 className="font-bold mb-1.5" style={{ fontSize: '16pt', letterSpacing: '0.02em' }}>
@@ -1747,7 +1774,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
 
 const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
+    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
       {/* Header - Simple and Clean */}
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold mb-2" style={{ color: '#000000' }}>
@@ -1937,7 +1964,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                 <h2 className="text-lg font-bold text-blue-600 mb-3">Skills</h2>
                 <div className="space-y-2">
                   {displaySkills.map((skill, idx) => (
-                    <div key={idx} className="bg-white px-3 py-1.5 rounded text-sm text-gray-800 shadow-sm">
+                    <div key={idx} className="bg-white px-3 py-1.5 rounded text-sm text-gray-800 border border-blue-100">
                       {skill}
                     </div>
                   ))}
@@ -1969,11 +1996,11 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
 
 const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displayProjects }) => {
   return (
-    <div className="bg-white max-w-4xl mx-auto">
+    <div className="bg-white max-w-4xl mx-auto print:max-w-none">
       {/* Subtle Colored Header Bar */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-600 h-3"></div>
 
-      <div className="p-4 sm:p-6 md:p-10 lg:p-12">
+      <div className="p-4 sm:p-6 md:p-10 lg:p-12 print:p-0">
         {/* Header */}
         <div className="text-center mb-8 pb-6 border-b-2 border-slate-600">
           <h1 className="text-3xl font-bold text-slate-800 mb-3">{profile.personal.fullName}</h1>
@@ -2103,7 +2130,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects })
                 <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Skills</h3>
                 <div className="space-y-2">
                   {displaySkills.map((skill, idx) => (
-                    <div key={idx} className="bg-slate-700/50 px-3 py-1.5 rounded text-slate-200 text-xs">
+                    <div key={idx} className="bg-slate-700 px-3 py-1.5 rounded text-slate-200 text-xs">
                       {skill}
                     </div>
                   ))}
@@ -2518,19 +2545,19 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
 
   if (step === 'input') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+      <div className="min-h-screen ny-bg p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-slate-800/50 backdrop-blur rounded-lg p-8 border border-slate-700/50">
+          <div className="ny-card rounded-lg p-8 border ny-border">
             <div className="flex items-center gap-3 mb-6">
-              <Sparkles className="w-8 h-8 text-blue-400" />
-              <h2 className="text-2xl font-bold text-slate-200">Generate Targeted Resume</h2>
+              <Sparkles className="w-8 h-8 ny-accent" />
+              <h2 className="text-2xl font-bold ny-text-1">Generate Targeted Resume</h2>
             </div>
-            <p className="text-slate-300 mb-6">Smart keyword matching will analyze the job and select your most relevant experiences.</p>
+            <p className="ny-text-2 mb-6">Smart keyword matching will analyze the job and select your most relevant experiences.</p>
 
             <div className="space-y-4">
               {/* ✅ TEMPLATE SELECTOR */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">
+                <label className="block text-sm font-medium ny-text-2 mb-3">
                   Choose Resume Template
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -2539,15 +2566,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'modern'
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-600 hover:border-slate-500'
+                        : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">📄</div>
-                      <div className={`font-semibold ${selectedTemplate === 'modern' ? 'text-blue-300' : 'text-slate-300'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'modern' ? 'ny-accent' : 'ny-text-2'}`}>
                         Modern
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Two-column gray</div>
+                      <div className="text-xs ny-text-2 mt-1">Two-column gray</div>
                       <div className={`text-xs mt-2 px-2 py-1 rounded ${templateCompatibility.modern.color === 'red' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
                         ATS: {templateCompatibility.modern.score}%
                       </div>
@@ -2558,15 +2585,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'classic'
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-600 hover:border-slate-500'
+                        : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">📋</div>
-                      <div className={`font-semibold ${selectedTemplate === 'classic' ? 'text-blue-300' : 'text-slate-300'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'classic' ? 'ny-accent' : 'ny-text-2'}`}>
                         Classic
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Traditional serif</div>
+                      <div className="text-xs ny-text-2 mt-1">Traditional serif</div>
                       <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
                         ATS: {templateCompatibility.classic.score}%
                       </div>
@@ -2577,16 +2604,16 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'ats'
                         ? 'border-green-500 bg-green-500/10'
-                        : 'border-slate-600 hover:border-slate-500'
+                        : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">🎯</div>
-                      <div className={`font-semibold ${selectedTemplate === 'ats' ? 'text-green-300' : 'text-slate-300'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'ats' ? 'ny-success-text' : 'ny-text-2'}`}>
                         ATS-Optimized
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">For online systems</div>
-                      <div className="text-xs mt-2 px-2 py-1 rounded bg-green-500/20 text-green-300">
+                      <div className="text-xs ny-text-2 mt-1">For online systems</div>
+                      <div className="text-xs mt-2 px-2 py-1 rounded bg-green-500/20 ny-success-text">
                         ATS: {templateCompatibility.ats.score}%
                       </div>
                     </div>
@@ -2596,15 +2623,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'harvard'
                         ? 'border-amber-500 bg-amber-500/10'
-                        : 'border-slate-600 hover:border-slate-500'
+                        : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">🎓</div>
-                      <div className={`font-semibold ${selectedTemplate === 'harvard' ? 'text-amber-300' : 'text-slate-300'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'harvard' ? 'text-amber-300' : 'ny-text-2'}`}>
                         Harvard
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Business school style</div>
+                      <div className="text-xs ny-text-2 mt-1">Business school style</div>
                       <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
                         ATS: {templateCompatibility.harvard.score}%
                       </div>
@@ -2615,15 +2642,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'creative'
                         ? 'border-purple-500 bg-purple-500/10'
-                        : 'border-slate-600 hover:border-slate-500'
+                        : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">🎨</div>
-                      <div className={`font-semibold ${selectedTemplate === 'creative' ? 'text-purple-300' : 'text-slate-300'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'creative' ? 'text-purple-300' : 'ny-text-2'}`}>
                         Creative
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Colorful gradient</div>
+                      <div className="text-xs ny-text-2 mt-1">Colorful gradient</div>
                       <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
                         ATS: {templateCompatibility.creative.score}%
                       </div>
@@ -2634,15 +2661,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'professional'
                         ? 'border-slate-500 bg-slate-500/10'
-                        : 'border-slate-600 hover:border-slate-500'
+                        : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">💼</div>
-                      <div className={`font-semibold ${selectedTemplate === 'professional' ? 'text-slate-300' : 'text-slate-300'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'professional' ? 'ny-text-2' : 'ny-text-2'}`}>
                         Professional
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Subtle color bar</div>
+                      <div className="text-xs ny-text-2 mt-1">Subtle color bar</div>
                       <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
                         ATS: {templateCompatibility.professional.score}%
                       </div>
@@ -2653,15 +2680,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedTemplate === 'bold'
                         ? 'border-cyan-500 bg-cyan-500/10'
-                        : 'border-slate-600 hover:border-slate-500'
+                        : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-2xl mb-2">⚡</div>
-                      <div className={`font-semibold ${selectedTemplate === 'bold' ? 'text-cyan-300' : 'text-slate-300'}`}>
+                      <div className={`font-semibold ${selectedTemplate === 'bold' ? 'text-cyan-300' : 'ny-text-2'}`}>
                         Bold
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">Dark sidebar</div>
+                      <div className="text-xs ny-text-2 mt-1">Dark sidebar</div>
                       <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
                         ATS: {templateCompatibility.bold.score}%
                       </div>
@@ -2678,7 +2705,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                         <p className="text-sm font-semibold text-yellow-300 mb-1">
                           ⚠️ Template Compatibility Notice
                         </p>
-                        <p className="text-sm text-slate-300">
+                        <p className="text-sm ny-text-2">
                           {templateCompatibility[selectedTemplate].warning}
                         </p>
                       </div>
@@ -2688,7 +2715,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium ny-text-2 mb-2">
                   Job Title or Description
                 </label>
                 <textarea
@@ -2702,23 +2729,23 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                   }}
                   rows={8}
                   placeholder="Enter job title (e.g., Senior Software Engineer) or paste the full job description for better matching..."
-                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
+                  className="w-full px-4 py-3 ny-input rounded-lg transition-all resize-y"
                   maxLength={50000}
                 />
-                <p className="text-slate-500 text-xs mt-2">💡 More details = better keyword matching</p>
+                <p className="ny-text-3 text-xs mt-2">💡 More details = better keyword matching</p>
 
                 <label className="flex items-start gap-3 mt-3 cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={includeAllItems}
                     onChange={(e) => setIncludeAllItems(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 w-4 h-4 rounded ny-border-strong ny-subcard ny-accent focus:ring-2 focus:ring-[var(--ny-accent)]"
                   />
                   <div>
-                    <span className="text-sm text-slate-300 group-hover:text-slate-200 transition-colors">
+                    <span className="text-sm ny-text-2 group-hover:ny-text-1 transition-colors">
                       Include all experiences and projects (don't filter by relevance)
                     </span>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs ny-text-3 mt-0.5">
                       Show everything while still calculating match scores for insights
                     </p>
                   </div>
@@ -2728,13 +2755,13 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => setCurrentView('dashboard')}
-                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
+                  className="px-6 py-3 ny-btn-secondary rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={generateFullResume}
-                  className="px-6 py-3 bg-slate-600 hover:bg-slate-500 text-slate-200 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                  className="px-6 py-3 bg-slate-600 hover:bg-slate-500 ny-text-1 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
                   title="Include all your experiences, skills and projects — no filtering"
                 >
                   <FileText className="w-5 h-5" />
@@ -2743,14 +2770,14 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                 <button
                   onClick={analyzeWithAI}
                   disabled={!jobTarget.trim()}
-                  className={`flex-1 px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${jobTarget.trim() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600/40 text-blue-300 cursor-not-allowed'}`}
+                  className={`flex-1 px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${jobTarget.trim() ? 'ny-btn-primary' : 'opacity-40 ny-accent cursor-not-allowed ny-subcard'}`}
                 >
                   <Sparkles className="w-5 h-5" />
                   Analyze & Match
                 </button>
               </div>
               {!jobTarget.trim() && (
-                <p className="text-slate-500 text-xs text-center">Enter a job description to enable smart matching, or click <span className="text-slate-300">Full Resume</span> to include everything.</p>
+                <p className="ny-text-3 text-xs text-center">Enter a job description to enable smart matching, or click <span className="ny-text-2">Full Resume</span> to include everything.</p>
               )}
             </div>
           </div>
@@ -2761,12 +2788,12 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
 
   if (step === 'analyzing') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 flex items-center justify-center">
-        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 sm:p-8 md:p-12 border border-slate-700/50 text-center">
-          <Sparkles className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-slate-200 mb-2">Analyzing Job Requirements</h2>
-          <p className="text-slate-400">Matching your profile to the job description...</p>
-          <p className="text-slate-500 text-sm mt-2">Extracting keywords and ranking experiences</p>
+      <div className="min-h-screen ny-bg p-6 flex items-center justify-center">
+        <div className="ny-card rounded-lg p-6 sm:p-8 md:p-12 border ny-border text-center">
+          <Sparkles className="w-16 h-16 ny-accent mx-auto mb-4 animate-pulse" />
+          <h2 className="text-2xl font-bold ny-text-1 mb-2">Analyzing Job Requirements</h2>
+          <p className="ny-text-2">Matching your profile to the job description...</p>
+          <p className="ny-text-3 text-sm mt-2">Extracting keywords and ranking experiences</p>
         </div>
       </div>
     );
@@ -2811,84 +2838,84 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
     };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+      <div className="min-h-screen ny-bg p-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-slate-200 mb-6">
+          <h2 className="text-3xl font-bold ny-text-1 mb-6">
             {analysisResult.fullResume ? 'Complete Resume Preview' : 'Resume Preview'}
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
             {analysisResult.fullResume ? (
               <>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className="text-4xl font-bold mb-2 text-blue-400">{selectedJobs.length}</div>
-                    <p className="text-slate-400 text-sm">Experiences</p>
-                    <p className="text-slate-500 text-xs mt-1">All included</p>
+                    <div className="text-4xl font-bold mb-2 ny-accent">{selectedJobs.length}</div>
+                    <p className="ny-text-2 text-sm">Experiences</p>
+                    <p className="ny-text-3 text-xs mt-1">All included</p>
                   </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'text-green-400' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'ny-success-text' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {templateCompatibility[selectedTemplate].score}%
                     </div>
-                    <p className="text-slate-400 text-sm">Template ATS</p>
-                    <p className="text-slate-500 text-xs mt-1">Format compatibility</p>
+                    <p className="ny-text-2 text-sm">Template ATS</p>
+                    <p className="ny-text-3 text-xs mt-1">Format compatibility</p>
                   </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className="text-4xl font-bold mb-2 text-blue-400">{displaySkills.length}</div>
-                    <p className="text-slate-400 text-sm">Skills</p>
-                    <p className="text-slate-500 text-xs mt-1">All categories</p>
+                    <div className="text-4xl font-bold mb-2 ny-accent">{displaySkills.length}</div>
+                    <p className="ny-text-2 text-sm">Skills</p>
+                    <p className="ny-text-3 text-xs mt-1">All categories</p>
                   </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.completeness >= 80 ? 'text-green-400' : analysisResult.completeness >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.completeness >= 80 ? 'ny-success-text' : analysisResult.completeness >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.completeness}%
                     </div>
-                    <p className="text-slate-400 text-sm">Profile Complete</p>
-                    <p className="text-slate-500 text-xs mt-1">Sections filled</p>
+                    <p className="ny-text-2 text-sm">Profile Complete</p>
+                    <p className="ny-text-3 text-xs mt-1">Sections filled</p>
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.atsScore >= 80 ? 'text-green-400' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.atsScore >= 80 ? 'ny-success-text' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.atsScore}%
                     </div>
-                    <p className="text-slate-400 text-sm">Content Match</p>
-                    <p className="text-slate-500 text-xs mt-1">Keywords & relevance</p>
+                    <p className="ny-text-2 text-sm">Content Match</p>
+                    <p className="ny-text-3 text-xs mt-1">Keywords & relevance</p>
                   </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'text-green-400' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'ny-success-text' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {templateCompatibility[selectedTemplate].score}%
                     </div>
-                    <p className="text-slate-400 text-sm">Template ATS</p>
-                    <p className="text-slate-500 text-xs mt-1">Format compatibility</p>
+                    <p className="ny-text-2 text-sm">Template ATS</p>
+                    <p className="ny-text-3 text-xs mt-1">Format compatibility</p>
                   </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.keywordMatch >= 80 ? 'text-green-400' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.keywordMatch >= 80 ? 'ny-success-text' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.keywordMatch}%
                     </div>
-                    <p className="text-slate-400 text-sm">Keyword Match</p>
-                    <p className="text-slate-500 text-xs mt-1">Job description fit</p>
+                    <p className="ny-text-2 text-sm">Keyword Match</p>
+                    <p className="ny-text-3 text-xs mt-1">Job description fit</p>
                   </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 border border-slate-700/50">
+                <div className="ny-card rounded-lg p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.authenticityScore >= 80 ? 'text-green-400' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-4xl font-bold mb-2 ${analysisResult.authenticityScore >= 80 ? 'ny-success-text' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.authenticityScore}%
                     </div>
-                    <p className="text-slate-400 text-sm">Authenticity</p>
-                    <p className="text-slate-500 text-xs mt-1">Real profile data</p>
+                    <p className="ny-text-2 text-sm">Authenticity</p>
+                    <p className="ny-text-3 text-xs mt-1">Real profile data</p>
                   </div>
                 </div>
               </>
@@ -2896,15 +2923,15 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
           </div>
 
           {analysisResult.suggestions && analysisResult.suggestions.length > 0 && (
-            <div className="bg-blue-600/10 border border-blue-500/30 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-blue-300 mb-3 flex items-center gap-2">
+            <div className="ny-info-box border rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold ny-accent mb-3 flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
                 {analysisResult.fullResume ? 'Tips' : 'AI Suggestions'}
               </h3>
-              <ul className="space-y-2 text-slate-300">
+              <ul className="space-y-2 ny-text-2">
                 {analysisResult.suggestions.map((suggestion, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-blue-400 flex-shrink-0 mt-1" />
+                    <Check className="w-4 h-4 ny-accent flex-shrink-0 mt-1" />
                     <span>{suggestion}</span>
                   </li>
                 ))}
@@ -2913,19 +2940,19 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
           )}
 
           {/* 🔧 FIX #5: Save Resume Feature */}
-          <div className="bg-slate-800/50 backdrop-blur rounded-lg p-6 mb-6 border border-slate-700/50">
-            <h3 className="text-lg font-semibold text-slate-200 mb-3">Save This Resume</h3>
+          <div className="ny-card rounded-lg p-6 mb-6 border ny-border">
+            <h3 className="text-lg font-semibold ny-text-1 mb-3">Save This Resume</h3>
             <div className="flex gap-3">
               <input
                 type="text"
                 value={resumeName}
                 onChange={(e) => setResumeName(e.target.value)}
                 placeholder="e.g., Software Engineer - Tech Corp"
-                className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 ny-input rounded-lg"
               />
               <button
                 onClick={saveResume}
-                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 transition-colors"
+                className="px-6 py-2 ny-btn-success rounded-lg flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 Save
@@ -2936,10 +2963,12 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
           {/* 🔧 FIX #2: Print-specific styling */}
           <style>{`
             @media print {
-              /* Page setup */
+              /* Page setup — 0.75in is standard resume margin.
+                 Templates control their own internal padding via print: Tailwind variants.
+                 Do NOT add padding here or it double-stacks with @page margin. */
               @page {
                 size: A4;
-                margin: 0.5in;
+                margin: 0.75in;
               }
 
               /* Hide everything except resume */
@@ -2964,11 +2993,16 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                 max-width: none !important;
               }
 
-              /* Remove responsive padding - use print-friendly spacing */
+              /* Normalize template wrapper divs:
+                 - NO padding here (was 0.5in — caused double-margin vs @page).
+                 - Each template sets its own print: padding via Tailwind.
+                 - max-width: none ensures templates fill the full printable width. */
               #resume-preview > div {
-                padding: 0.5in !important;
+                padding: 0 !important;
                 margin: 0 !important;
                 max-width: none !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
               }
 
               /* Hide print buttons and UI elements */
@@ -2981,36 +3015,32 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                 page-break-after: avoid;
               }
 
-              /* Remove decorative elements */
+              /* Remove decorative shadows (keeps gradients/colors intact) */
               * {
                 box-shadow: none !important;
                 text-shadow: none !important;
               }
 
-              /* Ensure backgrounds print for gradient templates */
+              /* Ensure page background is white */
               body {
                 background: white !important;
               }
 
+              /* Force color/background printing (required for gradient templates) */
               * {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
               }
 
-              /* Remove any overflow/height constraints */
+              /* Remove any overflow/height constraints so content flows naturally */
               #resume-preview, #resume-preview * {
                 overflow: visible !important;
                 max-height: none !important;
                 min-height: 0 !important;
               }
 
-              /* Allow natural page flow - CRITICAL FIX */
-              #resume-preview > div {
-                page-break-inside: auto !important;
-                break-inside: auto !important;
-              }
-
-              /* Full-bleed templates: remove outer padding so header/sidebar fills to @page margin */
+              /* Full-bleed templates (Creative, Bold): colored header/sidebar
+                 fills edge-to-edge within the @page margins — no extra padding. */
               #resume-preview > .print-full-bleed {
                 padding: 0 !important;
               }
@@ -3018,7 +3048,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
           `}</style>
 
           {/* ✅ TEMPLATE-BASED RENDERING — sortedProfile ensures education is newest-first */}
-          <div className="rounded-lg shadow-2xl mb-6 print:shadow-none print:overflow-visible overflow-hidden" id="resume-preview">
+          <div className="rounded-lg shadow-2xl mb-6 overflow-hidden print:shadow-none print:overflow-visible print:rounded-none print:mb-0" id="resume-preview">
             {selectedTemplate === 'modern' && (
               <ModernTemplate
                 profile={sortedProfile}
@@ -3080,7 +3110,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
           <div className="flex gap-3 no-print">
             <button
               onClick={() => setStep('input')}
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
+              className="px-6 py-3 ny-btn-secondary rounded-lg"
             >
               Back
             </button>
@@ -3092,7 +3122,7 @@ const GenerateView = ({ setCurrentView, profile, savedResumes, setSavedResumes, 
                 }
                 window.print();
               }}
-              className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+              className="flex-1 px-6 py-3 ny-btn-success rounded-lg font-medium flex items-center justify-center gap-2"
             >
               <Download className="w-5 h-5" />
               Download PDF

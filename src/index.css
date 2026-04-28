@@ -1,20 +1,242 @@
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@media print {
-  .print\:hidden {
-    display: none !important;
-  }
-  .print\:shadow-none {
-    box-shadow: none !important;
-  }
-  .print\:rounded-none {
-    border-radius: 0 !important;
-  }
-  body {
-    background: white !important;
-  }
-} */
-
 @import "tailwindcss";
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NYXINE — Deep Ocean Design System
+   Two modes: Dark (default) = midnight navy + electric cyan
+              Light           = ice blue + deep navy
+   All color tokens live here. Nothing hardcoded in components.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Dark mode (default) ────────────────────────────────────────────── */
+
+  /* Backgrounds */
+  --ny-bg:              #050C18;   /* True midnight navy — NOT slate-900    */
+  --ny-surface:         #091525;   /* Slightly elevated background           */
+  --ny-card:            rgba(10, 22, 42, 0.72);  /* Glassmorphism card       */
+  --ny-subcard:         rgba(8, 18, 36, 0.80);   /* Form / sub-panel surface */
+
+  /* Borders */
+  --ny-border:          rgba(0, 200, 255, 0.10);
+  --ny-border-strong:   rgba(0, 200, 255, 0.20);
+
+  /* Accent — Electric Cyan */
+  --ny-accent:          #00C8FF;
+  --ny-accent-btn:      #0088CC;   /* Slightly muted for button BG           */
+  --ny-accent-dim:      rgba(0, 200, 255, 0.10);
+  --ny-accent-glow:     rgba(0, 200, 255, 0.06);
+
+  /* Text */
+  --ny-text-1:          #CCE8FF;   /* Primary — ice white with blue tint     */
+  --ny-text-2:          #5B8FAA;   /* Secondary — muted ocean blue           */
+  --ny-text-3:          #2E5570;   /* Muted — very dim                       */
+
+  /* Semantic colours */
+  --ny-success:         #00D68F;
+  --ny-success-btn:     #009960;
+  --ny-success-bg:      rgba(0, 214, 143, 0.08);
+  --ny-success-border:  rgba(0, 214, 143, 0.22);
+
+  --ny-warning:         #FFB800;
+  --ny-warning-bg:      rgba(255, 184, 0, 0.08);
+  --ny-warning-border:  rgba(255, 184, 0, 0.22);
+
+  --ny-danger:          #FF4060;
+  --ny-danger-btn:      #CC1535;
+  --ny-danger-bg:       rgba(255, 64, 96, 0.08);
+  --ny-danger-border:   rgba(255, 64, 96, 0.22);
+
+  --ny-info-bg:         rgba(0, 200, 255, 0.07);
+  --ny-info-border:     rgba(0, 200, 255, 0.20);
+
+  /* Secondary button */
+  --ny-sec-btn:         rgba(10, 22, 42, 0.85);
+  --ny-sec-btn-hover:   rgba(16, 34, 62, 0.92);
+}
+
+/* ── Light mode ─────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --ny-bg:              #EEF5FF;
+  --ny-surface:         #E2EDFF;
+  --ny-card:            rgba(255, 255, 255, 0.90);
+  --ny-subcard:         rgba(240, 248, 255, 0.95);
+
+  --ny-border:          rgba(0, 60, 180, 0.10);
+  --ny-border-strong:   rgba(0, 60, 180, 0.22);
+
+  --ny-accent:          #0044CC;
+  --ny-accent-btn:      #0044CC;
+  --ny-accent-dim:      rgba(0, 68, 204, 0.08);
+  --ny-accent-glow:     rgba(0, 68, 204, 0.04);
+
+  --ny-text-1:          #061020;
+  --ny-text-2:          #2B5080;
+  --ny-text-3:          #6080A8;
+
+  --ny-success:         #007A50;
+  --ny-success-btn:     #006040;
+  --ny-success-bg:      rgba(0, 122, 80, 0.07);
+  --ny-success-border:  rgba(0, 122, 80, 0.22);
+
+  --ny-warning:         #B07000;
+  --ny-warning-bg:      rgba(176, 112, 0, 0.07);
+  --ny-warning-border:  rgba(176, 112, 0, 0.22);
+
+  --ny-danger:          #CC1535;
+  --ny-danger-btn:      #AA1020;
+  --ny-danger-bg:       rgba(204, 21, 53, 0.07);
+  --ny-danger-border:   rgba(204, 21, 53, 0.22);
+
+  --ny-info-bg:         rgba(0, 68, 204, 0.06);
+  --ny-info-border:     rgba(0, 68, 204, 0.18);
+
+  --ny-sec-btn:         rgba(220, 235, 255, 0.90);
+  --ny-sec-btn-hover:   rgba(200, 220, 255, 0.95);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Semantic utility classes — use these in JSX instead of raw Tailwind colors
+   ══════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+
+  /* ── Page background ─────────────────────────────────────────────────── */
+  .ny-bg {
+    background-color: var(--ny-bg);
+    /* Subtle radial aurora glow — different from flat slate-900 */
+    background-image:
+      radial-gradient(ellipse 130% 55% at 50% -5%,  rgba(0, 200, 255, 0.06) 0%, transparent 68%),
+      radial-gradient(ellipse 70%  40% at 85%  110%, rgba(0,  85, 238, 0.05) 0%, transparent 65%);
+    min-height: 100vh;
+  }
+
+  /* ── Cards / panels ──────────────────────────────────────────────────── */
+  .ny-card {
+    background-color: var(--ny-card);
+    border-color:     var(--ny-border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* ── Sub-cards (forms, nested panels) ───────────────────────────────── */
+  .ny-subcard {
+    background-color: var(--ny-subcard);
+    border-color:     var(--ny-border-strong);
+  }
+
+  /* ── Borders ─────────────────────────────────────────────────────────── */
+  .ny-border        { border-color: var(--ny-border); }
+  .ny-border-strong { border-color: var(--ny-border-strong); }
+  .ny-divider       { border-color: var(--ny-border); }
+
+  /* ── Text ────────────────────────────────────────────────────────────── */
+  .ny-text-1 { color: var(--ny-text-1); }
+  .ny-text-2 { color: var(--ny-text-2); }
+  .ny-text-3 { color: var(--ny-text-3); }
+  .ny-accent { color: var(--ny-accent); }
+  .ny-success-text { color: var(--ny-success); }
+  .ny-warning-text { color: var(--ny-warning); }
+  .ny-danger-text  { color: var(--ny-danger); }
+
+  /* ── Inputs ──────────────────────────────────────────────────────────── */
+  .ny-input {
+    background-color: var(--ny-subcard);
+    border:     1px solid var(--ny-border-strong);
+    color:      var(--ny-text-1);
+  }
+  .ny-input:focus {
+    outline:    none;
+    border-color: var(--ny-accent);
+    box-shadow: 0 0 0 2px var(--ny-accent-dim);
+  }
+  .ny-input::placeholder { color: var(--ny-text-3); }
+
+  /* ── Buttons ─────────────────────────────────────────────────────────── */
+  .ny-btn-primary {
+    background-color: var(--ny-accent-btn);
+    color: white;
+    transition: filter 0.15s ease;
+  }
+  .ny-btn-primary:hover { filter: brightness(1.14); }
+
+  .ny-btn-secondary {
+    background-color: var(--ny-sec-btn);
+    border: 1px solid var(--ny-border-strong);
+    color: var(--ny-text-1);
+    transition: background-color 0.15s ease;
+  }
+  .ny-btn-secondary:hover { background-color: var(--ny-sec-btn-hover); }
+
+  .ny-btn-success {
+    background-color: var(--ny-success-btn);
+    color: white;
+    transition: filter 0.15s ease;
+  }
+  .ny-btn-success:hover { filter: brightness(1.10); }
+
+  .ny-btn-danger {
+    background-color: var(--ny-danger-btn);
+    color: white;
+    transition: filter 0.15s ease;
+  }
+  .ny-btn-danger:hover { filter: brightness(1.10); }
+
+  /* ── Highlight boxes ─────────────────────────────────────────────────── */
+  .ny-info-box {
+    background-color: var(--ny-info-bg);
+    border-color:     var(--ny-info-border);
+    color:            var(--ny-text-1);
+  }
+  .ny-success-box {
+    background-color: var(--ny-success-bg);
+    border-color:     var(--ny-success-border);
+    color:            var(--ny-text-1);
+  }
+  .ny-warning-box {
+    background-color: var(--ny-warning-bg);
+    border-color:     var(--ny-warning-border);
+    color:            var(--ny-warning);
+  }
+
+  /* ── Warning badge (Coming Soon, etc.) ───────────────────────────────── */
+  .ny-badge-warning {
+    background-color: var(--ny-warning-bg);
+    border-color:     var(--ny-warning-border);
+    color:            var(--ny-warning);
+  }
+
+  /* ── Logo gradient — not the generic blue-purple-pink ───────────────── */
+  .ny-logo-gradient {
+    background: linear-gradient(130deg, #00C8FF 0%, #0066EE 48%, #7744FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Section heading gradient ───────────────────────────────────────── */
+  .ny-heading-gradient {
+    background: linear-gradient(130deg, var(--ny-accent) 0%, #6688FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Progress bar states ─────────────────────────────────────────────── */
+  .ny-progress-done    { background-color: var(--ny-success); }
+  .ny-progress-active  { background-color: var(--ny-accent); }
+  .ny-progress-pending { background-color: var(--ny-border-strong); }
+
+  /* ── Theme toggle button ─────────────────────────────────────────────── */
+  .ny-theme-toggle {
+    background-color: var(--ny-card);
+    border-color:     var(--ny-border-strong);
+    color:            var(--ny-text-1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .ny-theme-toggle:hover {
+    transform: scale(1.08);
+    filter: brightness(1.15);
+  }
+}
