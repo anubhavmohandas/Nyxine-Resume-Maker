@@ -1507,6 +1507,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
               <p>{profile.personal.location}</p>
               {profile.personal.linkedin && <p className="text-blue-600 break-words text-xs">{profile.personal.linkedin.replace('https://', '')}</p>}
               {profile.personal.github && <p className="text-blue-600 break-words text-xs">{profile.personal.github.replace('https://', '')}</p>}
+              {profile.personal.portfolio && <p className="text-blue-600 break-words text-xs">{profile.personal.portfolio.replace('https://', '')}</p>}
             </div>
           </div>
 
@@ -1633,9 +1634,9 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
         <p className="text-sm text-gray-700">
           {profile.personal.email} | {profile.personal.phone} | {profile.personal.location}
         </p>
-        {(profile.personal.linkedin || profile.personal.github) && (
+        {(profile.personal.linkedin || profile.personal.github || profile.personal.portfolio) && (
           <p className="text-sm text-blue-700 mt-1">
-            {[profile.personal.linkedin, profile.personal.github]
+            {[profile.personal.linkedin, profile.personal.github, profile.personal.portfolio]
               .filter(Boolean)
               .map(link => link.replace('https://', ''))
               .join(' | ')}
@@ -1774,6 +1775,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
             profile.personal.location,
             profile.personal.linkedin?.replace('https://','').replace('www.',''),
             profile.personal.github?.replace('https://','').replace('www.',''),
+            profile.personal.portfolio?.replace('https://','').replace('www.',''),
           ].filter(Boolean).join(' | ')}
         </p>
       </div>
@@ -1894,9 +1896,9 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
         <p className="text-sm" style={{ color: '#000000' }}>
           {profile.personal.email} | {profile.personal.phone} | {profile.personal.location}
         </p>
-        {(profile.personal.linkedin || profile.personal.github) && (
+        {(profile.personal.linkedin || profile.personal.github || profile.personal.portfolio) && (
           <p className="text-sm mt-1" style={{ color: '#000000' }}>
-            {[profile.personal.linkedin, profile.personal.github]
+            {[profile.personal.linkedin, profile.personal.github, profile.personal.portfolio]
               .filter(Boolean)
               .map(link => link.replace('https://', ''))
               .join(' | ')}
@@ -2028,10 +2030,11 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
           <span>📱 {profile.personal.phone}</span>
           <span>📍 {profile.personal.location}</span>
         </div>
-        {(profile.personal.linkedin || profile.personal.github) && (
+        {(profile.personal.linkedin || profile.personal.github || profile.personal.portfolio) && (
           <div className="flex gap-4 mt-2 text-sm text-blue-100">
             {profile.personal.linkedin && <span>🔗 {profile.personal.linkedin.replace('https://', '')}</span>}
             {profile.personal.github && <span>💻 {profile.personal.github.replace('https://', '')}</span>}
+            {profile.personal.portfolio && <span>🌐 {profile.personal.portfolio.replace('https://', '')}</span>}
           </div>
         )}
       </div>
@@ -2182,9 +2185,9 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
             <span>•</span>
             <span>{profile.personal.location}</span>
           </div>
-          {(profile.personal.linkedin || profile.personal.github) && (
+          {(profile.personal.linkedin || profile.personal.github || profile.personal.portfolio) && (
             <p className="text-sm text-slate-600 mt-2">
-              {[profile.personal.linkedin, profile.personal.github]
+              {[profile.personal.linkedin, profile.personal.github, profile.personal.portfolio]
                 .filter(Boolean)
                 .map(link => link.replace('https://', ''))
                 .join(' • ')}
@@ -2341,6 +2344,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                 <p>{profile.personal.location}</p>
                 {profile.personal.linkedin && <p className="text-cyan-300 break-words text-xs">{profile.personal.linkedin.replace('https://', '')}</p>}
                 {profile.personal.github && <p className="text-cyan-300 break-words text-xs">{profile.personal.github.replace('https://', '')}</p>}
+                {profile.personal.portfolio && <p className="text-cyan-300 break-words text-xs">{profile.personal.portfolio.replace('https://', '')}</p>}
               </div>
             </div>
 
