@@ -430,7 +430,14 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
 
         <div className="ny-card rounded-2xl shadow-2xl p-8 border ny-border">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold ny-logo-gradient mb-4">NYXINE</h1>
+            <h1 className="text-5xl font-bold mb-4" style={{
+              background: 'linear-gradient(90deg, #1E3A8A 0%, #2563EB 22%, #38BDF8 50%, #7DD3FC 75%, #E0F2FE 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter: 'drop-shadow(0 0 18px rgba(56,189,248,0.35)) drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
+              letterSpacing: '0.08em',
+            }}>NYXINE</h1>
             <p className="text-xl ny-text-2">Smart Resume Builder</p>
             <p className="ny-text-2 mt-2">Enter once. Generate targeted resumes. Stay authentic.</p>
           </div>
