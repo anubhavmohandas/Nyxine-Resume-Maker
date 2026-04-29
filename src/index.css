@@ -10,15 +10,15 @@
 :root {
   /* ── Dark mode (default) ────────────────────────────────────────────── */
 
-  /* Backgrounds — near-black with a faint forest depth */
-  --ny-bg:              #090D0B;
-  --ny-surface:         #10181380;
-  --ny-card:            rgba(16, 26, 20, 0.90);   /* clearly lighter than bg  */
-  --ny-subcard:         rgba(11, 20, 15, 0.94);
+  /* Backgrounds — pure neutral charcoal, no green cast */
+  --ny-bg:              #0E0E0E;
+  --ny-surface:         #181818;
+  --ny-card:            rgba(26, 26, 26, 0.95);   /* clearly lighter than bg  */
+  --ny-subcard:         rgba(20, 20, 20, 0.97);
 
-  /* Borders — emerald tint, very subtle */
-  --ny-border:          rgba(52, 211, 153, 0.12);
-  --ny-border-strong:   rgba(52, 211, 153, 0.24);
+  /* Borders — neutral with faint emerald hint */
+  --ny-border:          rgba(52, 211, 153, 0.10);
+  --ny-border-strong:   rgba(52, 211, 153, 0.20);
 
   /* Accent — Vivid Emerald */
   --ny-accent:          #34D399;
@@ -26,10 +26,10 @@
   --ny-accent-dim:      rgba(52, 211, 153, 0.14);
   --ny-accent-glow:     rgba(52, 211, 153, 0.07);
 
-  /* Text — clean, high contrast */
-  --ny-text-1:          #E8F5EE;   /* ~14:1 contrast on bg                    */
-  --ny-text-2:          #4A8C68;   /* Muted forest green                      */
-  --ny-text-3:          #264D38;   /* Very dim                                */
+  /* Text — pure neutral, no green cast */
+  --ny-text-1:          #F0F0F0;   /* Clean near-white, ~17:1 contrast on bg  */
+  --ny-text-2:          #888888;   /* Neutral mid-gray                        */
+  --ny-text-3:          #444444;   /* Dim gray                                */
 
   /* Semantic colours */
   --ny-success:         #22C55E;   /* Pure green — distinct from emerald accent */
@@ -49,9 +49,9 @@
   --ny-info-bg:         rgba(52, 211, 153, 0.07);
   --ny-info-border:     rgba(52, 211, 153, 0.20);
 
-  /* Secondary button — clearly distinct from bg */
-  --ny-sec-btn:         rgba(20, 32, 26, 0.92);
-  --ny-sec-btn-hover:   rgba(28, 44, 36, 0.96);
+  /* Secondary button — neutral dark */
+  --ny-sec-btn:         rgba(38, 38, 38, 0.95);
+  --ny-sec-btn-hover:   rgba(52, 52, 52, 0.98);
 }
 
 /* ── Light mode ─────────────────────────────────────────────────────────── */
@@ -102,10 +102,10 @@
   /* ── Page background ─────────────────────────────────────────────────── */
   .ny-bg {
     background-color: var(--ny-bg);
-    /* Faint forest glow — like moonlight through a canopy */
+    /* Single faint emerald bloom at the top — rest is pure dark */
     background-image:
-      radial-gradient(ellipse 120% 50% at 50% -5%,  rgba(52, 211, 153, 0.08) 0%, transparent 68%),
-      radial-gradient(ellipse 60%  35% at 90%  105%, rgba(16, 120, 70, 0.05) 0%, transparent 65%);
+      radial-gradient(ellipse 100% 40% at 50% -5%,  rgba(52, 211, 153, 0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 50%  30% at 90%  110%, rgba(5, 150, 105, 0.04) 0%, transparent 60%);
     min-height: 100vh;
   }
 
