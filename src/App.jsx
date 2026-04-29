@@ -3240,13 +3240,12 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
             }
 
             @media print {
-              /* Zero @page margin — the A4 wrapper's inline padding IS the margin.
-                 This allows full-bleed templates (Creative, Bold) to print edge-to-edge
-                 with no white border. Non-full-bleed templates retain their 0.75in
-                 wrapper padding which survives into print. */
+              /* 0.75in @page margin handles top/bottom gaps on ALL pages including
+                 page 2, 3, etc. Full-bleed templates lose edge-to-edge in PDF but
+                 gain correct multi-page margins — better trade-off than cut-off content. */
               @page {
                 size: A4;
-                margin: 0;
+                margin: 0.75in;
               }
 
               /* Hide everything except resume */
@@ -3263,10 +3262,10 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 left: 0;
                 top: 0;
                 width: 100%;
-                /* margin zeroed — but DO NOT override padding here.
-                   The inline padding (0.75in for standard, 0 for full-bleed)
-                   is what provides content margins in the PDF. */
+                /* @page margin: 0.75in now handles all 4 sides on every page.
+                   Remove #resume-preview's own padding on print to avoid double-stacking. */
                 margin: 0 !important;
+                padding: 0 !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
                 overflow: visible !important;
