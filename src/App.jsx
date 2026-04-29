@@ -1475,6 +1475,9 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
 // ✅ RESUME TEMPLATES
 
 const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
+  const techSkills = (profile.skills?.technical || []).filter(s => displaySkills.includes(s));
+  const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
+  const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
     <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4' }}>
       <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-8 print:gap-6">
@@ -1491,16 +1494,34 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
             </div>
           </div>
 
-          {displaySkills.length > 0 && (
+          {(techSkills.length > 0 || softSkills.length > 0 || langSkills.length > 0) && (
             <div className="mb-6">
               <h2 className="text-sm font-bold text-gray-900 mb-2 pb-1 border-b border-gray-300">SKILLS</h2>
-              <div className="text-xs text-gray-700 space-y-1">
-                {displaySkills.map((skill, idx) => (
-                  <div key={idx} className="flex items-start">
-                    <span className="mr-1">•</span>
-                    <span>{skill}</span>
+              <div className="text-xs text-gray-700 space-y-3">
+                {techSkills.length > 0 && (
+                  <div>
+                    <p className="font-bold text-gray-500 uppercase tracking-wide mb-1" style={{fontSize:'8pt'}}>Technical</p>
+                    <div className="space-y-0.5">
+                      {techSkills.map((s, i) => <div key={i} className="flex items-start"><span className="mr-1 text-gray-400">•</span><span>{s}</span></div>)}
+                    </div>
                   </div>
-                ))}
+                )}
+                {softSkills.length > 0 && (
+                  <div>
+                    <p className="font-bold text-gray-500 uppercase tracking-wide mb-1" style={{fontSize:'8pt'}}>Professional</p>
+                    <div className="space-y-0.5">
+                      {softSkills.map((s, i) => <div key={i} className="flex items-start"><span className="mr-1 text-gray-400">•</span><span>{s}</span></div>)}
+                    </div>
+                  </div>
+                )}
+                {langSkills.length > 0 && (
+                  <div>
+                    <p className="font-bold text-gray-500 uppercase tracking-wide mb-1" style={{fontSize:'8pt'}}>Languages</p>
+                    <div className="space-y-0.5">
+                      {langSkills.map((s, i) => <div key={i} className="flex items-start"><span className="mr-1 text-gray-400">•</span><span>{s}</span></div>)}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1978,6 +1999,9 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
 // 🎨 NEW COLORFUL TEMPLATES
 
 const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
+  const techSkills = (profile.skills?.technical || []).filter(s => displaySkills.includes(s));
+  const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
+  const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
     <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt' }}>
       {/* Colorful Header */}
@@ -2068,14 +2092,35 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Skills */}
-            {displaySkills.length > 0 && (
+            {(techSkills.length > 0 || softSkills.length > 0 || langSkills.length > 0) && (
               <div>
                 <h2 className="text-base font-bold text-blue-600 mb-3 pb-1 border-b-2 border-blue-600 uppercase tracking-wide">Skills</h2>
-                <ul className="list-disc ml-4 space-y-1">
-                  {displaySkills.map((skill, idx) => (
-                    <li key={idx} className="text-sm text-gray-800">{skill}</li>
-                  ))}
-                </ul>
+                <div className="space-y-3">
+                  {techSkills.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Technical</p>
+                      <ul className="list-disc ml-4 space-y-0.5">
+                        {techSkills.map((s, i) => <li key={i} className="text-sm text-gray-800">{s}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {softSkills.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">Professional</p>
+                      <ul className="list-disc ml-4 space-y-0.5">
+                        {softSkills.map((s, i) => <li key={i} className="text-sm text-gray-800">{s}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {langSkills.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Languages</p>
+                      <ul className="list-disc ml-4 space-y-0.5">
+                        {langSkills.map((s, i) => <li key={i} className="text-sm text-gray-800">{s}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -2258,6 +2303,9 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
 };
 
 const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, displayCerts }) => {
+  const techSkills = (profile.skills?.technical || []).filter(s => displaySkills.includes(s));
+  const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
+  const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
     <div className="bg-white max-w-6xl mx-auto print:max-w-none print-full-bleed" style={{ background: 'linear-gradient(to right, #1e293b 280px, white 280px)' }}>
       <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] print:grid-cols-[280px_1fr]">
@@ -2280,15 +2328,34 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
               </div>
             </div>
 
-            {displaySkills.length > 0 && (
+            {(techSkills.length > 0 || softSkills.length > 0 || langSkills.length > 0) && (
               <div>
                 <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Skills</h3>
-                <div className="space-y-2">
-                  {displaySkills.map((skill, idx) => (
-                    <div key={idx} className="bg-slate-700 px-3 py-1.5 rounded text-slate-200 text-xs">
-                      {skill}
+                <div className="space-y-4">
+                  {techSkills.length > 0 && (
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase tracking-wider mb-1.5">Technical</p>
+                      <div className="space-y-1">
+                        {techSkills.map((s, i) => <div key={i} className="bg-slate-700 px-2.5 py-1 rounded text-slate-200 text-xs">{s}</div>)}
+                      </div>
                     </div>
-                  ))}
+                  )}
+                  {softSkills.length > 0 && (
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase tracking-wider mb-1.5">Professional</p>
+                      <div className="space-y-1">
+                        {softSkills.map((s, i) => <div key={i} className="bg-slate-700 px-2.5 py-1 rounded text-slate-200 text-xs">{s}</div>)}
+                      </div>
+                    </div>
+                  )}
+                  {langSkills.length > 0 && (
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase tracking-wider mb-1.5">Languages</p>
+                      <div className="space-y-1">
+                        {langSkills.map((s, i) => <div key={i} className="bg-slate-700 px-2.5 py-1 rounded text-slate-200 text-xs">{s}</div>)}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
