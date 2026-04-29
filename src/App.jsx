@@ -2039,7 +2039,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
         )}
       </div>
 
-      <div className="p-8 print:p-8">
+      <div className="p-8 print:p-8 print:pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] print:grid-cols-[1fr_300px] gap-6 print:gap-6">
           {/* Main Content */}
           <div className="space-y-6">
@@ -2063,10 +2063,10 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                         {job.startDate} - {job.current ? 'Present' : job.endDate}
                       </span>
                     </div>
-                    <p className="text-base text-purple-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
+                    <p className="text-base text-gray-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
                     <ul className="list-none space-y-1.5 text-sm text-gray-800">
                       {job.bullets.filter(b => b.trim()).map((bullet, idx) => (
-                        <li key={idx} className="pl-5 relative before:content-['▸'] before:absolute before:left-0 before:text-blue-600 leading-relaxed">
+                        <li key={idx} className="pl-5 relative before:content-['▸'] before:absolute before:left-0 before:text-gray-400 leading-relaxed">
                           {bullet}
                         </li>
                       ))}
@@ -2085,11 +2085,11 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                     <h3 className="text-base font-bold text-gray-900">{proj.name}</h3>
                     <p className="text-sm text-gray-800 mt-1 leading-relaxed text-justify">{proj.description}</p>
                     {proj.technologies && (
-                      <p className="text-xs text-purple-600 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                         <span className="font-semibold">Tech:</span> {proj.technologies}
                       </p>
                     )}
-                    {proj.link && <p className="text-xs text-blue-600 mt-1 break-words">{proj.link}</p>}
+                    {proj.link && <p className="text-xs text-slate-500 mt-1 break-words">{proj.link}</p>}
                   </div>
                 ))}
               </div>
@@ -2117,7 +2117,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                 <div className="space-y-3">
                   {techSkills.length > 0 && (
                     <div>
-                      <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Technical</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Technical</p>
                       <ul className="list-disc ml-4 space-y-0.5">
                         {techSkills.map((s, i) => <li key={i} className="text-sm text-gray-800">{s}</li>)}
                       </ul>
@@ -2125,7 +2125,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                   )}
                   {softSkills.length > 0 && (
                     <div>
-                      <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">Professional</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Professional</p>
                       <ul className="list-disc ml-4 space-y-0.5">
                         {softSkills.map((s, i) => <li key={i} className="text-sm text-gray-800">{s}</li>)}
                       </ul>
@@ -2133,7 +2133,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                   )}
                   {langSkills.length > 0 && (
                     <div>
-                      <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Languages</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Languages</p>
                       <ul className="list-disc ml-4 space-y-0.5">
                         {langSkills.map((s, i) => <li key={i} className="text-sm text-gray-800">{s}</li>)}
                       </ul>
@@ -2146,7 +2146,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
             {/* Education */}
             {profile.education.length > 0 && (
               <div>
-                <h2 className="text-base font-bold text-purple-600 mb-3 pb-1 border-b-2 border-purple-600 uppercase tracking-wide">Education</h2>
+                <h2 className="text-base font-bold text-blue-600 mb-3 pb-1 border-b-2 border-blue-600 uppercase tracking-wide">Education</h2>
                 {profile.education.map(edu => (
                   <div key={edu.id} className="mb-4 last:mb-0 resume-entry">
                     <div className="font-bold text-gray-900 text-sm">{edu.degree}</div>
