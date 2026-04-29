@@ -385,7 +385,7 @@ IMPORTANT RULES:
   );
 
   if (currentView === 'landing') {
-    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} /><ThemeToggle /></>;
+    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} theme={theme} /><ThemeToggle /></>;
   }
 
   if (currentView === 'wizard') {
@@ -403,7 +403,7 @@ IMPORTANT RULES:
   return null;
 };
 
-const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes }) => {
+const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes, theme }) => {
   return (
     <div className="min-h-screen ny-bg flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
