@@ -1,38 +1,41 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   NYXINE — Obsidian Forest Design System
-   Two modes: Dark (default) = near-black forest + vivid emerald
-              Light           = off-white + deep forest green
-   All color tokens live here. Nothing hardcoded in components.
+   NYXINE — Deep Navy + Neon Mint Design System
+   Dark mode: deep navy base with proper elevation model + neon mint accent
+   Light mode: clean white + deep teal
+   Follows Material dark mode elevation principles — no pure black.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Dark mode (default) ────────────────────────────────────────────── */
+  /* ── Dark mode — elevation model (each layer is lighter) ────────────── */
 
-  /* Backgrounds — pure neutral charcoal, no green cast */
-  --ny-bg:              #0E0E0E;
-  --ny-surface:         #181818;
-  --ny-card:            rgba(26, 26, 26, 0.95);   /* clearly lighter than bg  */
-  --ny-subcard:         rgba(20, 20, 20, 0.97);
+  /* Level 0 — page background */
+  --ny-bg:              #050B14;   /* Deep Navy — not pure black, no eye strain */
+  /* Level 1 — sections / sidebars */
+  --ny-surface:         #091422;
+  /* Level 2 — cards (glassmorphism, +8% blue overlay for depth) */
+  --ny-card:            rgba(13, 22, 38, 0.92);
+  /* Level 3 — inputs / sub-panels (slightly more elevated) */
+  --ny-subcard:         rgba(10, 18, 32, 0.96);
 
-  /* Borders — neutral with faint emerald hint */
-  --ny-border:          rgba(52, 211, 153, 0.10);
-  --ny-border-strong:   rgba(52, 211, 153, 0.20);
+  /* Borders — faint mint tint to hint at brand */
+  --ny-border:          rgba(46, 230, 166, 0.10);
+  --ny-border-strong:   rgba(46, 230, 166, 0.20);
 
-  /* Accent — Vivid Emerald */
-  --ny-accent:          #34D399;
-  --ny-accent-btn:      #059669;
-  --ny-accent-dim:      rgba(52, 211, 153, 0.14);
-  --ny-accent-glow:     rgba(52, 211, 153, 0.07);
+  /* Accent — Neon Mint (desaturated enough to not vibrate) */
+  --ny-accent:          #2EE6A6;
+  --ny-accent-btn:      #0DB880;
+  --ny-accent-dim:      rgba(46, 230, 166, 0.13);
+  --ny-accent-glow:     rgba(46, 230, 166, 0.07);
 
-  /* Text — pure neutral, no green cast */
-  --ny-text-1:          #F0F0F0;   /* Clean near-white, ~17:1 contrast on bg  */
-  --ny-text-2:          #888888;   /* Neutral mid-gray                        */
-  --ny-text-3:          #444444;   /* Dim gray                                */
+  /* Text — 87% off-white to prevent retina burn */
+  --ny-text-1:          #DCE8F2;   /* ~12:1 contrast on bg, cool blue-white   */
+  --ny-text-2:          #4A6A88;   /* Muted slate — secondary info            */
+  --ny-text-3:          #253D56;   /* Very dim — hints / placeholders         */
 
   /* Semantic colours */
-  --ny-success:         #22C55E;   /* Pure green — distinct from emerald accent */
+  --ny-success:         #22C55E;
   --ny-success-btn:     #15803D;
   --ny-success-bg:      rgba(34, 197, 94, 0.08);
   --ny-success-border:  rgba(34, 197, 94, 0.22);
@@ -46,32 +49,32 @@
   --ny-danger-bg:       rgba(232, 64, 64, 0.08);
   --ny-danger-border:   rgba(232, 64, 64, 0.22);
 
-  --ny-info-bg:         rgba(52, 211, 153, 0.07);
-  --ny-info-border:     rgba(52, 211, 153, 0.20);
+  --ny-info-bg:         rgba(46, 230, 166, 0.07);
+  --ny-info-border:     rgba(46, 230, 166, 0.18);
 
-  /* Secondary button — neutral dark */
-  --ny-sec-btn:         rgba(38, 38, 38, 0.95);
-  --ny-sec-btn-hover:   rgba(52, 52, 52, 0.98);
+  /* Secondary button — elevated navy surface */
+  --ny-sec-btn:         rgba(14, 26, 46, 0.92);
+  --ny-sec-btn-hover:   rgba(20, 36, 60, 0.96);
 }
 
 /* ── Light mode ─────────────────────────────────────────────────────────── */
 [data-theme="light"] {
-  --ny-bg:              #F0F7F3;   /* Cool mint-white                         */
-  --ny-surface:         #E4F0E9;
-  --ny-card:            rgba(255, 255, 253, 0.96);
-  --ny-subcard:         rgba(244, 251, 247, 0.97);
+  --ny-bg:              #F4F8FC;   /* Clean cool white                        */
+  --ny-surface:         #E8F0F8;
+  --ny-card:            rgba(255, 255, 255, 0.96);
+  --ny-subcard:         rgba(246, 250, 254, 0.98);
 
-  --ny-border:          rgba(20, 100, 60, 0.12);
-  --ny-border-strong:   rgba(20, 100, 60, 0.22);
+  --ny-border:          rgba(0, 80, 160, 0.11);
+  --ny-border-strong:   rgba(0, 80, 160, 0.22);
 
-  --ny-accent:          #047857;   /* Deep forest green                       */
-  --ny-accent-btn:      #065F46;
-  --ny-accent-dim:      rgba(4, 120, 87, 0.09);
-  --ny-accent-glow:     rgba(4, 120, 87, 0.04);
+  --ny-accent:          #0B7A5C;   /* Deep teal for light mode                */
+  --ny-accent-btn:      #096648;
+  --ny-accent-dim:      rgba(11, 122, 92, 0.09);
+  --ny-accent-glow:     rgba(11, 122, 92, 0.04);
 
-  --ny-text-1:          #082018;   /* Near-black green — strong contrast      */
-  --ny-text-2:          #2D6A4A;
-  --ny-text-3:          #7AAA8E;
+  --ny-text-1:          #0A1628;   /* Near-black navy — strong contrast       */
+  --ny-text-2:          #2E5070;
+  --ny-text-3:          #7090AA;
 
   --ny-success:         #15803D;
   --ny-success-btn:     #0F6030;
@@ -87,11 +90,11 @@
   --ny-danger-bg:       rgba(184, 24, 32, 0.07);
   --ny-danger-border:   rgba(184, 24, 32, 0.22);
 
-  --ny-info-bg:         rgba(4, 120, 87, 0.06);
-  --ny-info-border:     rgba(4, 120, 87, 0.18);
+  --ny-info-bg:         rgba(11, 122, 92, 0.06);
+  --ny-info-border:     rgba(11, 122, 92, 0.18);
 
-  --ny-sec-btn:         rgba(212, 236, 224, 0.92);
-  --ny-sec-btn-hover:   rgba(192, 224, 208, 0.96);
+  --ny-sec-btn:         rgba(218, 232, 248, 0.92);
+  --ny-sec-btn-hover:   rgba(200, 218, 240, 0.96);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -102,10 +105,10 @@
   /* ── Page background ─────────────────────────────────────────────────── */
   .ny-bg {
     background-color: var(--ny-bg);
-    /* Single faint emerald bloom at the top — rest is pure dark */
+    /* Soft navy depth glow — gives the bg dimension without being distracting */
     background-image:
-      radial-gradient(ellipse 100% 40% at 50% -5%,  rgba(52, 211, 153, 0.07) 0%, transparent 65%),
-      radial-gradient(ellipse 50%  30% at 90%  110%, rgba(5, 150, 105, 0.04) 0%, transparent 60%);
+      radial-gradient(ellipse 110% 45% at 50% -5%,  rgba(46, 230, 166, 0.06) 0%, transparent 65%),
+      radial-gradient(ellipse 55%  35% at 88%  108%, rgba(0, 80, 200, 0.05)   0%, transparent 62%);
     min-height: 100vh;
   }
 
@@ -204,9 +207,9 @@
     color:            var(--ny-warning);
   }
 
-  /* ── Logo gradient — emerald to deep forest ─────────────────────────── */
+  /* ── Logo gradient — neon mint to deep teal ─────────────────────────── */
   .ny-logo-gradient {
-    background: linear-gradient(130deg, #6EE7B7 0%, #10B981 45%, #047857 100%);
+    background: linear-gradient(130deg, #5FF5C0 0%, #2EE6A6 45%, #0DB880 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -214,7 +217,7 @@
 
   /* ── Section heading gradient ───────────────────────────────────────── */
   .ny-heading-gradient {
-    background: linear-gradient(130deg, #34D399 0%, #059669 100%);
+    background: linear-gradient(130deg, #2EE6A6 0%, #0DB880 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
