@@ -112,7 +112,7 @@
     min-height: 100vh;
   }
 
-  /* ── Cards / panels ──────────────────────────────────────────────────── */
+  /* ── Cards / panels — dark mode ─────────────────────────────────────── */
   .ny-card {
     background: linear-gradient(
       160deg,
@@ -124,17 +124,39 @@
     -webkit-backdrop-filter: blur(16px);
     /* 3D elevation: top-left light edge + deep drop shadow */
     box-shadow:
-      0 1px 0   rgba(255, 255, 255, 0.06) inset,  /* top glint          */
-      1px 0 0   rgba(255, 255, 255, 0.03) inset,  /* left glint         */
-      0 -1px 0  rgba(0, 0, 0, 0.35) inset,        /* bottom depth       */
-      0 8px 32px rgba(0, 0, 0, 0.45),             /* main depth shadow  */
-      0 2px 8px  rgba(0, 0, 0, 0.30),             /* near shadow        */
-      0 0 0 1px  rgba(56, 189, 248, 0.06);        /* subtle border glow */
+      0 1px 0   rgba(255, 255, 255, 0.06) inset,
+      1px 0 0   rgba(255, 255, 255, 0.03) inset,
+      0 -1px 0  rgba(0, 0, 0, 0.35) inset,
+      0 8px 32px rgba(0, 0, 0, 0.45),
+      0 2px 8px  rgba(0, 0, 0, 0.30),
+      0 0 0 1px  rgba(56, 189, 248, 0.06);
+  }
+
+  /* ── Cards / panels — light mode override ───────────────────────────── */
+  [data-theme="light"] .ny-card {
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(244, 250, 255, 0.99) 100%
+    );
+    border-color: var(--ny-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 1px 0   rgba(255, 255, 255, 0.90) inset,
+      0 -1px 0  rgba(0, 0, 50, 0.06) inset,
+      0 4px 20px rgba(0, 20, 80, 0.08),
+      0 1px 4px  rgba(0, 20, 80, 0.05),
+      0 0 0 1px  rgba(0, 80, 160, 0.07);
   }
 
   /* ── Sub-cards (forms, nested panels) ───────────────────────────────── */
   .ny-subcard {
     background-color: var(--ny-subcard);
+    border-color:     var(--ny-border-strong);
+  }
+  [data-theme="light"] .ny-subcard {
+    background-color: rgba(240, 246, 255, 0.90);
     border-color:     var(--ny-border-strong);
   }
 
