@@ -431,11 +431,11 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
         <div className="ny-card rounded-2xl shadow-2xl p-8 border ny-border">
           <div className="text-center mb-8">
             <h1 className="text-5xl font-bold mb-4" style={{
-              background: 'linear-gradient(90deg, #1E3A8A 0%, #2563EB 22%, #38BDF8 50%, #7DD3FC 75%, #E0F2FE 100%)',
+              background: 'linear-gradient(90deg, #7C3AED 0%, #3B5BDB 18%, #0EA5E9 38%, #06B6D4 56%, #10B981 76%, #CCFBF1 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              filter: 'drop-shadow(0 0 18px rgba(56,189,248,0.35)) drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
+              filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.40)) drop-shadow(0 2px 8px rgba(0,0,0,0.65))',
               letterSpacing: '0.08em',
             }}>NYXINE</h1>
             <p className="text-xl ny-text-2">Smart Resume Builder</p>
@@ -1486,10 +1486,10 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
   const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
   const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4' }}>
+    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4', background: 'linear-gradient(to right, #f3f4f6 300px, white 300px)' }}>
       <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-8 print:gap-6">
         {/* Left sidebar - Contact & Skills */}
-        <div className="bg-gray-100 p-6 rounded-lg">
+        <div className="p-6" style={{ backgroundColor: 'transparent' }}>
           <div className="mb-6">
             <h1 className="text-xl font-bold text-gray-900 mb-2">{profile.personal.fullName}</h1>
             <div className="text-xs text-gray-700 space-y-1.5">
