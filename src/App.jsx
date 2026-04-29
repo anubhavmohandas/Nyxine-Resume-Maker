@@ -871,6 +871,7 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
               type="month"
               value={local.startDate}
               onChange={(e) => setLocal(prev => ({ ...prev, startDate: e.target.value }))}
+              onBlur={flushNow}
               className="w-full px-4 py-2 ny-input rounded-lg transition-all"
             />
           </div>
@@ -881,6 +882,7 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
                 type="month"
                 value={local.endDate}
                 onChange={(e) => setLocal(prev => ({ ...prev, endDate: e.target.value }))}
+                onBlur={flushNow}
                 disabled={local.current}
                 className="flex-1 px-4 py-2 ny-input rounded-lg transition-all disabled:opacity-50"
               />
@@ -888,7 +890,7 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
                 <input
                   type="checkbox"
                   checked={local.current}
-                  onChange={(e) => setLocal(prev => ({ ...prev, current: e.target.checked, endDate: e.target.checked ? '' : prev.endDate }))}
+                  onChange={(e) => { setLocal(prev => ({ ...prev, current: e.target.checked, endDate: e.target.checked ? '' : prev.endDate })); setTimeout(flushNow, 0); }}
                   className="rounded"
                 />
                 Present
