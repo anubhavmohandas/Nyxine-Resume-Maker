@@ -792,6 +792,7 @@ const WorkExperienceStep = ({ profile, setProfile }) => {
 const JobForm = ({ job, idx, setProfile, removeJob }) => {
   const [local, setLocal] = useState(job);
 
+  // Flush local state to parent — debounced for text fields
   useEffect(() => {
     const timer = setTimeout(() => {
       setProfile(prev => ({
@@ -801,6 +802,14 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
     }, 300);
     return () => clearTimeout(timer);
   }, [local, job.id, setProfile]);
+
+  // Immediate flush on blur so dates are never lost on navigation/refresh
+  const flushNow = () => {
+    setProfile(prev => ({
+      ...prev,
+      workExperience: prev.workExperience.map(j => j.id === job.id ? local : j)
+    }));
+  };
 
   const addBullet = () => {
     setLocal(prev => ({ ...prev, bullets: [...prev.bullets, ''] }));
