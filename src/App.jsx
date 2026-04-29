@@ -2039,7 +2039,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
         )}
       </div>
 
-      <div className="p-8 print:p-8 print:pt-10">
+      <div className="p-8 print:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] print:grid-cols-[1fr_300px] gap-6 print:gap-6">
           {/* Main Content */}
           <div className="space-y-6">
@@ -2335,9 +2335,9 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
             <div className="h-1 w-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded"></div>
           </div>
 
-          <div className="space-y-6 text-sm">
+          <div className="space-y-4 text-sm">
             <div>
-              <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3">Contact</h3>
+              <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-2">Contact</h3>
               <div className="space-y-2 text-slate-300">
                 <p className="break-words">{profile.personal.email}</p>
                 <p>{profile.personal.phone}</p>
