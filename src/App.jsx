@@ -397,7 +397,7 @@ IMPORTANT RULES:
   }
 
   if (currentView === 'generate') {
-    return <><GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} /><ThemeToggle /></>;
+    return <><GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} theme={theme} /><ThemeToggle /></>;
   }
 
   return null;
@@ -2466,7 +2466,13 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
   );
 };
 
-const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad }) => {
+const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad, theme }) => {
+  const isLight = theme === 'light';
+  const atsBadge = (score) => {
+    if (score >= 80) return isLight ? 'bg-green-100 text-green-700 font-semibold' : 'bg-green-500/20 text-green-300 font-semibold';
+    if (score >= 50) return isLight ? 'bg-amber-100 text-amber-700 font-semibold' : 'bg-yellow-500/20 text-yellow-300 font-semibold';
+    return isLight ? 'bg-red-100 text-red-700 font-semibold' : 'bg-red-500/20 text-red-300 font-semibold';
+  };
   const [step, setStep] = useState(() => savedResumeToLoad ? 'preview' : 'input');
   const [jobTarget, setJobTarget] = useState(() => savedResumeToLoad?.jobTarget || '');
   const [, setIsAnalyzing] = useState(false);
@@ -2838,7 +2844,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                         Modern
                       </div>
                       <div className="text-xs ny-text-2 mt-1">Two-column gray</div>
-                      <div className={`text-xs mt-2 px-2 py-1 rounded ${templateCompatibility.modern.color === 'red' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.modern.score)}`}>
                         ATS: {templateCompatibility.modern.score}%
                       </div>
                     </div>
@@ -2857,7 +2863,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                         Classic
                       </div>
                       <div className="text-xs ny-text-2 mt-1">Traditional serif</div>
-                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.classic.score)}`}>
                         ATS: {templateCompatibility.classic.score}%
                       </div>
                     </div>
@@ -2876,7 +2882,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                         ATS-Optimized
                       </div>
                       <div className="text-xs ny-text-2 mt-1">For online systems</div>
-                      <div className="text-xs mt-2 px-2 py-1 rounded bg-green-500/20 ny-success-text">
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.ats.score)}`}>
                         ATS: {templateCompatibility.ats.score}%
                       </div>
                     </div>
@@ -2895,7 +2901,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                         Harvard
                       </div>
                       <div className="text-xs ny-text-2 mt-1">Business school style</div>
-                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.harvard.score)}`}>
                         ATS: {templateCompatibility.harvard.score}%
                       </div>
                     </div>
@@ -2914,7 +2920,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                         Creative
                       </div>
                       <div className="text-xs ny-text-2 mt-1">Colorful gradient</div>
-                      <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.creative.score)}`}>
                         ATS: {templateCompatibility.creative.score}%
                       </div>
                     </div>
@@ -2933,7 +2939,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                         Professional
                       </div>
                       <div className="text-xs ny-text-2 mt-1">Subtle color bar</div>
-                      <div className="text-xs mt-2 px-2 py-1 rounded bg-yellow-500/20 text-yellow-300">
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.professional.score)}`}>
                         ATS: {templateCompatibility.professional.score}%
                       </div>
                     </div>
@@ -2952,7 +2958,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                         Bold
                       </div>
                       <div className="text-xs ny-text-2 mt-1">Dark sidebar</div>
-                      <div className="text-xs mt-2 px-2 py-1 rounded bg-red-500/20 text-red-300">
+                      <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.bold.score)}`}>
                         ATS: {templateCompatibility.bold.score}%
                       </div>
                     </div>
@@ -2961,11 +2967,11 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
 
                 {/* Template Compatibility Warning */}
                 {templateCompatibility[selectedTemplate].warning && (
-                  <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <div className={`mt-4 border rounded-lg p-4 ${isLight ? 'bg-amber-50 border-amber-300' : 'bg-yellow-500/10 border-yellow-500/30'}`}>
                     <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isLight ? 'text-amber-600' : 'text-yellow-400'}`} />
                       <div>
-                        <p className="text-sm font-semibold text-yellow-300 mb-1">
+                        <p className={`text-sm font-semibold mb-1 ${isLight ? 'text-amber-800' : 'text-yellow-300'}`}>
                           ⚠️ Template Compatibility Notice
                         </p>
                         <p className="text-sm ny-text-2">
