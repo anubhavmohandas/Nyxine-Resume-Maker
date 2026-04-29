@@ -1,41 +1,41 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   NYXINE — Obsidian Violet Design System
-   Two modes: Dark (default) = deep graphite + electric violet
-              Light           = light lavender + deep purple
+   NYXINE — Obsidian Forest Design System
+   Two modes: Dark (default) = near-black forest + vivid emerald
+              Light           = off-white + deep forest green
    All color tokens live here. Nothing hardcoded in components.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root {
   /* ── Dark mode (default) ────────────────────────────────────────────── */
 
-  /* Backgrounds — near-black with subtle purple depth */
-  --ny-bg:              #0D0C12;
-  --ny-surface:         #151320;
-  --ny-card:            rgba(22, 19, 34, 0.87);   /* clearly lighter than bg  */
-  --ny-subcard:         rgba(17, 14, 28, 0.92);
+  /* Backgrounds — near-black with a faint forest depth */
+  --ny-bg:              #090D0B;
+  --ny-surface:         #10181380;
+  --ny-card:            rgba(16, 26, 20, 0.90);   /* clearly lighter than bg  */
+  --ny-subcard:         rgba(11, 20, 15, 0.94);
 
-  /* Borders — violet tint, very subtle */
-  --ny-border:          rgba(130, 90, 220, 0.14);
-  --ny-border-strong:   rgba(130, 90, 220, 0.26);
+  /* Borders — emerald tint, very subtle */
+  --ny-border:          rgba(52, 211, 153, 0.12);
+  --ny-border-strong:   rgba(52, 211, 153, 0.24);
 
-  /* Accent — Electric Violet */
-  --ny-accent:          #9B72F0;
-  --ny-accent-btn:      #7C3AED;
-  --ny-accent-dim:      rgba(139, 92, 246, 0.15);
-  --ny-accent-glow:     rgba(139, 92, 246, 0.08);
+  /* Accent — Vivid Emerald */
+  --ny-accent:          #34D399;
+  --ny-accent-btn:      #059669;
+  --ny-accent-dim:      rgba(52, 211, 153, 0.14);
+  --ny-accent-glow:     rgba(52, 211, 153, 0.07);
 
-  /* Text — high contrast, slight lavender tint */
-  --ny-text-1:          #EDE8FA;   /* ~15:1 contrast on bg — crystal clear    */
-  --ny-text-2:          #7060A0;   /* Muted medium violet                     */
-  --ny-text-3:          #3A2E5A;   /* Very dim                                */
+  /* Text — clean, high contrast */
+  --ny-text-1:          #E8F5EE;   /* ~14:1 contrast on bg                    */
+  --ny-text-2:          #4A8C68;   /* Muted forest green                      */
+  --ny-text-3:          #264D38;   /* Very dim                                */
 
   /* Semantic colours */
-  --ny-success:         #2ECC8A;
-  --ny-success-btn:     #1A9A60;
-  --ny-success-bg:      rgba(46, 204, 138, 0.08);
-  --ny-success-border:  rgba(46, 204, 138, 0.22);
+  --ny-success:         #22C55E;   /* Pure green — distinct from emerald accent */
+  --ny-success-btn:     #15803D;
+  --ny-success-bg:      rgba(34, 197, 94, 0.08);
+  --ny-success-border:  rgba(34, 197, 94, 0.22);
 
   --ny-warning:         #F0B030;
   --ny-warning-bg:      rgba(240, 176, 48, 0.08);
@@ -46,37 +46,37 @@
   --ny-danger-bg:       rgba(232, 64, 64, 0.08);
   --ny-danger-border:   rgba(232, 64, 64, 0.22);
 
-  --ny-info-bg:         rgba(139, 92, 246, 0.08);
-  --ny-info-border:     rgba(139, 92, 246, 0.22);
+  --ny-info-bg:         rgba(52, 211, 153, 0.07);
+  --ny-info-border:     rgba(52, 211, 153, 0.20);
 
   /* Secondary button — clearly distinct from bg */
-  --ny-sec-btn:         rgba(28, 24, 44, 0.92);
-  --ny-sec-btn-hover:   rgba(38, 32, 60, 0.96);
+  --ny-sec-btn:         rgba(20, 32, 26, 0.92);
+  --ny-sec-btn-hover:   rgba(28, 44, 36, 0.96);
 }
 
 /* ── Light mode ─────────────────────────────────────────────────────────── */
 [data-theme="light"] {
-  --ny-bg:              #F0ECFC;   /* Soft lavender-white                     */
-  --ny-surface:         #E6DFF8;
-  --ny-card:            rgba(255, 253, 255, 0.96);
-  --ny-subcard:         rgba(246, 242, 254, 0.97);
+  --ny-bg:              #F0F7F3;   /* Cool mint-white                         */
+  --ny-surface:         #E4F0E9;
+  --ny-card:            rgba(255, 255, 253, 0.96);
+  --ny-subcard:         rgba(244, 251, 247, 0.97);
 
-  --ny-border:          rgba(100, 60, 180, 0.13);
-  --ny-border-strong:   rgba(100, 60, 180, 0.24);
+  --ny-border:          rgba(20, 100, 60, 0.12);
+  --ny-border-strong:   rgba(20, 100, 60, 0.22);
 
-  --ny-accent:          #6D28D9;   /* Deep purple for light mode              */
-  --ny-accent-btn:      #5B21B6;
-  --ny-accent-dim:      rgba(109, 40, 217, 0.10);
-  --ny-accent-glow:     rgba(109, 40, 217, 0.05);
+  --ny-accent:          #047857;   /* Deep forest green                       */
+  --ny-accent-btn:      #065F46;
+  --ny-accent-dim:      rgba(4, 120, 87, 0.09);
+  --ny-accent-glow:     rgba(4, 120, 87, 0.04);
 
-  --ny-text-1:          #120A28;   /* Near-black purple — strong contrast     */
-  --ny-text-2:          #4A3880;
-  --ny-text-3:          #9080B8;
+  --ny-text-1:          #082018;   /* Near-black green — strong contrast      */
+  --ny-text-2:          #2D6A4A;
+  --ny-text-3:          #7AAA8E;
 
-  --ny-success:         #1A7A48;
-  --ny-success-btn:     #106030;
-  --ny-success-bg:      rgba(26, 122, 72, 0.07);
-  --ny-success-border:  rgba(26, 122, 72, 0.22);
+  --ny-success:         #15803D;
+  --ny-success-btn:     #0F6030;
+  --ny-success-bg:      rgba(21, 128, 61, 0.07);
+  --ny-success-border:  rgba(21, 128, 61, 0.22);
 
   --ny-warning:         #8A6000;
   --ny-warning-bg:      rgba(138, 96, 0, 0.07);
@@ -87,11 +87,11 @@
   --ny-danger-bg:       rgba(184, 24, 32, 0.07);
   --ny-danger-border:   rgba(184, 24, 32, 0.22);
 
-  --ny-info-bg:         rgba(109, 40, 217, 0.07);
-  --ny-info-border:     rgba(109, 40, 217, 0.18);
+  --ny-info-bg:         rgba(4, 120, 87, 0.06);
+  --ny-info-border:     rgba(4, 120, 87, 0.18);
 
-  --ny-sec-btn:         rgba(224, 215, 248, 0.92);
-  --ny-sec-btn-hover:   rgba(208, 196, 240, 0.96);
+  --ny-sec-btn:         rgba(212, 236, 224, 0.92);
+  --ny-sec-btn-hover:   rgba(192, 224, 208, 0.96);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -102,10 +102,10 @@
   /* ── Page background ─────────────────────────────────────────────────── */
   .ny-bg {
     background-color: var(--ny-bg);
-    /* Subtle violet depth — like a dark nebula, not a neon sign */
+    /* Faint forest glow — like moonlight through a canopy */
     background-image:
-      radial-gradient(ellipse 120% 50% at 50% -5%,  rgba(139, 92, 246, 0.09) 0%, transparent 68%),
-      radial-gradient(ellipse 60%  35% at 90%  105%, rgba(100, 40, 200, 0.06) 0%, transparent 65%);
+      radial-gradient(ellipse 120% 50% at 50% -5%,  rgba(52, 211, 153, 0.08) 0%, transparent 68%),
+      radial-gradient(ellipse 60%  35% at 90%  105%, rgba(16, 120, 70, 0.05) 0%, transparent 65%);
     min-height: 100vh;
   }
 
@@ -204,9 +204,9 @@
     color:            var(--ny-warning);
   }
 
-  /* ── Logo gradient — violet to deep indigo ──────────────────────────── */
+  /* ── Logo gradient — emerald to deep forest ─────────────────────────── */
   .ny-logo-gradient {
-    background: linear-gradient(130deg, #C084FC 0%, #8B5CF6 45%, #5B21B6 100%);
+    background: linear-gradient(130deg, #6EE7B7 0%, #10B981 45%, #047857 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -214,7 +214,7 @@
 
   /* ── Section heading gradient ───────────────────────────────────────── */
   .ny-heading-gradient {
-    background: linear-gradient(130deg, #A78BFA 0%, #7C3AED 100%);
+    background: linear-gradient(130deg, #34D399 0%, #059669 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
