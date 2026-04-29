@@ -431,11 +431,15 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
         <div className="ny-card rounded-2xl shadow-2xl p-8 border ny-border">
           <div className="text-center mb-8">
             <h1 className="text-5xl font-bold mb-4" style={{
-              background: 'linear-gradient(90deg, #C084FC 0%, #818CF8 18%, #38BDF8 38%, #22D3EE 56%, #34D399 76%, #86EFAC 100%)',
+              background: theme === 'dark'
+                ? 'linear-gradient(90deg, #C084FC 0%, #818CF8 18%, #38BDF8 38%, #22D3EE 56%, #34D399 76%, #86EFAC 100%)'
+                : 'linear-gradient(90deg, #7C3AED 0%, #4F46E5 18%, #0284C7 38%, #0891B2 56%, #059669 76%, #047857 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              filter: 'drop-shadow(0 0 20px rgba(129,140,248,0.45)) drop-shadow(0 2px 8px rgba(0,0,0,0.55))',
+              filter: theme === 'dark'
+                ? 'drop-shadow(0 0 20px rgba(129,140,248,0.45)) drop-shadow(0 2px 8px rgba(0,0,0,0.55))'
+                : 'drop-shadow(0 2px 4px rgba(0,0,0,0.12))',
               letterSpacing: '0.08em',
             }}>NYXINE</h1>
             <p className="text-xl ny-text-2">Smart Resume Builder</p>
