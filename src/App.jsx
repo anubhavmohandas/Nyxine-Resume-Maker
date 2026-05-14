@@ -1,6 +1,6 @@
 // Nyxine Resume Maker - Updated Feb 3, 2026
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, ChevronLeft, ChevronRight, Download, AlertCircle, Check, X, Sparkles, Save, Sun, Moon, Home } from 'lucide-react';
+import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, ChevronLeft, ChevronRight, Download, AlertCircle, Check, X, Sparkles, Save, Sun, Moon, Home, BookOpen, Mic2, Star, FlaskConical, ToggleLeft, ToggleRight, Trophy, Presentation } from 'lucide-react';
 
 // ─── Date Sorting Utilities ───────────────────────────────────────────────────
 // Converts YYYY-MM date strings into a sortable integer.
@@ -40,15 +40,33 @@ const NyxineResumeMaker = () => {
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
   // ────────────────────────────────────────────────────────────────────────
 
+  // ── Mode: industry (default) or academic ────────────────────────────────
+  const [mode, setMode] = useState(() => {
+    try { return localStorage.getItem('nyxine_mode') || 'industry'; } catch { return 'industry'; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('nyxine_mode', mode); } catch { /* storage unavailable */ }
+  }, [mode]);
+
+  const toggleMode = () => setMode(m => m === 'industry' ? 'academic' : 'industry');
+  // ────────────────────────────────────────────────────────────────────────
+
   const [currentView, setCurrentView] = useState('landing');
   const [currentStep, setCurrentStep] = useState(0);
   const [showStorageWarning, setShowStorageWarning] = useState(true);
   const [profile, setProfile] = useState({
-    personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '', summary: '' },
+    personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '', summary: '', orcid: '', researchgate: '' },
     workExperience: [],
     education: [],
-    skills: { technical: [], soft: [], certifications: [], languages: [] },
+    skills: { technical: [], soft: [], certifications: [], languages: [], laboratory: [], interests: [] },
     projects: [],
+    // Academic-mode fields
+    researchExperience: [],
+    publications: [],
+    presentations: [],
+    awards: [],
+    activities: [],
     additional: { volunteer: '', awards: '', publications: '' }
   });
   const [savedResumes, setSavedResumes] = useState([]);
@@ -74,6 +92,8 @@ const NyxineResumeMaker = () => {
     try {
       const profileData = localStorage.getItem('nyxine_profile');
       const resumesData = localStorage.getItem('nyxine_resumes');
+      const savedMode = localStorage.getItem('nyxine_mode');
+      if (savedMode) setMode(savedMode);
 
       if (profileData) {
         try {
@@ -356,11 +376,16 @@ IMPORTANT RULES:
   const clearAllData = () => {
     if (window.confirm('Are you sure you want to delete all data? This cannot be undone.')) {
       setProfile({
-        personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '', summary: '' },
+        personal: { fullName: '', email: '', phone: '', location: '', linkedin: '', portfolio: '', github: '', summary: '', orcid: '', researchgate: '' },
         workExperience: [],
         education: [],
-        skills: { technical: [], soft: [], certifications: [], languages: [] },
+        skills: { technical: [], soft: [], certifications: [], languages: [], laboratory: [], interests: [] },
         projects: [],
+        researchExperience: [],
+        publications: [],
+        presentations: [],
+        awards: [],
+        activities: [],
         additional: { volunteer: '', awards: '', publications: '' }
       });
       setSavedResumes([]);
@@ -385,25 +410,48 @@ IMPORTANT RULES:
   );
 
   if (currentView === 'landing') {
-    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} theme={theme} /><ThemeToggle /></>;
+    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} theme={theme} mode={mode} toggleMode={toggleMode} /><ThemeToggle /></>;
   }
 
   if (currentView === 'wizard') {
-    return <><WizardView currentStep={currentStep} setCurrentStep={setCurrentStep} steps={steps} profile={profile} setProfile={setProfile} setCurrentView={setCurrentView} /><ThemeToggle /></>;
+    return <><WizardView currentStep={currentStep} setCurrentStep={setCurrentStep} steps={steps} profile={profile} setProfile={setProfile} setCurrentView={setCurrentView} mode={mode} toggleMode={toggleMode} /><ThemeToggle /></>;
   }
 
   if (currentView === 'dashboard') {
-    return <><DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} /><ThemeToggle /></>;
+    return <><DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} mode={mode} /><ThemeToggle /></>;
   }
 
   if (currentView === 'generate') {
-    return <><GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} theme={theme} /><ThemeToggle /></>;
+    return <><GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} theme={theme} mode={mode} /><ThemeToggle /></>;
   }
 
   return null;
 };
 
-const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes, theme }) => {
+// ── Mode Toggle Component ─────────────────────────────────────────────────────
+const ModeToggle = ({ mode, toggleMode }) => (
+  <div className="flex items-center gap-3">
+    <span className={`text-sm font-medium transition-colors ${mode === 'industry' ? 'ny-accent' : 'ny-text-3'}`}>Industry</span>
+    <button
+      onClick={toggleMode}
+      className="relative w-14 h-7 rounded-full border ny-border-strong transition-all focus:outline-none"
+      style={{ background: mode === 'academic' ? 'var(--ny-accent)' : 'var(--ny-subcard-bg)', opacity: 1 }}
+      aria-label="Toggle mode"
+    >
+      <span
+        className="absolute top-0.5 w-6 h-6 rounded-full transition-all shadow"
+        style={{
+          left: mode === 'academic' ? 'calc(100% - 1.75rem)' : '0.125rem',
+          background: 'white',
+        }}
+      />
+    </button>
+    <span className={`text-sm font-medium transition-colors ${mode === 'academic' ? 'ny-accent' : 'ny-text-3'}`}>Academic / Research</span>
+  </div>
+);
+// ─────────────────────────────────────────────────────────────────────────────
+
+const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes, theme, mode, toggleMode }) => {
   return (
     <div className="min-h-screen ny-bg flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
@@ -433,6 +481,16 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
             <h1 className={`text-5xl font-bold mb-4 ${theme === 'dark' ? 'ny-title-dark' : 'ny-title-light'}`} style={{ letterSpacing: '0.08em' }}>NYXINE</h1>
             <p className="text-xl ny-text-2">Smart Resume Builder</p>
             <p className="ny-text-2 mt-2">Enter once. Generate targeted resumes. Stay authentic.</p>
+
+            {/* Mode Toggle */}
+            <div className="mt-5 flex flex-col items-center gap-2">
+              <ModeToggle mode={mode} toggleMode={toggleMode} />
+              <p className="text-xs ny-text-3 mt-1">
+                {mode === 'industry'
+                  ? 'Standard mode — Work experience, skills, projects'
+                  : 'Academic mode — Research, publications, ORCID, thesis, presentations'}
+              </p>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 mb-6">
@@ -475,8 +533,22 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
   );
 };
 
-const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, setCurrentView }) => {
-  const CurrentStepIcon = steps[currentStep].icon;
+const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setProfile, setCurrentView, mode, toggleMode }) => {
+  // Override steps based on mode
+  const steps = mode === 'academic'
+    ? [
+        { name: 'Personal Info', icon: FileText },
+        { name: 'Research Exp.', icon: Briefcase },
+        { name: 'Education', icon: GraduationCap },
+        { name: 'Skills & Lab', icon: Sparkles },
+        { name: 'Publications', icon: BookOpen },
+        { name: 'Presentations', icon: Award },
+        { name: 'Awards', icon: Star },
+        { name: 'Activities', icon: Code },
+      ]
+    : _steps;
+
+  const CurrentStepIcon = steps[currentStep]?.icon || FileText;
 
   // ✅ FORM VALIDATION
   const validateStep = (step) => {
@@ -558,7 +630,10 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
         <div className="ny-card rounded-lg p-6 mb-6 border ny-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold ny-text-1">Build Your Profile</h2>
-            <span className="ny-text-2 text-sm">{currentStep + 1} of {steps.length}</span>
+            <div className="flex items-center gap-4">
+              <ModeToggle mode={mode} toggleMode={() => { toggleMode(); setCurrentStep(0); }} />
+              <span className="ny-text-2 text-sm">{currentStep + 1} of {steps.length}</span>
+            </div>
           </div>
           <div className="flex gap-2">
             {steps.map((step, idx) => (
@@ -580,12 +655,22 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
             <h2 className="text-2xl font-bold ny-text-1">{steps[currentStep].name}</h2>
           </div>
 
-          {currentStep === 0 && <PersonalInfoStep profile={profile} setProfile={setProfile} />}
-          {currentStep === 1 && <WorkExperienceStep profile={profile} setProfile={setProfile} />}
-          {currentStep === 2 && <EducationStep profile={profile} setProfile={setProfile} />}
-          {currentStep === 3 && <SkillsStep profile={profile} setProfile={setProfile} />}
-          {currentStep === 4 && <ProjectsStep profile={profile} setProfile={setProfile} />}
-          {currentStep === 5 && <AdditionalStep profile={profile} setProfile={setProfile} />}
+          {/* Industry mode steps */}
+          {mode === 'industry' && currentStep === 0 && <PersonalInfoStep profile={profile} setProfile={setProfile} mode={mode} />}
+          {mode === 'industry' && currentStep === 1 && <WorkExperienceStep profile={profile} setProfile={setProfile} />}
+          {mode === 'industry' && currentStep === 2 && <EducationStep profile={profile} setProfile={setProfile} mode={mode} />}
+          {mode === 'industry' && currentStep === 3 && <SkillsStep profile={profile} setProfile={setProfile} mode={mode} />}
+          {mode === 'industry' && currentStep === 4 && <ProjectsStep profile={profile} setProfile={setProfile} />}
+          {mode === 'industry' && currentStep === 5 && <AdditionalStep profile={profile} setProfile={setProfile} />}
+          {/* Academic mode steps */}
+          {mode === 'academic' && currentStep === 0 && <PersonalInfoStep profile={profile} setProfile={setProfile} mode={mode} />}
+          {mode === 'academic' && currentStep === 1 && <ResearchExperienceStep profile={profile} setProfile={setProfile} />}
+          {mode === 'academic' && currentStep === 2 && <EducationStep profile={profile} setProfile={setProfile} mode={mode} />}
+          {mode === 'academic' && currentStep === 3 && <SkillsStep profile={profile} setProfile={setProfile} mode={mode} />}
+          {mode === 'academic' && currentStep === 4 && <PublicationsStep profile={profile} setProfile={setProfile} />}
+          {mode === 'academic' && currentStep === 5 && <PresentationsStep profile={profile} setProfile={setProfile} />}
+          {mode === 'academic' && currentStep === 6 && <AwardsStep profile={profile} setProfile={setProfile} />}
+          {mode === 'academic' && currentStep === 7 && <ActivitiesStep profile={profile} setProfile={setProfile} />}
 
           <div className="flex justify-between mt-8 pt-6 border-t ny-divider">
             <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : setCurrentView('landing')} className="px-6 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
@@ -615,7 +700,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps, profile, setProfile, s
   );
 };
 
-const PersonalInfoStep = ({ profile, setProfile }) => {
+const PersonalInfoStep = ({ profile, setProfile, mode }) => {
   const [local, setLocal] = useState(profile.personal);
 
   useEffect(() => {
@@ -693,17 +778,17 @@ const PersonalInfoStep = ({ profile, setProfile }) => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium ny-text-2 mb-2">Portfolio</label>
+          <label className="block text-sm font-medium ny-text-2 mb-2">{mode === 'academic' ? 'ResearchGate' : 'Portfolio'}</label>
           <input
             type="url"
-            value={local.portfolio}
-            onChange={(e) => setLocal(prev => ({ ...prev, portfolio: e.target.value }))}
+            value={mode === 'academic' ? (local.researchgate || '') : local.portfolio}
+            onChange={(e) => setLocal(prev => mode === 'academic' ? { ...prev, researchgate: e.target.value } : { ...prev, portfolio: e.target.value })}
             className="w-full px-4 py-2 ny-input rounded-lg transition-all"
-            placeholder="yoursite.com"
+            placeholder={mode === 'academic' ? 'researchgate.net/profile/...' : 'yoursite.com'}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium ny-text-2 mb-2">GitHub</label>
+          <label className="block text-sm font-medium ny-text-2 mb-2">{mode === 'academic' ? 'GitHub / Portfolio' : 'GitHub'}</label>
           <input
             type="url"
             value={local.github}
@@ -713,8 +798,26 @@ const PersonalInfoStep = ({ profile, setProfile }) => {
           />
         </div>
       </div>
+
+      {/* Academic-only: ORCID */}
+      {mode === 'academic' && (
+        <div>
+          <label className="block text-sm font-medium ny-text-2 mb-2">ORCID iD</label>
+          <input
+            type="text"
+            value={local.orcid || ''}
+            onChange={(e) => setLocal(prev => ({ ...prev, orcid: e.target.value }))}
+            className="w-full px-4 py-2 ny-input rounded-lg transition-all"
+            placeholder="0000-0000-0000-0000"
+          />
+          <p className="text-xs ny-text-3 mt-1">Your Open Researcher and Contributor ID — used in academic profiles and journals</p>
+        </div>
+      )}
+
       <div className="ny-info-box border rounded-lg p-3 text-sm">
-        💡 <strong>Tip:</strong> No photo needed - not recommended for US/Canada resumes
+        {mode === 'academic'
+          ? '💡 <strong>Tip:</strong> Include your ORCID — required by many journals and grant applications'
+          : '💡 <strong>Tip:</strong> No photo needed - not recommended for US/Canada resumes'}
       </div>
     </div>
   );
@@ -928,7 +1031,7 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
   );
 };
 
-const EducationStep = ({ profile, setProfile }) => {
+const EducationStep = ({ profile, setProfile, mode }) => {
   const addEdu = () => {
     setProfile(prev => ({
       ...prev,
@@ -939,7 +1042,9 @@ const EducationStep = ({ profile, setProfile }) => {
         school: '',
         location: '',
         graduationDate: '',
-        gpa: ''
+        gpa: '',
+        thesis: '',
+        coursework: ''
       }]
     }));
   };
@@ -977,13 +1082,13 @@ const EducationStep = ({ profile, setProfile }) => {
       )}
 
       {sortedEdu.map((edu, idx) => (
-        <EduForm key={edu.id} edu={edu} idx={idx} setProfile={setProfile} removeEdu={removeEdu} />
+        <EduForm key={edu.id} edu={edu} idx={idx} setProfile={setProfile} removeEdu={removeEdu} mode={mode} />
       ))}
     </div>
   );
 };
 
-const EduForm = ({ edu, idx, setProfile, removeEdu }) => {
+const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
   const [local, setLocal] = useState(edu);
 
   useEffect(() => {
@@ -1073,17 +1178,45 @@ const EduForm = ({ edu, idx, setProfile, removeEdu }) => {
             />
           </div>
         </div>
+
+        {/* Academic-only fields */}
+        {mode === 'academic' && (
+          <>
+            <div>
+              <label className="block text-sm ny-text-2 mb-2">Thesis / Dissertation Title</label>
+              <input
+                type="text"
+                value={local.thesis || ''}
+                onChange={(e) => setLocal(prev => ({ ...prev, thesis: e.target.value }))}
+                className="w-full px-4 py-2 ny-input rounded-lg transition-all"
+                placeholder="e.g., Identification of free-living amoebae using PCR..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm ny-text-2 mb-2">Relevant Coursework</label>
+              <textarea
+                value={local.coursework || ''}
+                onChange={(e) => setLocal(prev => ({ ...prev, coursework: e.target.value }))}
+                rows={2}
+                className="w-full px-4 py-2 ny-input rounded-lg transition-all resize-y"
+                placeholder="e.g., Biochemistry, Microbiology, Pathology, Molecular Biology..."
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-const SkillsStep = ({ profile, setProfile }) => {
+const SkillsStep = ({ profile, setProfile, mode }) => {
   // 🔧 FIX: Use refs to prevent re-render on every keystroke
   const technicalInputRef = useRef(null);
   const softInputRef = useRef(null);
   const certificationsInputRef = useRef(null);
   const languagesInputRef = useRef(null);
+  const laboratoryInputRef = useRef(null);
+  const interestsInputRef = useRef(null);
 
   const addSkill = (cat, inputRef) => {
     const value = inputRef.current?.value.trim();
@@ -1134,6 +1267,18 @@ const SkillsStep = ({ profile, setProfile }) => {
       bg: 'bg-amber-400/20',
       text: 'text-amber-100',
       border: 'border-amber-300/30'
+    },
+    'laboratory': {
+      button: 'bg-teal-500',
+      bg: 'bg-teal-500/20',
+      text: 'text-teal-100',
+      border: 'border-teal-400/30'
+    },
+    'interests': {
+      button: 'bg-pink-400',
+      bg: 'bg-pink-400/20',
+      text: 'text-pink-100',
+      border: 'border-pink-300/30'
     }
   };
 
@@ -1181,6 +1326,12 @@ const SkillsStep = ({ profile, setProfile }) => {
       <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." inputRef={softInputRef} />
       <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." inputRef={certificationsInputRef} />
       <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." inputRef={languagesInputRef} />
+      {mode === 'academic' && (
+        <>
+          <SkillSection title="Laboratory Skills" cat="laboratory" placeholder="e.g., PCR, ELISA, MALDI-TOF, Flow Cytometry..." inputRef={laboratoryInputRef} />
+          <SkillSection title="Interests" cat="interests" placeholder="e.g., Photography, Badminton, Bioinformatics..." inputRef={interestsInputRef} />
+        </>
+      )}
     </div>
   );
 };
@@ -1361,7 +1512,396 @@ const AdditionalStep = ({ profile, setProfile }) => {
   );
 };
 
-const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView, setSavedResumeToLoad, exportData, importData, clearAllData }) => {
+// ─── ACADEMIC MODE STEPS ─────────────────────────────────────────────────────
+
+const ResearchExperienceStep = ({ profile, setProfile }) => {
+  const addEntry = () => {
+    setProfile(prev => ({
+      ...prev,
+      researchExperience: [...(prev.researchExperience || []), {
+        id: Date.now(), title: '', institution: '', location: '', startDate: '', endDate: '', current: false, bullets: ['']
+      }]
+    }));
+  };
+  const removeEntry = (id) => setProfile(prev => ({ ...prev, researchExperience: prev.researchExperience.filter(e => e.id !== id) }));
+  const entries = profile.researchExperience || [];
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <p className="ny-text-2 text-sm">Add your research roles, lab positions, and internships</p>
+        <button onClick={addEntry} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2"><Plus className="w-4 h-4" />Add Role</button>
+      </div>
+      {entries.length === 0 && (
+        <div className="text-center py-12 ny-text-2">
+          <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p>No research experience yet. Click "Add Role" to start.</p>
+        </div>
+      )}
+      {entries.map((entry, idx) => (
+        <ResearchEntryForm key={entry.id} entry={entry} idx={idx} setProfile={setProfile} removeEntry={removeEntry} />
+      ))}
+    </div>
+  );
+};
+
+const ResearchEntryForm = ({ entry, idx, setProfile, removeEntry }) => {
+  const [local, setLocal] = useState(entry);
+  useEffect(() => {
+    const t = setTimeout(() => setProfile(prev => ({ ...prev, researchExperience: prev.researchExperience.map(e => e.id === entry.id ? local : e) })), 300);
+    return () => clearTimeout(t);
+  }, [local, entry.id, setProfile]);
+  const flushNow = () => setProfile(prev => ({ ...prev, researchExperience: prev.researchExperience.map(e => e.id === entry.id ? local : e) }));
+  const addBullet = () => setLocal(prev => ({ ...prev, bullets: [...prev.bullets, ''] }));
+  const removeBullet = (i) => { if (local.bullets.length > 1) setLocal(prev => ({ ...prev, bullets: prev.bullets.filter((_, bi) => bi !== i) })); };
+  return (
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+      <div className="flex justify-between mb-4">
+        <h3 className="text-lg font-semibold ny-text-1">Research Role #{idx + 1}</h3>
+        <button onClick={() => removeEntry(entry.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
+      </div>
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Role / Position *</label>
+            <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Junior Research Fellow" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Institution *</label>
+            <input type="text" value={local.institution} onChange={e => setLocal(p => ({ ...p, institution: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Location</label>
+            <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Puducherry, India" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Start Date</label>
+            <input type="month" value={local.startDate} onChange={e => setLocal(p => ({ ...p, startDate: e.target.value }))} onBlur={flushNow} className="w-full px-4 py-2 ny-input rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">End Date</label>
+            <div className="flex gap-2">
+              <input type="month" value={local.endDate} onChange={e => setLocal(p => ({ ...p, endDate: e.target.value }))} onBlur={flushNow} disabled={local.current} className="flex-1 px-4 py-2 ny-input rounded-lg disabled:opacity-50" />
+              <label className="flex items-center gap-1 ny-text-2 text-sm whitespace-nowrap">
+                <input type="checkbox" checked={local.current} onChange={e => { setLocal(p => ({ ...p, current: e.target.checked, endDate: e.target.checked ? '' : p.endDate })); setTimeout(flushNow, 0); }} className="rounded" />Present
+              </label>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between mb-2">
+            <label className="block text-sm ny-text-2">Key Contributions</label>
+            <button onClick={addBullet} className="ny-accent text-sm flex items-center gap-1"><Plus className="w-3 h-3" />Add Point</button>
+          </div>
+          <div className="space-y-2">
+            {local.bullets.map((b, bi) => (
+              <div key={bi} className="flex gap-2">
+                <input type="text" value={b} onChange={e => { const nb = [...local.bullets]; nb[bi] = e.target.value; setLocal(p => ({ ...p, bullets: nb })); }} className="flex-1 px-4 py-2 ny-input rounded-lg" placeholder="Performed PCR on 48 water samples..." />
+                {local.bullets.length > 1 && <button onClick={() => removeBullet(bi)} className="ny-danger-text hover:opacity-80"><X className="w-4 h-4" /></button>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PublicationsStep = ({ profile, setProfile }) => {
+  const addPub = () => setProfile(prev => ({
+    ...prev,
+    publications: [...(prev.publications || []), { id: Date.now(), title: '', authors: '', journal: '', year: '', doi: '', type: 'journal' }]
+  }));
+  const removePub = (id) => setProfile(prev => ({ ...prev, publications: prev.publications.filter(p => p.id !== id) }));
+  const pubs = profile.publications || [];
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <p className="ny-text-2 text-sm">Add journal articles, conference papers, preprints, and book chapters</p>
+        <button onClick={addPub} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2"><Plus className="w-4 h-4" />Add Publication</button>
+      </div>
+      {pubs.length === 0 && (
+        <div className="text-center py-12 ny-text-2">
+          <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p>No publications yet. Click "Add Publication" to start.</p>
+        </div>
+      )}
+      {pubs.map((pub, idx) => (
+        <PubForm key={pub.id} pub={pub} idx={idx} setProfile={setProfile} removePub={removePub} />
+      ))}
+    </div>
+  );
+};
+
+const PubForm = ({ pub, idx, setProfile, removePub }) => {
+  const [local, setLocal] = useState(pub);
+  useEffect(() => {
+    const t = setTimeout(() => setProfile(prev => ({ ...prev, publications: prev.publications.map(p => p.id === pub.id ? local : p) })), 300);
+    return () => clearTimeout(t);
+  }, [local, pub.id, setProfile]);
+  return (
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+      <div className="flex justify-between mb-4">
+        <h3 className="text-lg font-semibold ny-text-1">Publication #{idx + 1}</h3>
+        <button onClick={() => removePub(pub.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
+      </div>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm ny-text-2 mb-2">Title *</label>
+          <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Evaluating the Presence of Free-Living Amoebae in Hostel Water Systems..." />
+        </div>
+        <div>
+          <label className="block text-sm ny-text-2 mb-2">Authors</label>
+          <input type="text" value={local.authors} onChange={e => setLocal(p => ({ ...p, authors: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Mathew A.A., Kumar S., et al." />
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Type</label>
+            <select value={local.type} onChange={e => setLocal(p => ({ ...p, type: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg">
+              <option value="journal">Journal Article</option>
+              <option value="conference">Conference Paper</option>
+              <option value="preprint">Preprint</option>
+              <option value="book-chapter">Book Chapter</option>
+              <option value="thesis">Thesis</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Journal / Venue</label>
+            <input type="text" value={local.journal} onChange={e => setLocal(p => ({ ...p, journal: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Int. J. Adv. Med. Health Res." />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Year</label>
+            <input type="text" value={local.year} onChange={e => setLocal(p => ({ ...p, year: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="2024" />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm ny-text-2 mb-2">DOI / URL</label>
+          <input type="text" value={local.doi} onChange={e => setLocal(p => ({ ...p, doi: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="10.4103/ijamr.ijamr_277_24" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PresentationsStep = ({ profile, setProfile }) => {
+  const addPres = () => setProfile(prev => ({
+    ...prev,
+    presentations: [...(prev.presentations || []), { id: Date.now(), title: '', event: '', location: '', date: '', type: 'poster' }]
+  }));
+  const removePres = (id) => setProfile(prev => ({ ...prev, presentations: prev.presentations.filter(p => p.id !== id) }));
+  const pres = profile.presentations || [];
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <p className="ny-text-2 text-sm">Poster presentations, oral talks, guest lectures, conference presentations</p>
+        <button onClick={addPres} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2"><Plus className="w-4 h-4" />Add Presentation</button>
+      </div>
+      {pres.length === 0 && (
+        <div className="text-center py-12 ny-text-2">
+          <Award className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p>No presentations yet. Click "Add Presentation" to start.</p>
+        </div>
+      )}
+      {pres.map((p, idx) => (
+        <PresForm key={p.id} pres={p} idx={idx} setProfile={setProfile} removePres={removePres} />
+      ))}
+    </div>
+  );
+};
+
+const PresForm = ({ pres, idx, setProfile, removePres }) => {
+  const [local, setLocal] = useState(pres);
+  useEffect(() => {
+    const t = setTimeout(() => setProfile(prev => ({ ...prev, presentations: prev.presentations.map(p => p.id === pres.id ? local : p) })), 300);
+    return () => clearTimeout(t);
+  }, [local, pres.id, setProfile]);
+  return (
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+      <div className="flex justify-between mb-4">
+        <h3 className="text-lg font-semibold ny-text-1">Presentation #{idx + 1}</h3>
+        <button onClick={() => removePres(pres.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
+      </div>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm ny-text-2 mb-2">Title *</label>
+          <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Identification of free-living amoebae using PCR..." />
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Type</label>
+            <select value={local.type} onChange={e => setLocal(p => ({ ...p, type: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg">
+              <option value="poster">Poster</option>
+              <option value="oral">Oral Presentation</option>
+              <option value="invited">Invited Talk</option>
+              <option value="workshop">Workshop</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Date</label>
+            <input type="month" value={local.date} onChange={e => setLocal(p => ({ ...p, date: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Event / Conference</label>
+            <input type="text" value={local.event} onChange={e => setLocal(p => ({ ...p, event: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="10th Annual Research Day 2025" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Location / Institution</label>
+            <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AwardsStep = ({ profile, setProfile }) => {
+  const addAward = () => setProfile(prev => ({
+    ...prev,
+    awards: [...(prev.awards || []), { id: Date.now(), title: '', org: '', year: '', description: '' }]
+  }));
+  const removeAward = (id) => setProfile(prev => ({ ...prev, awards: prev.awards.filter(a => a.id !== id) }));
+  const awards = profile.awards || [];
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <p className="ny-text-2 text-sm">Scholarships, fellowships, prizes, honors, distinctions</p>
+        <button onClick={addAward} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2"><Plus className="w-4 h-4" />Add Award</button>
+      </div>
+      {awards.length === 0 && (
+        <div className="text-center py-12 ny-text-2">
+          <Award className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p>No awards yet. Click "Add Award" to start.</p>
+        </div>
+      )}
+      {awards.map((a, idx) => (
+        <AwardForm key={a.id} award={a} idx={idx} setProfile={setProfile} removeAward={removeAward} />
+      ))}
+    </div>
+  );
+};
+
+const AwardForm = ({ award, idx, setProfile, removeAward }) => {
+  const [local, setLocal] = useState(award);
+  useEffect(() => {
+    const t = setTimeout(() => setProfile(prev => ({ ...prev, awards: prev.awards.map(a => a.id === award.id ? local : a) })), 300);
+    return () => clearTimeout(t);
+  }, [local, award.id, setProfile]);
+  return (
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+      <div className="flex justify-between mb-4">
+        <h3 className="text-lg font-semibold ny-text-1">Award #{idx + 1}</h3>
+        <button onClick={() => removeAward(award.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
+      </div>
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Award / Honor Title *</label>
+            <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="GJ-STRAUS Awardee 2024" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Awarding Organization</label>
+            <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Year</label>
+            <input type="text" value={local.year} onChange={e => setLocal(p => ({ ...p, year: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="2024" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Brief Description (optional)</label>
+            <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Top position with 80.5% aggregate across 3.5 years" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ActivitiesStep = ({ profile, setProfile }) => {
+  const addActivity = () => setProfile(prev => ({
+    ...prev,
+    activities: [...(prev.activities || []), { id: Date.now(), name: '', role: '', org: '', date: '', description: '' }]
+  }));
+  const removeActivity = (id) => setProfile(prev => ({ ...prev, activities: prev.activities.filter(a => a.id !== id) }));
+  const activities = profile.activities || [];
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <p className="ny-text-2 text-sm">Conferences attended, workshops, e-courses, extracurriculars, leadership roles</p>
+        <button onClick={addActivity} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2"><Plus className="w-4 h-4" />Add Activity</button>
+      </div>
+      {activities.length === 0 && (
+        <div className="text-center py-12 ny-text-2">
+          <Code className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p>No activities yet. Click "Add Activity" to start.</p>
+        </div>
+      )}
+      {activities.map((a, idx) => (
+        <ActivityForm key={a.id} activity={a} idx={idx} setProfile={setProfile} removeActivity={removeActivity} />
+      ))}
+      {activities.length > 0 && (
+        <div className="ny-success-box border rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Check className="w-5 h-5 ny-success-text flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="ny-success-text font-semibold mb-1">Academic Profile Complete! 🎉</h3>
+              <p className="ny-text-2 text-sm">Head to Generate to produce your academic CV</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ActivityForm = ({ activity, idx, setProfile, removeActivity }) => {
+  const [local, setLocal] = useState(activity);
+  useEffect(() => {
+    const t = setTimeout(() => setProfile(prev => ({ ...prev, activities: prev.activities.map(a => a.id === activity.id ? local : a) })), 300);
+    return () => clearTimeout(t);
+  }, [local, activity.id, setProfile]);
+  return (
+    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+      <div className="flex justify-between mb-4">
+        <h3 className="text-lg font-semibold ny-text-1">Activity #{idx + 1}</h3>
+        <button onClick={() => removeActivity(activity.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
+      </div>
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Activity / Event Name *</label>
+            <input type="text" value={local.name} onChange={e => setLocal(p => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="HIPRACON 2024 National Conference" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Your Role</label>
+            <input type="text" value={local.role} onChange={e => setLocal(p => ({ ...p, role: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Attendee / Organizer / Speaker" />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Organizer / Institution</label>
+            <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Dept. of Biochemistry, JIPMER" />
+          </div>
+          <div>
+            <label className="block text-sm ny-text-2 mb-2">Date / Year</label>
+            <input type="text" value={local.date} onChange={e => setLocal(p => ({ ...p, date: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="2024" />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm ny-text-2 mb-2">Description (optional)</label>
+          <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Themed: Building the future of healthcare with Innovation and Creativity" />
+        </div>
+      </div>
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView, setSavedResumeToLoad, exportData, importData, clearAllData, mode }) => {
   const deleteResume = (index) => {
     if (window.confirm('Delete this resume?')) {
       setSavedResumes(prev => prev.filter((_, i) => i !== index));
@@ -2466,7 +3006,175 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
   );
 };
 
-const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad, theme }) => {
+// ─── ACADEMIC CV TEMPLATE ─────────────────────────────────────────────────────
+const AcademicTemplate = ({ profile }) => {
+  const divider = { borderBottom: '1px solid #000', marginBottom: '6px', paddingBottom: '2px' };
+  const sectionHeading = { fontSize: '11pt', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', ...divider };
+  const p = profile;
+  const personal = p.personal || {};
+  const labSkills = p.skills?.laboratory || [];
+  const techSkills = p.skills?.technical || [];
+  const langSkills = p.skills?.languages || [];
+  const interests = p.skills?.interests || [];
+  const researchExp = p.researchExperience || [];
+  const pubs = p.publications || [];
+  const presentations = p.presentations || [];
+  const awards = p.awards || [];
+  const activities = p.activities || [];
+  const education = p.education || [];
+
+  const pubTypeLabel = { journal: 'Journal Article', conference: 'Conference Paper', preprint: 'Preprint', 'book-chapter': 'Book Chapter', thesis: 'Thesis' };
+
+  return (
+    <div style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11pt', lineHeight: '1.45', color: '#000', background: '#fff' }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+        <h1 style={{ fontSize: '17pt', fontWeight: 'bold', marginBottom: '4px', letterSpacing: '0.03em' }}>{personal.fullName || ''}</h1>
+        <p style={{ fontSize: '9.5pt', marginBottom: '2px' }}>
+          {[personal.email, personal.phone, personal.location].filter(Boolean).join(' | ')}
+        </p>
+        <p style={{ fontSize: '9pt' }}>
+          {[
+            personal.linkedin?.replace('https://','').replace('www.',''),
+            personal.researchgate?.replace('https://','').replace('www.',''),
+            personal.orcid ? `ORCID: ${personal.orcid}` : null
+          ].filter(Boolean).join(' | ')}
+        </p>
+      </div>
+      <hr style={{ border: 'none', borderTop: '1.5px solid #000', marginBottom: '10px' }} />
+
+      {/* Professional Summary */}
+      {personal.summary && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Summary</h2>
+          <p style={{ fontSize: '10pt', textAlign: 'justify' }}>{personal.summary}</p>
+        </div>
+      )}
+
+      {/* Education */}
+      {education.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Education</h2>
+          {education.map((edu, i) => (
+            <div key={edu.id || i} style={{ marginBottom: '8px' }} className="resume-entry">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <strong>{edu.degree}{edu.major ? ` in ${edu.major}` : ''}</strong>
+                  <div>{edu.school}{edu.location ? `, ${edu.location}` : ''}</div>
+                  {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
+                  {edu.coursework && <div style={{ fontSize: '10pt' }}><em>Relevant Coursework:</em> {edu.coursework}</div>}
+                  {edu.thesis && <div style={{ fontSize: '10pt' }}><em>Thesis:</em> {edu.thesis}</div>}
+                </div>
+                <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>{edu.graduationDate || ''}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Research Experience */}
+      {researchExp.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Research Experience</h2>
+          {researchExp.map((r, i) => (
+            <div key={r.id || i} style={{ marginBottom: '8px' }} className="resume-entry">
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <strong>{r.title}{r.institution ? `, ${r.institution}` : ''}{r.location ? `, ${r.location}` : ''}</strong>
+                <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>
+                  {r.startDate}{(r.startDate || r.endDate) ? ' – ' : ''}{r.current ? 'Present' : r.endDate}
+                </span>
+              </div>
+              {r.bullets?.filter(b => b.trim()).length > 0 && (
+                <ul style={{ paddingLeft: '1.4em', marginTop: '3px' }}>
+                  {r.bullets.filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: '2px', fontSize: '10pt' }}>{b}</li>)}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Publications */}
+      {pubs.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Publications</h2>
+          {pubs.map((pub, i) => (
+            <div key={pub.id || i} style={{ marginBottom: '6px', paddingLeft: '1.4em', textIndent: '-1.4em', fontSize: '10pt' }} className="resume-entry">
+              {pub.authors && <>{pub.authors}. </>}
+              <em>{pub.title}</em>.
+              {pub.journal && <> {pub.journal}.</>}
+              {pub.year && <> {pub.year}.</>}
+              {pub.doi && <> DOI: {pub.doi}.</>}
+              {pub.type && <span style={{ color: '#555', fontSize: '9pt' }}> [{pubTypeLabel[pub.type] || pub.type}]</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Presentations */}
+      {presentations.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Presentations</h2>
+          {presentations.map((pr, i) => (
+            <div key={pr.id || i} style={{ marginBottom: '5px', fontSize: '10pt' }} className="resume-entry">
+              <strong>{pr.title}</strong>{pr.type ? ` [${pr.type.charAt(0).toUpperCase() + pr.type.slice(1)}]` : ''}.
+              {pr.event && <> {pr.event}.</>}
+              {pr.location && <> {pr.location}.</>}
+              {pr.date && <> {pr.date}.</>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Awards & Honors */}
+      {awards.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Awards &amp; Honors</h2>
+          {awards.map((a, i) => (
+            <div key={a.id || i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '10pt' }} className="resume-entry">
+              <div>
+                <strong>{a.title}</strong>{a.org ? `, ${a.org}` : ''}
+                {a.description && <div style={{ fontStyle: 'italic' }}>{a.description}</div>}
+              </div>
+              {a.year && <span style={{ whiteSpace: 'nowrap', marginLeft: '12px' }}>{a.year}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Leadership & Activities */}
+      {activities.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Leadership &amp; Activities</h2>
+          {activities.map((a, i) => (
+            <div key={a.id || i} style={{ marginBottom: '5px', fontSize: '10pt' }} className="resume-entry">
+              <strong>{a.name}</strong>{a.role ? ` — ${a.role}` : ''}.
+              {a.org && <> {a.org}.</>}
+              {a.date && <> {a.date}.</>}
+              {a.description && <div style={{ fontStyle: 'italic', paddingLeft: '1em' }}>{a.description}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Skills */}
+      {(techSkills.length > 0 || labSkills.length > 0 || langSkills.length > 0 || interests.length > 0) && (
+        <div style={{ marginBottom: '10px' }}>
+          <h2 style={sectionHeading}>Skills &amp; Interests</h2>
+          <div style={{ fontSize: '10pt', lineHeight: '1.6' }}>
+            {techSkills.length > 0 && <p><strong>Technical: </strong>{techSkills.join(', ')}</p>}
+            {labSkills.length > 0 && <p><strong>Laboratory: </strong>{labSkills.join(', ')}</p>}
+            {langSkills.length > 0 && <p><strong>Languages: </strong>{langSkills.join(', ')}</p>}
+            {interests.length > 0 && <p><strong>Interests: </strong>{interests.join(', ')}</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad, theme, mode }) => {
   const isLight = theme === 'light';
   const atsBadge = (score) => {
     if (score >= 80) return isLight ? 'bg-green-100 text-green-700 font-semibold' : 'bg-green-500/20 text-green-300 font-semibold';
@@ -2477,7 +3185,8 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
   const [jobTarget, setJobTarget] = useState(() => savedResumeToLoad?.jobTarget || '');
   const [, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(() => savedResumeToLoad?.analysisResult || null);
-  const [selectedTemplate, setSelectedTemplate] = useState(() => savedResumeToLoad?.template || 'modern');
+  const defaultTemplate = mode === 'academic' ? 'academic' : 'modern';
+  const [selectedTemplate, setSelectedTemplate] = useState(() => savedResumeToLoad?.template || defaultTemplate);
   const [resumeName, setResumeName] = useState('');
   const [includeAllItems, setIncludeAllItems] = useState(false);
 
@@ -2526,6 +3235,12 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
     },
     'ats': {
       score: 100,
+      label: 'Excellent',
+      color: 'green',
+      warning: null
+    },
+    'academic': {
+      score: 95,
       label: 'Excellent',
       color: 'green',
       warning: null
@@ -2830,6 +3545,20 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                   Choose Resume Template
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {/* Academic CV template — pinned first when in academic mode */}
+                  {mode === 'academic' && (
+                    <button
+                      onClick={() => setSelectedTemplate('academic')}
+                      className={`p-4 rounded-lg border-2 transition-all ${selectedTemplate === 'academic' ? 'border-teal-500 bg-teal-500/10' : 'border-[var(--ny-border-strong)] hover:border-[var(--ny-accent)]'}`}
+                    >
+                      <div className="text-center">
+                        <div className="text-2xl mb-2">🎓</div>
+                        <div className={`font-semibold ${selectedTemplate === 'academic' ? 'text-teal-300' : 'ny-text-2'}`}>Academic CV</div>
+                        <div className="text-xs ny-text-2 mt-1">Research & publications</div>
+                        <div className={`text-xs mt-2 px-2 py-1 rounded ${atsBadge(templateCompatibility.academic.score)}`}>ATS: {templateCompatibility.academic.score}%</div>
+                      </div>
+                    </button>
+                  )}
                   <button
                     onClick={() => setSelectedTemplate('modern')}
                     className={`p-4 rounded-lg border-2 transition-all ${
@@ -3419,6 +4148,9 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 displayProjects={displayProjects}
                 displayCerts={displayCerts}
               />
+            )}
+            {selectedTemplate === 'academic' && (
+              <AcademicTemplate profile={sortedProfile} />
             )}
           </div>{/* end #resume-preview */}
           </div>{/* end overflow-x-auto scroll wrapper */}
