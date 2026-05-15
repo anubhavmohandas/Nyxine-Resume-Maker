@@ -820,12 +820,11 @@ const PersonalInfoStep = ({ profile, setProfile, mode }) => {
         </div>
       )}
 
-      <div
-        className="ny-info-box border rounded-lg p-3 text-sm"
-        dangerouslySetInnerHTML={{ __html: mode === 'academic'
+      <div className="ny-info-box border rounded-lg p-3 text-sm">
+        {mode === 'academic'
           ? '💡 <strong>Tip:</strong> Include your ORCID — required by many journals and grant applications'
-          : '💡 <strong>Tip:</strong> No photo needed - not recommended for US/Canada resumes' }}
-      />
+          : '💡 <strong>Tip:</strong> No photo needed - not recommended for US/Canada resumes'}
+      </div>
     </div>
   );
 };
