@@ -67,8 +67,6 @@ const NyxineResumeMaker = () => {
     presentations: [],
     awards: [],
     activities: [],
-    // Custom sections (both modes)
-    customSections: [],
     additional: { volunteer: '', awards: '', publications: '' }
   });
   const [savedResumes, setSavedResumes] = useState([]);
@@ -388,7 +386,6 @@ IMPORTANT RULES:
         presentations: [],
         awards: [],
         activities: [],
-        customSections: [],
         additional: { volunteer: '', awards: '', publications: '' }
       });
       setSavedResumes([]);
@@ -548,9 +545,8 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
         { name: 'Presentations', icon: Award },
         { name: 'Awards', icon: Star },
         { name: 'Activities', icon: Code },
-        { name: 'Custom Sections', icon: Plus },
       ]
-    : [..._steps, { name: 'Custom Sections', icon: Plus }];
+    : _steps;
 
   const CurrentStepIcon = steps[currentStep]?.icon || FileText;
 
@@ -666,7 +662,6 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
           {mode === 'industry' && currentStep === 3 && <SkillsStep profile={profile} setProfile={setProfile} mode={mode} />}
           {mode === 'industry' && currentStep === 4 && <ProjectsStep profile={profile} setProfile={setProfile} />}
           {mode === 'industry' && currentStep === 5 && <AdditionalStep profile={profile} setProfile={setProfile} />}
-          {mode === 'industry' && currentStep === 6 && <CustomSectionsStep profile={profile} setProfile={setProfile} />}
           {/* Academic mode steps */}
           {mode === 'academic' && currentStep === 0 && <PersonalInfoStep profile={profile} setProfile={setProfile} mode={mode} />}
           {mode === 'academic' && currentStep === 1 && <ResearchExperienceStep profile={profile} setProfile={setProfile} />}
@@ -676,7 +671,6 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
           {mode === 'academic' && currentStep === 5 && <PresentationsStep profile={profile} setProfile={setProfile} />}
           {mode === 'academic' && currentStep === 6 && <AwardsStep profile={profile} setProfile={setProfile} />}
           {mode === 'academic' && currentStep === 7 && <ActivitiesStep profile={profile} setProfile={setProfile} />}
-          {mode === 'academic' && currentStep === 8 && <CustomSectionsStep profile={profile} setProfile={setProfile} />}
 
           <div className="flex justify-between mt-8 pt-6 border-t ny-divider">
             <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : setCurrentView('landing')} className="px-6 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
@@ -841,8 +835,7 @@ const WorkExperienceStep = ({ profile, setProfile }) => {
         startDate: '',
         endDate: '',
         current: false,
-        bullets: [''],
-        customFields: []
+        bullets: ['']
       }]
     }));
   };
@@ -1033,10 +1026,6 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
           </div>
           <p className="text-xs ny-text-3 mt-2">💡 Include numbers (e.g., "Increased sales by 30%")</p>
         </div>
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(prev => ({ ...prev, customFields: fields }))}
-        />
       </div>
     </div>
   );
@@ -1055,8 +1044,7 @@ const EducationStep = ({ profile, setProfile, mode }) => {
         graduationDate: '',
         gpa: '',
         thesis: '',
-        coursework: '',
-        customFields: []
+        coursework: ''
       }]
     }));
   };
@@ -1216,10 +1204,6 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
             </div>
           </>
         )}
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(prev => ({ ...prev, customFields: fields }))}
-        />
       </div>
     </div>
   );
@@ -1361,8 +1345,7 @@ const ProjectsStep = ({ profile, setProfile }) => {
         name: '',
         description: '',
         technologies: '',
-        link: '',
-        customFields: []
+        link: ''
       }]
     }));
   };
@@ -1464,10 +1447,6 @@ const ProjectForm = ({ proj, idx, setProfile, removeProject }) => {
             />
           </div>
         </div>
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(prev => ({ ...prev, customFields: fields }))}
-        />
       </div>
     </div>
   );
@@ -1540,7 +1519,7 @@ const ResearchExperienceStep = ({ profile, setProfile }) => {
     setProfile(prev => ({
       ...prev,
       researchExperience: [...(prev.researchExperience || []), {
-        id: Date.now(), title: '', institution: '', location: '', startDate: '', endDate: '', current: false, bullets: [''], customFields: []
+        id: Date.now(), title: '', institution: '', location: '', startDate: '', endDate: '', current: false, bullets: ['']
       }]
     }));
   };
@@ -1624,10 +1603,6 @@ const ResearchEntryForm = ({ entry, idx, setProfile, removeEntry }) => {
             ))}
           </div>
         </div>
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(p => ({ ...p, customFields: fields }))}
-        />
       </div>
     </div>
   );
@@ -1636,7 +1611,7 @@ const ResearchEntryForm = ({ entry, idx, setProfile, removeEntry }) => {
 const PublicationsStep = ({ profile, setProfile }) => {
   const addPub = () => setProfile(prev => ({
     ...prev,
-    publications: [...(prev.publications || []), { id: Date.now(), title: '', authors: '', journal: '', year: '', doi: '', type: 'journal', customFields: [] }]
+    publications: [...(prev.publications || []), { id: Date.now(), title: '', authors: '', journal: '', year: '', doi: '', type: 'journal' }]
   }));
   const removePub = (id) => setProfile(prev => ({ ...prev, publications: prev.publications.filter(p => p.id !== id) }));
   const pubs = profile.publications || [];
@@ -1704,10 +1679,6 @@ const PubForm = ({ pub, idx, setProfile, removePub }) => {
           <label className="block text-sm ny-text-2 mb-2">DOI / URL</label>
           <input type="text" value={local.doi} onChange={e => setLocal(p => ({ ...p, doi: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="10.4103/ijamr.ijamr_277_24" />
         </div>
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(p => ({ ...p, customFields: fields }))}
-        />
       </div>
     </div>
   );
@@ -1716,7 +1687,7 @@ const PubForm = ({ pub, idx, setProfile, removePub }) => {
 const PresentationsStep = ({ profile, setProfile }) => {
   const addPres = () => setProfile(prev => ({
     ...prev,
-    presentations: [...(prev.presentations || []), { id: Date.now(), title: '', event: '', location: '', date: '', type: 'poster', customFields: [] }]
+    presentations: [...(prev.presentations || []), { id: Date.now(), title: '', event: '', location: '', date: '', type: 'poster' }]
   }));
   const removePres = (id) => setProfile(prev => ({ ...prev, presentations: prev.presentations.filter(p => p.id !== id) }));
   const pres = profile.presentations || [];
@@ -1781,10 +1752,6 @@ const PresForm = ({ pres, idx, setProfile, removePres }) => {
             <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
           </div>
         </div>
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(p => ({ ...p, customFields: fields }))}
-        />
       </div>
     </div>
   );
@@ -1793,7 +1760,7 @@ const PresForm = ({ pres, idx, setProfile, removePres }) => {
 const AwardsStep = ({ profile, setProfile }) => {
   const addAward = () => setProfile(prev => ({
     ...prev,
-    awards: [...(prev.awards || []), { id: Date.now(), title: '', org: '', year: '', description: '', customFields: [] }]
+    awards: [...(prev.awards || []), { id: Date.now(), title: '', org: '', year: '', description: '' }]
   }));
   const removeAward = (id) => setProfile(prev => ({ ...prev, awards: prev.awards.filter(a => a.id !== id) }));
   const awards = profile.awards || [];
@@ -1849,10 +1816,6 @@ const AwardForm = ({ award, idx, setProfile, removeAward }) => {
             <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Top position with 80.5% aggregate across 3.5 years" />
           </div>
         </div>
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(p => ({ ...p, customFields: fields }))}
-        />
       </div>
     </div>
   );
@@ -1861,7 +1824,7 @@ const AwardForm = ({ award, idx, setProfile, removeAward }) => {
 const ActivitiesStep = ({ profile, setProfile }) => {
   const addActivity = () => setProfile(prev => ({
     ...prev,
-    activities: [...(prev.activities || []), { id: Date.now(), name: '', role: '', org: '', date: '', description: '', customFields: [] }]
+    activities: [...(prev.activities || []), { id: Date.now(), name: '', role: '', org: '', date: '', description: '' }]
   }));
   const removeActivity = (id) => setProfile(prev => ({ ...prev, activities: prev.activities.filter(a => a.id !== id) }));
   const activities = profile.activities || [];
@@ -1932,177 +1895,7 @@ const ActivityForm = ({ activity, idx, setProfile, removeActivity }) => {
           <label className="block text-sm ny-text-2 mb-2">Description (optional)</label>
           <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Themed: Building the future of healthcare with Innovation and Creativity" />
         </div>
-        <CustomFieldsBlock
-          fields={local.customFields || []}
-          onChange={fields => setLocal(p => ({ ...p, customFields: fields }))}
-        />
       </div>
-    </div>
-  );
-};
-// ─── CustomFieldsBlock — reusable per-entry custom key/value fields ───────────
-const CustomFieldsBlock = ({ fields, onChange }) => {
-  const addField = () => onChange([...fields, { id: Date.now(), label: '', value: '' }]);
-  const removeField = (id) => onChange(fields.filter(f => f.id !== id));
-  const updateField = (id, key, val) => onChange(fields.map(f => f.id === id ? { ...f, [key]: val } : f));
-
-  return (
-    <div className="mt-4 pt-4 border-t ny-divider">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold ny-text-3 uppercase tracking-wider">Custom Fields</span>
-        <button
-          onClick={addField}
-          className="text-xs ny-accent flex items-center gap-1 hover:opacity-80 transition-opacity px-2 py-1 rounded border ny-border"
-        >
-          <Plus className="w-3 h-3" /> Add Field
-        </button>
-      </div>
-      {fields.length === 0 && (
-        <p className="text-xs ny-text-3 italic">No custom fields. Click "Add Field" to add anything extra — Patent #, Grant ID, Score, Certificate #, etc.</p>
-      )}
-      <div className="space-y-2">
-        {fields.map(f => (
-          <div key={f.id} className="flex gap-2 items-center">
-            <input
-              type="text"
-              value={f.label}
-              onChange={e => updateField(f.id, 'label', e.target.value)}
-              className="w-36 px-3 py-1.5 ny-input rounded text-sm"
-              placeholder="Label"
-            />
-            <span className="ny-text-3 text-sm">:</span>
-            <input
-              type="text"
-              value={f.value}
-              onChange={e => updateField(f.id, 'value', e.target.value)}
-              className="flex-1 px-3 py-1.5 ny-input rounded text-sm"
-              placeholder="Value"
-            />
-            <button onClick={() => removeField(f.id)} className="ny-danger-text hover:opacity-80 flex-shrink-0">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ─── CustomSectionsStep — full profile-level custom sections ─────────────────
-const CustomSectionsStep = ({ profile, setProfile }) => {
-  const sections = profile.customSections || [];
-
-  const addSection = () => {
-    setProfile(prev => ({
-      ...prev,
-      customSections: [
-        ...(prev.customSections || []),
-        { id: Date.now(), title: '', entries: [{ id: Date.now() + 1, text: '' }] }
-      ]
-    }));
-  };
-
-  const removeSection = (sId) => {
-    setProfile(prev => ({ ...prev, customSections: prev.customSections.filter(s => s.id !== sId) }));
-  };
-
-  const updateSection = (sId, updated) => {
-    setProfile(prev => ({ ...prev, customSections: prev.customSections.map(s => s.id === sId ? updated : s) }));
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="ny-text-2 text-sm">Add any section that doesn't fit the standard fields</p>
-          <p className="ny-text-3 text-xs mt-1">Examples: Patents, Grants, Clinical Rotations, Committees, Licenses, Memberships, Courses…</p>
-        </div>
-        <button onClick={addSection} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2 whitespace-nowrap">
-          <Plus className="w-4 h-4" /> Add Section
-        </button>
-      </div>
-
-      {sections.length === 0 && (
-        <div className="text-center py-12 ny-text-2 border-2 border-dashed ny-border rounded-lg">
-          <Plus className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="font-medium">No custom sections yet</p>
-          <p className="text-xs ny-text-3 mt-1">Click "Add Section" to create one — it will appear as a full section in your resume</p>
-        </div>
-      )}
-
-      {sections.map((section, sIdx) => (
-        <CustomSectionCard
-          key={section.id}
-          section={section}
-          sIdx={sIdx}
-          onUpdate={updated => updateSection(section.id, updated)}
-          onRemove={() => removeSection(section.id)}
-        />
-      ))}
-
-      {sections.length > 0 && (
-        <div className="ny-success-box border rounded-lg p-4 flex items-start gap-3">
-          <Check className="w-5 h-5 ny-success-text flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="ny-success-text font-semibold mb-1">Looking good! 🎉</p>
-            <p className="ny-text-2 text-sm">All custom sections will appear at the bottom of your resume in the order listed above.</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const CustomSectionCard = ({ section, sIdx, onUpdate, onRemove }) => {
-  const addEntry = () => onUpdate({ ...section, entries: [...section.entries, { id: Date.now(), text: '' }] });
-  const removeEntry = (eId) => onUpdate({ ...section, entries: section.entries.filter(e => e.id !== eId) });
-  const updateEntry = (eId, text) => onUpdate({ ...section, entries: section.entries.map(e => e.id === eId ? { ...e, text } : e) });
-
-  return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
-      <div className="flex items-start justify-between mb-4 gap-4">
-        <div className="flex-1">
-          <label className="block text-xs ny-text-3 uppercase tracking-wider mb-1">Section Title</label>
-          <input
-            type="text"
-            value={section.title}
-            onChange={e => onUpdate({ ...section, title: e.target.value })}
-            className="w-full px-4 py-2 ny-input rounded-lg text-base font-semibold"
-            placeholder="e.g., Patents, Grants, Memberships, Clinical Rotations…"
-          />
-        </div>
-        <button onClick={onRemove} className="ny-danger-text hover:opacity-80 mt-6 flex-shrink-0">
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="space-y-2">
-        {section.entries.map((entry, eIdx) => (
-          <div key={entry.id} className="flex gap-2 items-center">
-            <span className="ny-text-3 text-sm w-4 text-right flex-shrink-0">{eIdx + 1}.</span>
-            <input
-              type="text"
-              value={entry.text}
-              onChange={e => updateEntry(entry.id, e.target.value)}
-              className="flex-1 px-4 py-2 ny-input rounded-lg text-sm"
-              placeholder="Enter your content here…"
-            />
-            {section.entries.length > 1 && (
-              <button onClick={() => removeEntry(entry.id)} className="ny-danger-text hover:opacity-80 flex-shrink-0">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={addEntry}
-        className="mt-3 text-xs ny-accent flex items-center gap-1 hover:opacity-80 transition-opacity"
-      >
-        <Plus className="w-3 h-3" /> Add entry
-      </button>
     </div>
   );
 };
@@ -2300,9 +2093,6 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                   <div className="text-gray-600">{edu.school}</div>
                   <div className="text-gray-500 text-xs mt-0.5">{edu.graduationDate}</div>
                   {edu.gpa && <div className="text-gray-500 text-xs">GPA: {edu.gpa}</div>}
-                  {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -2334,9 +2124,6 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                       <li key={idx} className="leading-relaxed">{bullet}</li>
                     ))}
                   </ul>
-                  {(job.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -2355,9 +2142,6 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                     </p>
                   )}
                   {proj.link && <p className="text-xs text-blue-600 mt-1 break-words">{proj.link}</p>}
-                  {(proj.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -2372,14 +2156,6 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
               </ul>
             </div>
           )}
-          {(profile.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-            <div key={sec.id} className="mb-5">
-              <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-gray-800">{sec.title.toUpperCase()}</h2>
-              <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
-                {sec.entries.filter(e=>e.text?.trim()).map(e=><li key={e.id} className="leading-relaxed">{e.text}</li>)}
-              </ul>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -2436,9 +2212,6 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                     <li key={idx}>{bullet}</li>
                   ))}
                 </ul>
-                {(job.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                  <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                ))}
               </div>
             ))}
           </div>
@@ -2458,9 +2231,6 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                   <span className="text-sm whitespace-nowrap ml-4">{edu.graduationDate}</span>
                 </div>
                 {edu.gpa && <p className="text-sm text-gray-700 mt-1">GPA: {edu.gpa}</p>}
-                {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                  <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                ))}
               </div>
             ))}
           </div>
@@ -2498,9 +2268,6 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                   </p>
                 )}
                 {proj.link && <p className="text-sm text-blue-700 mt-1 break-words">{proj.link}</p>}
-                {(proj.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                  <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                ))}
               </div>
             ))}
           </div>
@@ -2516,14 +2283,6 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
             </ul>
           </div>
         )}
-        {(profile.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-          <div key={sec.id}>
-            <h2 className="text-lg font-bold text-center mb-3 tracking-wide">{sec.title.toUpperCase()}</h2>
-            <ul className="list-disc ml-6 space-y-1 text-sm">
-              {sec.entries.filter(e=>e.text?.trim()).map(e=><li key={e.id} className="leading-relaxed">{e.text}</li>)}
-            </ul>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -2584,9 +2343,6 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                 </div>
                 <p style={{ marginBottom: '1px' }}>{edu.degree}{edu.major ? ` in ${edu.major}` : ''}</p>
                 {edu.gpa && <p>GPA: {edu.gpa}</p>}
-                {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                  <p key={f.id} style={{ fontSize: '9.5pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</p>
-                ))}
               </div>
             </div>
           ))}
@@ -2611,9 +2367,6 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                     <li key={idx} style={{ marginBottom: '2px' }}>{bullet}</li>
                   ))}
                 </ul>
-                {(job.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                  <p key={f.id} style={{ fontSize: '9.5pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</p>
-                ))}
               </div>
             </div>
           ))}
@@ -2632,9 +2385,6 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                 <p style={{ lineHeight: '1.4', marginBottom: '2px', textAlign: 'justify' }}>{proj.description}</p>
                 {proj.technologies && <p style={{ fontStyle: 'italic' }}>Technologies: {proj.technologies}</p>}
                 {proj.link && <p style={{ fontSize: '9.5pt' }}>{proj.link}</p>}
-                {(proj.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                  <p key={f.id} style={{ fontSize: '9.5pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</p>
-                ))}
               </div>
             </div>
           ))}
@@ -2668,17 +2418,6 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           ))}
         </div>
       )}
-      {(profile.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-        <div key={sec.id} style={{ marginBottom: '10px' }}>
-          <h2 style={headingStyle}>{sec.title}</h2>
-          {sec.entries.filter(e=>e.text?.trim()).map(e=>(
-            <div key={e.id} style={{ display: 'flex', gap: '12px', marginBottom: '4px' }}>
-              <div style={{ ...colDate, textAlign: 'left' }}></div>
-              <p style={colBody}>{e.text}</p>
-            </div>
-          ))}
-        </div>
-      ))}
     </div>
   );
 };
@@ -2753,9 +2492,6 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
                   <li key={idx} className="mb-1 leading-relaxed">{bullet}</li>
                 ))}
               </ul>
-              {(job.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                <p key={f.id} className="text-xs mt-0.5" style={{color:'#000'}}><span className="font-semibold">{f.label}:</span> {f.value}</p>
-              ))}
             </div>
           ))}
         </div>
@@ -2781,9 +2517,6 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
                 </span>
               </div>
               {edu.gpa && <p className="text-sm mt-1" style={{ color: '#000000' }}>GPA: {edu.gpa}</p>}
-              {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                <p key={f.id} className="text-xs mt-0.5" style={{color:'#000'}}><span className="font-semibold">{f.label}:</span> {f.value}</p>
-              ))}
             </div>
           ))}
         </div>
@@ -2803,9 +2536,6 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
                 </p>
               )}
               {proj.link && <p className="text-sm mt-1" style={{ color: '#000000' }}>{proj.link}</p>}
-              {(proj.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                <p key={f.id} className="text-xs mt-0.5" style={{color:'#000'}}><span className="font-semibold">{f.label}:</span> {f.value}</p>
-              ))}
             </div>
           ))}
         </div>
@@ -2820,14 +2550,6 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
           </ul>
         </div>
       )}
-      {(profile.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-        <div key={sec.id} className="mb-6">
-          <h2 className="text-base font-bold mb-2" style={{ color: '#000000' }}>{sec.title}</h2>
-          <ul className="list-disc ml-6 text-sm" style={{ color: '#000000' }}>
-            {sec.entries.filter(e=>e.text?.trim()).map(e=><li key={e.id} className="mb-1 leading-relaxed">{e.text}</li>)}
-          </ul>
-        </div>
-      ))}
     </div>
   );
 };
@@ -2889,9 +2611,6 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                         </li>
                       ))}
                     </ul>
-                    {(job.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                      <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                    ))}
                   </div>
                 ))}
               </div>
@@ -2911,9 +2630,6 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                       </p>
                     )}
                     {proj.link && <p className="text-xs text-slate-500 mt-1 break-words">{proj.link}</p>}
-                    {(proj.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                      <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                    ))}
                   </div>
                 ))}
               </div>
@@ -2930,14 +2646,6 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                 </ul>
               </div>
             )}
-            {(profile.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-              <div key={sec.id}>
-                <h2 className="text-base font-bold text-blue-600 mb-3 pb-1.5 border-b-2 border-blue-600 uppercase tracking-wide">{sec.title.toUpperCase()}</h2>
-                <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
-                  {sec.entries.filter(e=>e.text?.trim()).map(e=><li key={e.id} className="leading-relaxed">{e.text}</li>)}
-                </ul>
-              </div>
-            ))}
           </div>
 
           {/* Sidebar */}
@@ -2986,9 +2694,6 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                     <div className="text-sm text-gray-600">{edu.school}</div>
                     <div className="text-xs text-gray-500 mt-1">{edu.graduationDate}</div>
                     {edu.gpa && <div className="text-xs text-gray-500">GPA: {edu.gpa}</div>}
-                    {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                      <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                    ))}
                   </div>
                 ))}
               </div>
@@ -3057,9 +2762,6 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                       <li key={idx} className="leading-relaxed">{bullet}</li>
                     ))}
                   </ul>
-                  {(job.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -3079,9 +2781,6 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                     <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
                   </div>
                   {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
-                  {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -3140,9 +2839,6 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                     </p>
                   )}
                   {proj.link && <p className="text-xs text-slate-600 mt-1 break-words">{proj.link}</p>}
-                  {(proj.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -3159,14 +2855,6 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
               </ul>
             </div>
           )}
-          {(profile.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-            <div key={sec.id}>
-              <h2 className="text-sm font-bold text-slate-700 mb-3 pb-1.5 border-b-2 border-slate-600 tracking-widest">{sec.title.toUpperCase()}</h2>
-              <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
-                {sec.entries.filter(e=>e.text?.trim()).map(e=><li key={e.id} className="leading-relaxed">{e.text}</li>)}
-              </ul>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -3242,9 +2930,6 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                     <div className="text-slate-400 text-xs">{edu.school}</div>
                     <div className="text-slate-500 text-xs mt-1">{edu.graduationDate}</div>
                     {edu.gpa && <div className="text-slate-500 text-xs">GPA: {edu.gpa}</div>}
-                    {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                      <p key={f.id} className="text-xs text-slate-400 mt-0.5"><span className="font-semibold text-slate-300">{f.label}:</span> {f.value}</p>
-                    ))}
                   </div>
                 ))}
               </div>
@@ -3281,9 +2966,6 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                       </li>
                     ))}
                   </ul>
-                  {(job.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -3302,9 +2984,6 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                     </p>
                   )}
                   {proj.link && <p className="text-xs text-cyan-600 mt-1 break-words">{proj.link}</p>}
-                  {(proj.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
-                  ))}
                 </div>
               ))}
             </div>
@@ -3321,14 +3000,6 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
               </ul>
             </div>
           )}
-          {(profile.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-            <div key={sec.id}>
-              <h2 className="text-sm font-bold text-slate-800 mb-4 pb-1.5 border-b-2 border-cyan-400 uppercase tracking-widest">{sec.title.toUpperCase()}</h2>
-              <ul className="list-disc ml-5 space-y-1 text-sm text-gray-800">
-                {sec.entries.filter(e=>e.text?.trim()).map(e=><li key={e.id} className="leading-relaxed">{e.text}</li>)}
-              </ul>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -3393,9 +3064,6 @@ const AcademicTemplate = ({ profile }) => {
                   {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
                   {edu.coursework && <div style={{ fontSize: '10pt' }}><em>Relevant Coursework:</em> {edu.coursework}</div>}
                   {edu.thesis && <div style={{ fontSize: '10pt' }}><em>Thesis:</em> {edu.thesis}</div>}
-                  {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                    <div key={f.id} style={{ fontSize: '10pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</div>
-                  ))}
                 </div>
                 <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>{edu.graduationDate || ''}</span>
               </div>
@@ -3421,9 +3089,6 @@ const AcademicTemplate = ({ profile }) => {
                   {r.bullets.filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: '2px', fontSize: '10pt' }}>{b}</li>)}
                 </ul>
               )}
-              {(r.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                <div key={f.id} style={{ fontSize: '10pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</div>
-              ))}
             </div>
           ))}
         </div>
@@ -3441,9 +3106,6 @@ const AcademicTemplate = ({ profile }) => {
               {pub.year && <> {pub.year}.</>}
               {pub.doi && <> DOI: {pub.doi}.</>}
               {pub.type && <span style={{ color: '#555', fontSize: '9pt' }}> [{pubTypeLabel[pub.type] || pub.type}]</span>}
-              {(pub.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                <span key={f.id} style={{ fontSize: '9.5pt', marginLeft: '4px' }}> | <strong>{f.label}:</strong> {f.value}</span>
-              ))}
             </div>
           ))}
         </div>
@@ -3459,9 +3121,6 @@ const AcademicTemplate = ({ profile }) => {
               {pr.event && <> {pr.event}.</>}
               {pr.location && <> {pr.location}.</>}
               {pr.date && <> {pr.date}.</>}
-              {(pr.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                <span key={f.id} style={{ fontSize: '9.5pt', marginLeft: '4px' }}> | <strong>{f.label}:</strong> {f.value}</span>
-              ))}
             </div>
           ))}
         </div>
@@ -3476,9 +3135,6 @@ const AcademicTemplate = ({ profile }) => {
               <div>
                 <strong>{a.title}</strong>{a.org ? `, ${a.org}` : ''}
                 {a.description && <div style={{ fontStyle: 'italic' }}>{a.description}</div>}
-                {(a.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                  <div key={f.id} style={{ fontSize: '9.5pt' }}><strong>{f.label}:</strong> {f.value}</div>
-                ))}
               </div>
               {a.year && <span style={{ whiteSpace: 'nowrap', marginLeft: '12px' }}>{a.year}</span>}
             </div>
@@ -3496,9 +3152,6 @@ const AcademicTemplate = ({ profile }) => {
               {a.org && <> {a.org}.</>}
               {a.date && <> {a.date}.</>}
               {a.description && <div style={{ fontStyle: 'italic', paddingLeft: '1em' }}>{a.description}</div>}
-              {(a.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
-                <div key={f.id} style={{ fontSize: '9.5pt', paddingLeft: '1em' }}><strong>{f.label}:</strong> {f.value}</div>
-              ))}
             </div>
           ))}
         </div>
@@ -3516,16 +3169,6 @@ const AcademicTemplate = ({ profile }) => {
           </div>
         </div>
       )}
-      {(p.customSections||[]).filter(s=>s.title&&s.entries?.some(e=>e.text?.trim())).map(sec=>(
-        <div key={sec.id} style={{ marginBottom: '10px' }}>
-          <h2 style={sectionHeading}>{sec.title}</h2>
-          <ul style={{ paddingLeft: '1.4em', fontSize: '10pt' }}>
-            {sec.entries.filter(e=>e.text?.trim()).map(e=>(
-              <li key={e.id} style={{ marginBottom: '2px' }}>{e.text}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
     </div>
   );
 };
