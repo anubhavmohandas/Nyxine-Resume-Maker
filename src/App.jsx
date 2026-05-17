@@ -4537,12 +4537,14 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
             }
 
             @media print {
-              /* 0.75in @page margin handles top/bottom gaps on ALL pages including
-                 page 2, 3, etc. Full-bleed templates lose edge-to-edge in PDF but
-                 gain correct multi-page margins — better trade-off than cut-off content. */
+              /* Full-bleed templates (Creative, Bold) use margin:0 so their gradient
+                 headers and dark sidebars reach the paper edge. Their inner content
+                 divs (p-8) provide the text margins. All other templates keep 0.75in
+                 page margins so the outer wrapper zeroing (#resume-preview > div) still
+                 produces correct spacing. */
               @page {
                 size: A4;
-                margin: 0.75in;
+                margin: ${['creative', 'bold'].includes(selectedTemplate) ? '0' : '0.75in'};
               }
 
               /* Hide everything except resume */
