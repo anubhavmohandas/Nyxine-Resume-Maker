@@ -24,18 +24,6 @@ const sortChronologically = (items, dateKey, currentKey = null) => {
     return db - da;
   });
 };
-
-// Converts stored date strings to display format.
-// Handles both "2021-08" (ISO from date picker) and "Aug 2021" (legacy free-text).
-const formatDate = (dateStr) => {
-  if (!dateStr) return '';
-  const iso = dateStr.match(/^(\d{4})-(\d{2})$/);
-  if (iso) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${months[parseInt(iso[2]) - 1]} ${iso[1]}`;
-  }
-  return dateStr; // already "Aug 2021" or similar — show as-is
-};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NyxineResumeMaker = () => {
@@ -2311,7 +2299,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                   <div className="font-bold text-gray-900">{edu.degree}</div>
                   <div className="text-gray-700 font-medium">{edu.major}</div>
                   <div className="text-gray-600">{edu.school}</div>
-                  <div className="text-gray-500 text-xs mt-0.5">{formatDate(edu.graduationDate)}</div>
+                  <div className="text-gray-500 text-xs mt-0.5">{edu.graduationDate}</div>
                   {edu.gpa && <div className="text-gray-500 text-xs">GPA: {edu.gpa}</div>}
                   {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                     <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
@@ -2338,7 +2326,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
                     <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
-                      {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
+                      {job.startDate} - {job.current ? 'Present' : job.endDate}
                     </span>
                   </div>
                   <p className="text-sm text-gray-700 italic mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -2441,7 +2429,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                     <p className="text-sm italic">{job.company}{job.location && `, ${job.location}`}</p>
                   </div>
                   <span className="text-sm whitespace-nowrap ml-4">
-                    {formatDate(job.startDate)} – {job.current ? 'Present' : formatDate(job.endDate)}
+                    {job.startDate} – {job.current ? 'Present' : job.endDate}
                   </span>
                 </div>
                 <ul className="list-disc ml-6 mt-2 space-y-1.5 text-sm leading-relaxed">
@@ -2468,7 +2456,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                     <h3 className="text-base font-bold">{edu.degree} in {edu.major}</h3>
                     <p className="text-sm">{edu.school}{edu.location && `, ${edu.location}`}</p>
                   </div>
-                  <span className="text-sm whitespace-nowrap ml-4">{formatDate(edu.graduationDate)}</span>
+                  <span className="text-sm whitespace-nowrap ml-4">{edu.graduationDate}</span>
                 </div>
                 {edu.gpa && <p className="text-sm text-gray-700 mt-1">GPA: {edu.gpa}</p>}
                 {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
@@ -2589,7 +2577,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           <h2 style={headingStyle}>Education</h2>
           {profile.education.map(edu => (
             <div key={edu.id} style={{ display: 'flex', gap: '12px', marginBottom: '8px' }} className="resume-entry">
-              <div style={colDate}>{formatDate(edu.graduationDate) || 'Present'}</div>
+              <div style={colDate}>{edu.graduationDate || 'Present'}</div>
               <div style={colBody}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1px' }}>
                   <span style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.01em' }}>{edu.school}</span>
@@ -2612,7 +2600,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           <h2 style={headingStyle}>Experience</h2>
           {selectedJobs.map(job => (
             <div key={job.id} style={{ display: 'flex', gap: '12px', marginBottom: '10px' }} className="resume-entry">
-              <div style={colDate}>{formatDate(job.startDate)}–{job.current ? 'Present' : formatDate(job.endDate)}</div>
+              <div style={colDate}>{job.startDate}–{job.current ? 'Present' : job.endDate}</div>
               <div style={colBody}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1px' }}>
                   <span style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.01em' }}>{job.company}</span>
@@ -2755,7 +2743,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{job.title}</h3>
                 <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
-                  {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
+                  {job.startDate} - {job.current ? 'Present' : job.endDate}
                 </span>
               </div>
               <p className="text-sm mb-2" style={{ color: '#000000' }}>
@@ -2790,7 +2778,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
                   </p>
                 </div>
                 <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
-                  {formatDate(edu.graduationDate)}
+                  {edu.graduationDate}
                 </span>
               </div>
               {edu.gpa && <p className="text-sm mt-1" style={{ color: '#000000' }}>GPA: {edu.gpa}</p>}
@@ -2891,7 +2879,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                     <div className="flex justify-between items-baseline mb-1">
                       <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
                       <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
-                        {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
+                        {job.startDate} - {job.current ? 'Present' : job.endDate}
                       </span>
                     </div>
                     <p className="text-base text-gray-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -2997,7 +2985,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                     <div className="font-bold text-gray-900 text-sm">{edu.degree}</div>
                     <div className="text-sm text-gray-700">{edu.major}</div>
                     <div className="text-sm text-gray-600">{edu.school}</div>
-                    <div className="text-xs text-gray-500 mt-1">{formatDate(edu.graduationDate)}</div>
+                    <div className="text-xs text-gray-500 mt-1">{edu.graduationDate}</div>
                     {edu.gpa && <div className="text-xs text-gray-500">GPA: {edu.gpa}</div>}
                     {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                       <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
@@ -3061,7 +3049,7 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-sm font-bold text-slate-800">{job.title}</h3>
                     <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                      {formatDate(job.startDate)} – {job.current ? 'Present' : formatDate(job.endDate)}
+                      {job.startDate} – {job.current ? 'Present' : job.endDate}
                     </span>
                   </div>
                   <p className="text-sm text-slate-600 italic mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -3089,7 +3077,7 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                       <h3 className="text-sm font-bold text-slate-800">{edu.degree} in {edu.major}</h3>
                       <p className="text-sm text-gray-700">{edu.school}{edu.location && `, ${edu.location}`}</p>
                     </div>
-                    <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{formatDate(edu.graduationDate)}</span>
+                    <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
                   </div>
                   {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
                   {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
@@ -3253,7 +3241,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                     <div className="font-bold text-white text-sm">{edu.degree}</div>
                     <div className="text-slate-300 text-xs">{edu.major}</div>
                     <div className="text-slate-400 text-xs">{edu.school}</div>
-                    <div className="text-slate-500 text-xs mt-1">{formatDate(edu.graduationDate)}</div>
+                    <div className="text-slate-500 text-xs mt-1">{edu.graduationDate}</div>
                     {edu.gpa && <div className="text-slate-500 text-xs">GPA: {edu.gpa}</div>}
                     {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                       <p key={f.id} className="text-xs text-slate-400 mt-0.5"><span className="font-semibold text-slate-300">{f.label}:</span> {f.value}</p>
@@ -3283,7 +3271,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-base font-bold text-slate-800">{job.title}</h3>
                     <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
-                      {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
+                      {job.startDate} - {job.current ? 'Present' : job.endDate}
                     </span>
                   </div>
                   <p className="text-base text-cyan-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -3410,7 +3398,7 @@ const AcademicTemplate = ({ profile }) => {
                     <div key={f.id} style={{ fontSize: '10pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</div>
                   ))}
                 </div>
-                <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>{formatDate(edu.graduationDate) || ''}</span>
+                <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>{edu.graduationDate || ''}</span>
               </div>
             </div>
           ))}
@@ -3426,7 +3414,7 @@ const AcademicTemplate = ({ profile }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <strong>{r.title}{r.institution ? `, ${r.institution}` : ''}{r.location ? `, ${r.location}` : ''}</strong>
                 <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>
-                  {formatDate(r.startDate)}{(r.startDate || r.endDate) ? ' – ' : ''}{r.current ? 'Present' : formatDate(r.endDate)}
+                  {r.startDate}{(r.startDate || r.endDate) ? ' – ' : ''}{r.current ? 'Present' : r.endDate}
                 </span>
               </div>
               {r.bullets?.filter(b => b.trim()).length > 0 && (
@@ -3566,7 +3554,7 @@ const profileToResumeText = (prof) => {
   if (prof.researchExperience?.length) {
     lines.push('\nRESEARCH EXPERIENCE');
     prof.researchExperience.forEach(r => {
-      lines.push(`${r.title || ''}, ${r.institution || ''} (${formatDate(r.startDate) || ''} – ${r.current ? 'Present' : (formatDate(r.endDate) || '')})`);
+      lines.push(`${r.title || ''}, ${r.institution || ''} (${r.startDate || ''} – ${r.current ? 'Present' : (r.endDate || '')})`);
       (r.bullets || []).filter(b => b.trim()).forEach(b => lines.push('• ' + b));
     });
   }
