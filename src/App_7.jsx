@@ -114,7 +114,7 @@ const NyxineResumeMaker = () => {
           const parsed = JSON.parse(profileData);
           // Validate parsed data structure
           if (parsed && typeof parsed === 'object' && parsed.personal) {
-            setProfile(migrateDatesInProfile(parsed));
+            setProfile(parsed);
           }
         } catch {
           console.error('Invalid profile data, resetting');
@@ -377,7 +377,7 @@ IMPORTANT RULES:
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target.result);
-        if (data.profile) setProfile(migrateDatesInProfile(data.profile));
+        if (data.profile) setProfile(data.profile);
         if (data.savedResumes) setSavedResumes(data.savedResumes);
         alert('Data imported successfully!');
       } catch {
