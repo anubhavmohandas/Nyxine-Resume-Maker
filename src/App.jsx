@@ -2255,51 +2255,74 @@ const CoachView = ({ profile, setCurrentView }) => {
 
   const toggle = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
 
+  // Static color maps — avoids dynamic template literals that Tailwind v4 can't scan
+  const CARD_COLORS = {
+    red:    { bg: 'bg-red-500/5',    hoverBg: 'hover:bg-red-500/10',    hoverBorder: 'hover:border-red-400/60',    title: 'group-hover:text-red-300',    badge: 'bg-red-500/20 text-red-300'    },
+    blue:   { bg: 'bg-blue-500/5',   hoverBg: 'hover:bg-blue-500/10',   hoverBorder: 'hover:border-blue-400/60',   title: 'group-hover:text-blue-300',   badge: 'bg-blue-500/20 text-blue-300'   },
+    green:  { bg: 'bg-green-500/5',  hoverBg: 'hover:bg-green-500/10',  hoverBorder: 'hover:border-green-400/60',  title: 'group-hover:text-green-300',  badge: 'bg-green-500/20 text-green-300'  },
+    amber:  { bg: 'bg-amber-500/5',  hoverBg: 'hover:bg-amber-500/10',  hoverBorder: 'hover:border-amber-400/60',  title: 'group-hover:text-amber-300',  badge: 'bg-amber-500/20 text-amber-300'  },
+    orange: { bg: 'bg-orange-500/5', hoverBg: 'hover:bg-orange-500/10', hoverBorder: 'hover:border-orange-400/60', title: 'group-hover:text-orange-300', badge: 'bg-orange-500/20 text-orange-300' },
+    purple: { bg: 'bg-purple-500/5', hoverBg: 'hover:bg-purple-500/10', hoverBorder: 'hover:border-purple-400/60', title: 'group-hover:text-purple-300', badge: 'bg-purple-500/20 text-purple-300' },
+    teal:   { bg: 'bg-teal-500/5',   hoverBg: 'hover:bg-teal-500/10',   hoverBorder: 'hover:border-teal-400/60',   title: 'group-hover:text-teal-300',   badge: 'bg-teal-500/20 text-teal-300'   },
+    indigo: { bg: 'bg-indigo-500/5', hoverBg: 'hover:bg-indigo-500/10', hoverBorder: 'hover:border-indigo-400/60', title: 'group-hover:text-indigo-300', badge: 'bg-indigo-500/20 text-indigo-300' },
+    violet: { bg: 'bg-violet-500/5', hoverBg: 'hover:bg-violet-500/10', hoverBorder: 'hover:border-violet-400/60', title: 'group-hover:text-violet-300', badge: 'bg-violet-500/20 text-violet-300' },
+    rose:   { bg: 'bg-rose-500/5',   hoverBg: 'hover:bg-rose-500/10',   hoverBorder: 'hover:border-rose-400/60',   title: 'group-hover:text-rose-300',   badge: 'bg-rose-500/20 text-rose-300'   },
+  };
+
   const launchLabel = aiModel === 'claude'
     ? 'Open in Claude →'
     : aiModel === 'chatgpt'
     ? 'Copy + Open ChatGPT →'
     : 'Copy Prompt →';
 
-  const SectionHeader = ({ sectionKey, icon, title, count, color }) => (
-    <button
-      onClick={() => toggle(sectionKey)}
-      className={`w-full flex items-center justify-between p-4 rounded-lg border ny-border transition-all hover:bg-${color}-500/5 text-left`}
-    >
-      <div className="flex items-center gap-3">
-        <span className="text-lg">{icon}</span>
-        <span className="font-semibold ny-text-1">{title}</span>
-        <span className={`text-xs px-2 py-0.5 rounded-full bg-${color}-500/20 text-${color}-300`}>{count} prompts</span>
-      </div>
-      <span className="ny-text-3 text-sm">{openSections[sectionKey] ? '▲' : '▼'}</span>
-    </button>
-  );
-
-  const SimpleBtn = ({ onClick, emoji, title, subtitle, hoverColor }) => (
-    <button
-      onClick={onClick}
-      className={`group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-${hoverColor}-400/60 bg-${hoverColor}-500/5 hover:bg-${hoverColor}-500/10 transition-all text-left`}
-    >
-      <span className={`text-sm font-semibold ny-text-1 group-hover:text-${hoverColor}-300 transition-colors`}>{emoji} {title}</span>
-      <span className="text-xs ny-text-3">{subtitle}</span>
-      <span className={`text-xs mt-1 opacity-50 group-hover:opacity-80 transition-opacity`}>{launchLabel}</span>
-    </button>
-  );
-
-  const InputCard = ({ emoji, title, subtitle, color, children, onLaunch, disabled }) => (
-    <div className={`p-4 rounded-lg border ny-border bg-${color}-500/5 space-y-2`}>
-      <span className="text-sm font-semibold ny-text-1">{emoji} {title}</span>
-      <p className="text-xs ny-text-3">{subtitle}</p>
-      {children}
+  const SectionHeader = ({ sectionKey, icon, title, count, color }) => {
+    const c = CARD_COLORS[color] || CARD_COLORS.blue;
+    return (
       <button
-        onClick={onLaunch}
-        disabled={disabled}
-        className={`w-full py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${disabled ? 'opacity-40 cursor-not-allowed ny-subcard ny-text-3' : 'ny-btn-primary'}`}
+        onClick={() => toggle(sectionKey)}
+        className={`w-full flex items-center justify-between p-4 rounded-lg border ny-border transition-all ${c.hoverBg} text-left`}
       >
-        {launchLabel}
+        <div className="flex items-center gap-3">
+          <span className="text-lg">{icon}</span>
+          <span className="font-semibold ny-text-1">{title}</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full ${c.badge}`}>{count} prompts</span>
+        </div>
+        <span className="ny-text-2 text-sm">{openSections[sectionKey] ? '▲' : '▼'}</span>
       </button>
-    </div>
-  );
+    );
+  };
+
+  const SimpleBtn = ({ onClick, emoji, title, subtitle, hoverColor }) => {
+    const c = CARD_COLORS[hoverColor] || CARD_COLORS.blue;
+    return (
+      <button
+        onClick={onClick}
+        className={`group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border ${c.hoverBorder} ${c.bg} ${c.hoverBg} transition-all text-left`}
+      >
+        <span className={`text-sm font-semibold ny-text-1 ${c.title} transition-colors`}>{emoji} {title}</span>
+        <span className="text-xs ny-text-2">{subtitle}</span>
+        <span className="text-xs mt-1 ny-text-3">{launchLabel}</span>
+      </button>
+    );
+  };
+
+  const InputCard = ({ emoji, title, subtitle, color, children, onLaunch, disabled }) => {
+    const c = CARD_COLORS[color] || CARD_COLORS.blue;
+    return (
+      <div className={`p-4 rounded-lg border ny-border ${c.bg} space-y-2`}>
+        <span className="text-sm font-semibold ny-text-1">{emoji} {title}</span>
+        <p className="text-xs ny-text-2">{subtitle}</p>
+        {children}
+        <button
+          onClick={onLaunch}
+          disabled={disabled}
+          className={`w-full py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${disabled ? 'opacity-40 cursor-not-allowed ny-subcard ny-text-2' : 'ny-btn-primary'}`}
+        >
+          {launchLabel}
+        </button>
+      </div>
+    );
+  };
 
   const inputCls = "w-full text-xs ny-input rounded-lg p-2 border ny-border";
   const textareaCls = "w-full text-xs ny-input rounded-lg p-2 resize-none border ny-border";
