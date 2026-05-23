@@ -2255,6 +2255,12 @@ const CoachView = ({ profile, setCurrentView }) => {
 
   const toggle = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
 
+  const launchLabel = aiModel === 'claude'
+    ? 'Open in Claude →'
+    : aiModel === 'chatgpt'
+    ? 'Copy + Open ChatGPT →'
+    : 'Copy Prompt →';
+
   const SectionHeader = ({ sectionKey, icon, title, count, color }) => (
     <button
       onClick={() => toggle(sectionKey)}
@@ -2276,6 +2282,7 @@ const CoachView = ({ profile, setCurrentView }) => {
     >
       <span className={`text-sm font-semibold ny-text-1 group-hover:text-${hoverColor}-300 transition-colors`}>{emoji} {title}</span>
       <span className="text-xs ny-text-3">{subtitle}</span>
+      <span className={`text-xs mt-1 opacity-50 group-hover:opacity-80 transition-opacity`}>{launchLabel}</span>
     </button>
   );
 
@@ -2289,7 +2296,7 @@ const CoachView = ({ profile, setCurrentView }) => {
         disabled={disabled}
         className={`w-full py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${disabled ? 'opacity-40 cursor-not-allowed ny-subcard ny-text-3' : 'ny-btn-primary'}`}
       >
-        Open in Claude →
+        {launchLabel}
       </button>
     </div>
   );
@@ -2305,7 +2312,11 @@ const CoachView = ({ profile, setCurrentView }) => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold ny-heading-gradient">AI Coach</h1>
-            <p className="ny-text-3 text-sm mt-1">One click → Claude opens with your resume pre-loaded</p>
+            <p className="ny-text-3 text-sm mt-1">
+              {aiModel === 'claude' && 'One click → Claude opens with your resume pre-loaded'}
+              {aiModel === 'chatgpt' && 'Prompt copies to clipboard + ChatGPT opens → just paste'}
+              {aiModel === 'other' && 'Prompt copies to clipboard → paste it in any AI tool'}
+            </p>
           </div>
           <button onClick={() => setCurrentView('dashboard')} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2 text-sm">
             <Home className="w-4 h-4" />Dashboard
