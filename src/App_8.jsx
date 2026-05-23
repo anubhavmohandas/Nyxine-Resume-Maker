@@ -24,6 +24,18 @@ const sortChronologically = (items, dateKey, currentKey = null) => {
     return db - da;
   });
 };
+
+// Converts stored date strings to display format.
+// Handles both "2021-08" (ISO from date picker) and "Aug 2021" (legacy free-text).
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const iso = dateStr.match(/^(\d{4})-(\d{2})$/);
+  if (iso) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[parseInt(iso[2]) - 1]} ${iso[1]}`;
+  }
+  return dateStr; // already "Aug 2021" or similar — show as-is
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NyxineResumeMaker = () => {
@@ -102,7 +114,7 @@ const NyxineResumeMaker = () => {
           const parsed = JSON.parse(profileData);
           // Validate parsed data structure
           if (parsed && typeof parsed === 'object' && parsed.personal) {
-            setProfile(parsed);
+            setProfile(migrateDatesInProfile(parsed));
           }
         } catch {
           console.error('Invalid profile data, resetting');
@@ -365,7 +377,7 @@ IMPORTANT RULES:
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target.result);
-        if (data.profile) setProfile(data.profile);
+        if (data.profile) setProfile(migrateDatesInProfile(data.profile));
         if (data.savedResumes) setSavedResumes(data.savedResumes);
         alert('Data imported successfully!');
       } catch {
@@ -2299,7 +2311,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                   <div className="font-bold text-gray-900">{edu.degree}</div>
                   <div className="text-gray-700 font-medium">{edu.major}</div>
                   <div className="text-gray-600">{edu.school}</div>
-                  <div className="text-gray-500 text-xs mt-0.5">{edu.graduationDate}</div>
+                  <div className="text-gray-500 text-xs mt-0.5">{formatDate(edu.graduationDate)}</div>
                   {edu.gpa && <div className="text-gray-500 text-xs">GPA: {edu.gpa}</div>}
                   {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                     <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
@@ -2326,7 +2338,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
                     <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
-                      {job.startDate} - {job.current ? 'Present' : job.endDate}
+                      {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-700 italic mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -2429,7 +2441,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                     <p className="text-sm italic">{job.company}{job.location && `, ${job.location}`}</p>
                   </div>
                   <span className="text-sm whitespace-nowrap ml-4">
-                    {job.startDate} – {job.current ? 'Present' : job.endDate}
+                    {formatDate(job.startDate)} – {job.current ? 'Present' : formatDate(job.endDate)}
                   </span>
                 </div>
                 <ul className="list-disc ml-6 mt-2 space-y-1.5 text-sm leading-relaxed">
@@ -2456,7 +2468,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                     <h3 className="text-base font-bold">{edu.degree} in {edu.major}</h3>
                     <p className="text-sm">{edu.school}{edu.location && `, ${edu.location}`}</p>
                   </div>
-                  <span className="text-sm whitespace-nowrap ml-4">{edu.graduationDate}</span>
+                  <span className="text-sm whitespace-nowrap ml-4">{formatDate(edu.graduationDate)}</span>
                 </div>
                 {edu.gpa && <p className="text-sm text-gray-700 mt-1">GPA: {edu.gpa}</p>}
                 {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
@@ -2577,7 +2589,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           <h2 style={headingStyle}>Education</h2>
           {profile.education.map(edu => (
             <div key={edu.id} style={{ display: 'flex', gap: '12px', marginBottom: '8px' }} className="resume-entry">
-              <div style={colDate}>{edu.graduationDate || 'Present'}</div>
+              <div style={colDate}>{formatDate(edu.graduationDate) || 'Present'}</div>
               <div style={colBody}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1px' }}>
                   <span style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.01em' }}>{edu.school}</span>
@@ -2600,7 +2612,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
           <h2 style={headingStyle}>Experience</h2>
           {selectedJobs.map(job => (
             <div key={job.id} style={{ display: 'flex', gap: '12px', marginBottom: '10px' }} className="resume-entry">
-              <div style={colDate}>{job.startDate}–{job.current ? 'Present' : job.endDate}</div>
+              <div style={colDate}>{formatDate(job.startDate)}–{job.current ? 'Present' : formatDate(job.endDate)}</div>
               <div style={colBody}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1px' }}>
                   <span style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.01em' }}>{job.company}</span>
@@ -2743,7 +2755,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="text-sm font-bold" style={{ color: '#000000' }}>{job.title}</h3>
                 <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
-                  {job.startDate} - {job.current ? 'Present' : job.endDate}
+                  {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
                 </span>
               </div>
               <p className="text-sm mb-2" style={{ color: '#000000' }}>
@@ -2778,7 +2790,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
                   </p>
                 </div>
                 <span className="text-xs whitespace-nowrap ml-4" style={{ color: '#000000' }}>
-                  {edu.graduationDate}
+                  {formatDate(edu.graduationDate)}
                 </span>
               </div>
               {edu.gpa && <p className="text-sm mt-1" style={{ color: '#000000' }}>GPA: {edu.gpa}</p>}
@@ -2879,7 +2891,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                     <div className="flex justify-between items-baseline mb-1">
                       <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
                       <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
-                        {job.startDate} - {job.current ? 'Present' : job.endDate}
+                        {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
                       </span>
                     </div>
                     <p className="text-base text-gray-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -2985,7 +2997,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                     <div className="font-bold text-gray-900 text-sm">{edu.degree}</div>
                     <div className="text-sm text-gray-700">{edu.major}</div>
                     <div className="text-sm text-gray-600">{edu.school}</div>
-                    <div className="text-xs text-gray-500 mt-1">{edu.graduationDate}</div>
+                    <div className="text-xs text-gray-500 mt-1">{formatDate(edu.graduationDate)}</div>
                     {edu.gpa && <div className="text-xs text-gray-500">GPA: {edu.gpa}</div>}
                     {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                       <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
@@ -3049,7 +3061,7 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-sm font-bold text-slate-800">{job.title}</h3>
                     <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                      {job.startDate} – {job.current ? 'Present' : job.endDate}
+                      {formatDate(job.startDate)} – {job.current ? 'Present' : formatDate(job.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-slate-600 italic mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -3077,7 +3089,7 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                       <h3 className="text-sm font-bold text-slate-800">{edu.degree} in {edu.major}</h3>
                       <p className="text-sm text-gray-700">{edu.school}{edu.location && `, ${edu.location}`}</p>
                     </div>
-                    <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{edu.graduationDate}</span>
+                    <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{formatDate(edu.graduationDate)}</span>
                   </div>
                   {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
                   {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
@@ -3241,7 +3253,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                     <div className="font-bold text-white text-sm">{edu.degree}</div>
                     <div className="text-slate-300 text-xs">{edu.major}</div>
                     <div className="text-slate-400 text-xs">{edu.school}</div>
-                    <div className="text-slate-500 text-xs mt-1">{edu.graduationDate}</div>
+                    <div className="text-slate-500 text-xs mt-1">{formatDate(edu.graduationDate)}</div>
                     {edu.gpa && <div className="text-slate-500 text-xs">GPA: {edu.gpa}</div>}
                     {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                       <p key={f.id} className="text-xs text-slate-400 mt-0.5"><span className="font-semibold text-slate-300">{f.label}:</span> {f.value}</p>
@@ -3271,7 +3283,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="text-base font-bold text-slate-800">{job.title}</h3>
                     <span className="text-xs text-gray-600 whitespace-nowrap ml-4">
-                      {job.startDate} - {job.current ? 'Present' : job.endDate}
+                      {formatDate(job.startDate)} - {job.current ? 'Present' : formatDate(job.endDate)}
                     </span>
                   </div>
                   <p className="text-base text-cyan-600 font-semibold mb-2">{job.company}{job.location && ` | ${job.location}`}</p>
@@ -3398,7 +3410,7 @@ const AcademicTemplate = ({ profile }) => {
                     <div key={f.id} style={{ fontSize: '10pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</div>
                   ))}
                 </div>
-                <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>{edu.graduationDate || ''}</span>
+                <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>{formatDate(edu.graduationDate) || ''}</span>
               </div>
             </div>
           ))}
@@ -3414,7 +3426,7 @@ const AcademicTemplate = ({ profile }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <strong>{r.title}{r.institution ? `, ${r.institution}` : ''}{r.location ? `, ${r.location}` : ''}</strong>
                 <span style={{ whiteSpace: 'nowrap', marginLeft: '12px', fontSize: '10pt' }}>
-                  {r.startDate}{(r.startDate || r.endDate) ? ' – ' : ''}{r.current ? 'Present' : r.endDate}
+                  {formatDate(r.startDate)}{(r.startDate || r.endDate) ? ' – ' : ''}{r.current ? 'Present' : formatDate(r.endDate)}
                 </span>
               </div>
               {r.bullets?.filter(b => b.trim()).length > 0 && (
@@ -3532,6 +3544,86 @@ const AcademicTemplate = ({ profile }) => {
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Serialize profile → plain text resume for AI prompts
+const profileToResumeText = (prof) => {
+  const lines = [];
+  const p = prof.personal || {};
+  if (p.fullName) lines.push(p.fullName);
+  const contact = [p.email, p.phone, p.location].filter(Boolean).join(' | ');
+  if (contact) lines.push(contact);
+  const links = [p.linkedin, p.github, p.portfolio, p.orcid ? `ORCID: ${p.orcid}` : null].filter(Boolean).join(' | ');
+  if (links) lines.push(links);
+  if (p.summary) lines.push('\nSUMMARY\n' + p.summary);
+
+  if (prof.workExperience?.length) {
+    lines.push('\nWORK EXPERIENCE');
+    prof.workExperience.forEach(j => {
+      lines.push(`${j.title || ''} at ${j.company || ''} (${j.startDate || ''} – ${j.current ? 'Present' : (j.endDate || '')})`);
+      (j.bullets || []).filter(b => b.trim()).forEach(b => lines.push('• ' + b));
+    });
+  }
+
+  if (prof.researchExperience?.length) {
+    lines.push('\nRESEARCH EXPERIENCE');
+    prof.researchExperience.forEach(r => {
+      lines.push(`${r.title || ''}, ${r.institution || ''} (${formatDate(r.startDate) || ''} – ${r.current ? 'Present' : (formatDate(r.endDate) || '')})`);
+      (r.bullets || []).filter(b => b.trim()).forEach(b => lines.push('• ' + b));
+    });
+  }
+
+  if (prof.education?.length) {
+    lines.push('\nEDUCATION');
+    prof.education.forEach(e => {
+      lines.push(`${e.degree || ''} in ${e.major || ''}, ${e.school || ''} (${e.graduationDate || ''})`);
+      if (e.gpa) lines.push('GPA: ' + e.gpa);
+      if (e.thesis) lines.push('Thesis: ' + e.thesis);
+    });
+  }
+
+  const tech = prof.skills?.technical || [];
+  const soft = prof.skills?.soft || [];
+  const lab  = prof.skills?.laboratory || [];
+  const lang = prof.skills?.languages || [];
+  const certs = prof.skills?.certifications || [];
+  if (tech.length || soft.length || lab.length || lang.length || certs.length) {
+    lines.push('\nSKILLS');
+    if (tech.length)  lines.push('Technical: ' + tech.join(', '));
+    if (soft.length)  lines.push('Professional: ' + soft.join(', '));
+    if (lab.length)   lines.push('Laboratory: ' + lab.join(', '));
+    if (lang.length)  lines.push('Languages: ' + lang.join(', '));
+    if (certs.length) lines.push('Certifications: ' + certs.join(', '));
+  }
+
+  if (prof.projects?.length) {
+    lines.push('\nPROJECTS');
+    prof.projects.forEach(pr => {
+      lines.push(pr.name + (pr.technologies ? ` | ${pr.technologies}` : ''));
+      if (pr.description) lines.push(pr.description);
+    });
+  }
+
+  if (prof.publications?.length) {
+    lines.push('\nPUBLICATIONS');
+    prof.publications.forEach(pub => {
+      lines.push([pub.authors, pub.title, pub.journal, pub.year, pub.doi ? `DOI: ${pub.doi}` : null].filter(Boolean).join('. '));
+    });
+  }
+
+  if (prof.awards?.length) {
+    lines.push('\nAWARDS & HONORS');
+    prof.awards.forEach(a => lines.push(`${a.title || ''}${a.org ? `, ${a.org}` : ''}${a.year ? ` (${a.year})` : ''}`));
+  }
+
+  (prof.customSections || []).forEach(sec => {
+    if (sec.title && sec.entries?.some(e => e.text?.trim())) {
+      lines.push(`\n${sec.title.toUpperCase()}`);
+      sec.entries.filter(e => e.text?.trim()).forEach(e => lines.push('• ' + e.text));
+    }
+  });
+
+  return lines.join('\n').trim();
+};
+
 const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToLoad, setSavedResumeToLoad, theme, mode }) => {
   const isLight = theme === 'light';
   const atsBadge = (score) => {
@@ -3547,6 +3639,26 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
   const [selectedTemplate, setSelectedTemplate] = useState(() => savedResumeToLoad?.template || defaultTemplate);
   const [resumeName, setResumeName] = useState('');
   const [includeAllItems, setIncludeAllItems] = useState(false);
+  const [coachingJD, setCoachingJD] = useState('');
+  const [coachingCompanies, setCoachingCompanies] = useState('');
+  const [coachingToast, setCoachingToast] = useState('');
+
+  const launchInClaude = (prompt) => {
+    const url = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
+    window.open(url, '_blank', 'noopener');
+    setCoachingToast('Opening Claude… if the prompt didn\'t auto-fill, press Ctrl+V / ⌘V to paste.');
+    setTimeout(() => setCoachingToast(''), 5000);
+  };
+
+  const resumeText = profileToResumeText(profile);
+  const allBullets = [
+    ...(profile.workExperience || []).flatMap(j =>
+      (j.bullets || []).filter(b => b.trim()).map(b => `[${j.title || 'Role'} @ ${j.company || ''}] ${b}`)
+    ),
+    ...(profile.researchExperience || []).flatMap(r =>
+      (r.bullets || []).filter(b => b.trim()).map(b => `[${r.title || 'Research'} @ ${r.institution || ''}] ${b}`)
+    ),
+  ].join('\n');
 
   useEffect(() => {
     if (savedResumeToLoad) setSavedResumeToLoad(null);
@@ -4137,6 +4249,110 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
               )}
             </div>
           </div>
+
+          {/* ─── AI COACHING PANEL ─────────────────────────────────────── */}
+          <div className="ny-card rounded-lg p-6 border ny-border mt-6">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl">🤖</span>
+              <h3 className="text-lg font-bold ny-text-1">AI Coaching</h3>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-medium ml-1">Opens Claude</span>
+            </div>
+            <p className="ny-text-3 text-sm mb-5">One click → Claude opens in a new tab with your resume pre-loaded. Each prompt targets a specific weakness.</p>
+
+            {coachingToast && (
+              <div className="mb-4 px-4 py-2 rounded-lg bg-green-500/20 text-green-300 text-sm border border-green-500/30">
+                ✅ {coachingToast}
+              </div>
+            )}
+
+            {/* Row 1: standalone prompts */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <button
+                onClick={() => launchInClaude(
+                  `Here is my resume:\n\n${resumeText}\n\n---\nYou are a senior hiring manager at a top company in my industry. Tell me honestly: what's weak, what's missing, and what would make you reject this resume immediately. Be direct, not encouraging.`
+                )}
+                className="group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-red-400/60 bg-red-500/5 hover:bg-red-500/10 transition-all text-left"
+              >
+                <span className="text-base font-semibold ny-text-1 group-hover:text-red-300 transition-colors">🔥 Brutal Review</span>
+                <span className="text-xs ny-text-3">Hiring manager tears it apart</span>
+              </button>
+
+              <button
+                onClick={() => launchInClaude(
+                  `Here are my resume bullet points:\n\n${allBullets || '[No bullets found — please add experience bullet points first]'}\n\n---\nRewrite each bullet point using the formula: Action Verb + Task + Measurable Result. If I haven't given you numbers, ask me targeted questions to help me find them. Output each rewritten bullet alongside the original.`
+                )}
+                className="group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-blue-400/60 bg-blue-500/5 hover:bg-blue-500/10 transition-all text-left"
+              >
+                <span className="text-base font-semibold ny-text-1 group-hover:text-blue-300 transition-colors">⚡ Bullet Transformer</span>
+                <span className="text-xs ny-text-3">Action Verb + Task + Result formula</span>
+              </button>
+
+              <button
+                onClick={() => launchInClaude(
+                  `Here is my resume:\n\n${resumeText}\n\n---\nDo a final polish review. Check for: (1) consistency in verb tense across bullet points, (2) clichés or overused phrases like "team player", "hardworking", "detail-oriented", "passionate", "results-driven" — flag every instance, (3) anything that sounds generic and could apply to any candidate. For each issue found, replace it with specific, powerful language that reflects my actual experience.`
+                )}
+                className="group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-green-400/60 bg-green-500/5 hover:bg-green-500/10 transition-all text-left"
+              >
+                <span className="text-base font-semibold ny-text-1 group-hover:text-green-300 transition-colors">✨ Final Polish</span>
+                <span className="text-xs ny-text-3">Kill clichés, fix tense, add specificity</span>
+              </button>
+            </div>
+
+            {/* Row 2: prompts requiring extra input */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-lg border ny-border bg-amber-500/5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-semibold ny-text-1">🎯 ATS Optimizer</span>
+                </div>
+                <p className="text-xs ny-text-3">Paste the job description to find keyword gaps</p>
+                <textarea
+                  value={coachingJD}
+                  onChange={e => setCoachingJD(e.target.value)}
+                  placeholder="Paste job description here…"
+                  rows={3}
+                  className="w-full text-xs ny-input rounded-lg p-2 resize-none border ny-border"
+                />
+                <button
+                  onClick={() => {
+                    if (!coachingJD.trim()) { alert('Paste a job description first'); return; }
+                    launchInClaude(
+                      `Here is my resume:\n\n${resumeText}\n\n---\nHere is the job description I'm applying for:\n\n${coachingJD}\n\n---\nCompare them and tell me: (1) exactly which keywords from the JD are missing from my resume, (2) which of my skills I should highlight more prominently, (3) how I should restructure my bullet points to pass ATS screening for this specific role. Be specific — list the exact keywords and suggested rewrites.`
+                    );
+                  }}
+                  className="w-full py-2 rounded-lg ny-btn-primary text-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <span>Open in Claude →</span>
+                </button>
+              </div>
+
+              <div className="p-4 rounded-lg border ny-border bg-purple-500/5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-semibold ny-text-1">🎨 Tone Match</span>
+                </div>
+                <p className="text-xs ny-text-3">Rewrite summary & skills to match target company voice</p>
+                <input
+                  type="text"
+                  value={coachingCompanies}
+                  onChange={e => setCoachingCompanies(e.target.value)}
+                  placeholder="e.g. Google, Stripe, McKinsey"
+                  className="w-full text-xs ny-input rounded-lg p-2 border ny-border"
+                />
+                <button
+                  onClick={() => {
+                    if (!coachingCompanies.trim()) { alert('Enter at least one target company'); return; }
+                    launchInClaude(
+                      `Here is my resume:\n\n${resumeText}\n\n---\nBased on the tone, language, values, and culture of companies like ${coachingCompanies}, rewrite my professional summary and skills section so it sounds like I genuinely belong in their world — not like a generic applicant. Mirror the language they use in job postings and their public communications.`
+                    );
+                  }}
+                  className="w-full py-2 rounded-lg ny-btn-primary text-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <span>Open in Claude →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* ─────────────────────────────────────────────────────────────── */}
+
         </div>
       </div>
     );
@@ -4333,12 +4549,14 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
             }
 
             @media print {
-              /* 0.75in @page margin handles top/bottom gaps on ALL pages including
-                 page 2, 3, etc. Full-bleed templates lose edge-to-edge in PDF but
-                 gain correct multi-page margins — better trade-off than cut-off content. */
+              /* Full-bleed templates (Creative, Bold) use margin:0 so their gradient
+                 headers and dark sidebars reach the paper edge. Their inner content
+                 divs (p-8) provide the text margins. All other templates keep 0.75in
+                 page margins so the outer wrapper zeroing (#resume-preview > div) still
+                 produces correct spacing. */
               @page {
                 size: A4;
-                margin: 0.75in;
+                margin: ${['creative', 'bold'].includes(selectedTemplate) ? '0' : '0.75in'};
               }
 
               /* Hide everything except resume */

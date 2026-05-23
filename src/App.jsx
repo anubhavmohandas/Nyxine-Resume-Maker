@@ -436,6 +436,10 @@ IMPORTANT RULES:
     return <><DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} mode={mode} /><ThemeToggle /></>;
   }
 
+  if (currentView === 'coach') {
+    return <><CoachView profile={profile} setCurrentView={setCurrentView} /><ThemeToggle /></>;
+  }
+
   if (currentView === 'generate') {
     return <><GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} theme={theme} mode={mode} /><ThemeToggle /></>;
   }
@@ -2119,6 +2123,334 @@ const CustomSectionCard = ({ section, sIdx, onUpdate, onRemove }) => {
     </div>
   );
 };
+
+// ─── AI Coach View ────────────────────────────────────────────────────────────
+const CoachView = ({ profile, setCurrentView }) => {
+  const [openSections, setOpenSections] = useState({
+    review: true, ats: true, linkedin: true, outreach: true, strategy: true
+  });
+  const [toast, setToast] = useState('');
+  const [aiModel, setAiModel] = useState('claude');
+  // inputs
+  const [toneCompanies, setToneCompanies] = useState('');
+  const [atsJD, setAtsJD] = useState('');
+  const [roleAlignRole, setRoleAlignRole] = useState('');
+  const [roleAlignType, setRoleAlignType] = useState('');
+  const [linkedinRole, setLinkedinRole] = useState('');
+  const [coverRole, setCoverRole] = useState('');
+  const [coverCompany, setCoverCompany] = useState('');
+  const [coverJD, setCoverJD] = useState('');
+  const [coldCompany, setColdCompany] = useState('');
+  const [coldRole, setColdRole] = useState('');
+  const [followupContext, setFollowupContext] = useState('');
+  const [followupName, setFollowupName] = useState('');
+  const [blueprintRole, setBlueprintRole] = useState('');
+  const [blueprintCity, setBlueprintCity] = useState('');
+  const [interviewRole, setInterviewRole] = useState('');
+  const [interviewCompany, setInterviewCompany] = useState('');
+
+  const resumeText = profileToResumeText(profile);
+  const allBullets = [
+    ...(profile.workExperience || []).flatMap(j =>
+      (j.bullets || []).filter(b => b.trim()).map(b => `[${j.title || 'Role'} @ ${j.company || ''}] ${b}`)
+    ),
+    ...(profile.researchExperience || []).flatMap(r =>
+      (r.bullets || []).filter(b => b.trim()).map(b => `[${r.title || 'Research'} @ ${r.institution || ''}] ${b}`)
+    ),
+  ].join('\n');
+
+  const launch = (prompt) => {
+    if (aiModel === 'claude') {
+      window.open(`https://claude.ai/new?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener');
+      setToast("Opening Claude… if the prompt didn\'t auto-fill, press Ctrl+V / ⌘V to paste.");
+    } else if (aiModel === 'chatgpt') {
+      navigator.clipboard.writeText(prompt).catch(() => {});
+      window.open('https://chatgpt.com/', '_blank', 'noopener');
+      setToast('Prompt copied + ChatGPT opened → paste with Ctrl+V / ⌘V in the chat box.');
+    } else {
+      navigator.clipboard.writeText(prompt).catch(() => {});
+      setToast('Prompt copied to clipboard — paste it in your AI tool of choice.');
+    }
+    setTimeout(() => setToast(''), 6000);
+  };
+
+  const toggle = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+  const SectionHeader = ({ sectionKey, icon, title, count, color }) => (
+    <button
+      onClick={() => toggle(sectionKey)}
+      className={`w-full flex items-center justify-between p-4 rounded-lg border ny-border transition-all hover:bg-${color}-500/5 text-left`}
+    >
+      <div className="flex items-center gap-3">
+        <span className="text-lg">{icon}</span>
+        <span className="font-semibold ny-text-1">{title}</span>
+        <span className={`text-xs px-2 py-0.5 rounded-full bg-${color}-500/20 text-${color}-300`}>{count} prompts</span>
+      </div>
+      <span className="ny-text-3 text-sm">{openSections[sectionKey] ? '▲' : '▼'}</span>
+    </button>
+  );
+
+  const SimpleBtn = ({ onClick, emoji, title, subtitle, hoverColor }) => (
+    <button
+      onClick={onClick}
+      className={`group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-${hoverColor}-400/60 bg-${hoverColor}-500/5 hover:bg-${hoverColor}-500/10 transition-all text-left`}
+    >
+      <span className={`text-sm font-semibold ny-text-1 group-hover:text-${hoverColor}-300 transition-colors`}>{emoji} {title}</span>
+      <span className="text-xs ny-text-3">{subtitle}</span>
+    </button>
+  );
+
+  const InputCard = ({ emoji, title, subtitle, color, children, onLaunch, disabled }) => (
+    <div className={`p-4 rounded-lg border ny-border bg-${color}-500/5 space-y-2`}>
+      <span className="text-sm font-semibold ny-text-1">{emoji} {title}</span>
+      <p className="text-xs ny-text-3">{subtitle}</p>
+      {children}
+      <button
+        onClick={onLaunch}
+        disabled={disabled}
+        className={`w-full py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${disabled ? 'opacity-40 cursor-not-allowed ny-subcard ny-text-3' : 'ny-btn-primary'}`}
+      >
+        Open in Claude →
+      </button>
+    </div>
+  );
+
+  const inputCls = "w-full text-xs ny-input rounded-lg p-2 border ny-border";
+  const textareaCls = "w-full text-xs ny-input rounded-lg p-2 resize-none border ny-border";
+
+  return (
+    <div className="min-h-screen ny-bg p-4 sm:p-6">
+      <div className="max-w-4xl mx-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold ny-heading-gradient">AI Coach</h1>
+            <p className="ny-text-3 text-sm mt-1">One click → Claude opens with your resume pre-loaded</p>
+          </div>
+          <button onClick={() => setCurrentView('dashboard')} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2 text-sm">
+            <Home className="w-4 h-4" />Dashboard
+          </button>
+        </div>
+
+        {/* Model Selector */}
+        <div className="flex items-center gap-3 mb-5 p-3 ny-card rounded-lg border ny-border">
+          <span className="text-sm ny-text-2 font-medium shrink-0">Open prompt in:</span>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { id: 'claude', label: '✦ Claude', desc: 'Recommended', color: 'orange' },
+              { id: 'chatgpt', label: '⬡ ChatGPT', desc: 'Copies + opens', color: 'green' },
+              { id: 'other', label: '📋 Other', desc: 'Copy only', color: 'gray' },
+            ].map(({ id, label, desc, color }) => (
+              <button
+                key={id}
+                onClick={() => setAiModel(id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                  aiModel === id
+                    ? `bg-${color}-500/20 border-${color}-400/60 text-${color}-300`
+                    : 'ny-border ny-text-3 hover:ny-text-2 hover:bg-white/5'
+                }`}
+              >
+                {label}
+                {id === 'claude' && aiModel !== 'claude' && (
+                  <span className="text-xs opacity-60">({desc})</span>
+                )}
+                {aiModel === id && <span className="text-xs opacity-70">✓</span>}
+              </button>
+            ))}
+          </div>
+          {aiModel === 'chatgpt' && (
+            <span className="text-xs ny-text-3 ml-auto hidden sm:block">Prompt copies to clipboard, ChatGPT opens in new tab</span>
+          )}
+          {aiModel === 'other' && (
+            <span className="text-xs ny-text-3 ml-auto hidden sm:block">Prompt will be copied to your clipboard</span>
+          )}
+        </div>
+
+        {toast && (
+          <div className="mb-5 px-4 py-2 rounded-lg bg-green-500/20 text-green-300 text-sm border border-green-500/30">
+            ✅ {toast}
+          </div>
+        )}
+
+        <div className="space-y-3">
+
+          {/* ── 📄 Resume Review ─────────────────────────────────── */}
+          <div className="ny-card rounded-lg border ny-border overflow-hidden">
+            <SectionHeader sectionKey="review" icon="📄" title="Resume Review" count={4} color="red" />
+            {openSections.review && (
+              <div className="p-4 pt-2 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <SimpleBtn
+                    emoji="⚡" title="6-Second Filter" subtitle="Google recruiter lens — XYZ rewrite + 3 before/afters" hoverColor="red"
+                    onClick={() => launch(
+                      `Here is my resume:\n\n${resumeText}\n\n---\nAct as a senior recruiter at Google who screens resumes in under 6 seconds. Rewrite my resume to pass that filter:\n- Create a 2–3 sentence professional summary with clear positioning and impact\n- Rewrite all bullets using the XYZ formula: Accomplished X, measured by Y, by doing Z\n- Add metrics to every achievement (%, $, scale) — if I haven't given you numbers, ask me targeted questions\n- Replace weak verbs with strong action verbs\n- Cut all filler and enforce a 1-page format (2 pages if 10+ years experience)\n- Remove red flags (gaps, outdated tools, irrelevant content)\n\nOutput:\n1. Full rewritten resume\n2. Before vs after for the 3 weakest bullets\n3. Summary of key improvements`
+                    )}
+                  />
+                  <SimpleBtn
+                    emoji="📊" title="Bullet & Impact Rewriter" subtitle="McKinsey quantification + XYZ formula on every bullet" hoverColor="blue"
+                    onClick={() => launch(
+                      `Here are my resume bullet points:\n\n${allBullets || '[No bullets found — please add experience bullet points first]'}\n\n---\nAct as a resume strategist at McKinsey & Company. Turn every bullet into measurable impact:\n- Rewrite using the formula: Achieved X → Result Y → By doing Z\n- Add metrics: revenue, cost savings, growth %, time saved, scale\n- Quantify leadership, process creation, and improvements\n- Replace weak verbs with strong action verbs\n- Highlight promotions, ownership, and outcomes\n\nOutput:\n1. Before vs after for every bullet\n2. Fully quantified achievement statements\n3. Flag any bullets where you need more info from me to add real numbers`
+                    )}
+                  />
+                  <SimpleBtn
+                    emoji="✨" title="Final Polish" subtitle="Kill clichés, fix tense, replace generic language" hoverColor="green"
+                    onClick={() => launch(
+                      `Here is my resume:\n\n${resumeText}\n\n---\nDo a final polish review. Check for: (1) consistency in verb tense across bullet points, (2) clichés or overused phrases like "team player", "hardworking", "detail-oriented", "passionate", "results-driven" — flag every instance, (3) anything that sounds generic and could apply to any candidate. For each issue found, replace it with specific, powerful language that reflects my actual experience.`
+                    )}
+                  />
+                </div>
+                <InputCard
+                  emoji="🎨" title="Tone Match" subtitle="Rewrite summary & skills to mirror target company voice" color="purple"
+                  onLaunch={() => {
+                    if (!toneCompanies.trim()) { alert('Enter at least one target company'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nBased on the tone, language, values, and culture of companies like ${toneCompanies}, rewrite my professional summary and skills section so it sounds like I genuinely belong in their world — not like a generic applicant. Mirror the language they use in job postings and their public communications.`);
+                  }}
+                  disabled={!toneCompanies.trim()}
+                >
+                  <input type="text" value={toneCompanies} onChange={e => setToneCompanies(e.target.value)} placeholder="e.g. Google, Stripe, McKinsey" className={inputCls} />
+                </InputCard>
+              </div>
+            )}
+          </div>
+
+          {/* ── 🎯 ATS & Targeting ───────────────────────────────── */}
+          <div className="ny-card rounded-lg border ny-border overflow-hidden">
+            <SectionHeader sectionKey="ats" icon="🎯" title="ATS & Targeting" count={2} color="amber" />
+            {openSections.ats && (
+              <div className="p-4 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <InputCard
+                  emoji="🔍" title="ATS Deep Scan" subtitle="Workday/Greenhouse/Lever keyword analysis + ATS score estimate" color="amber"
+                  onLaunch={() => {
+                    if (!atsJD.trim()) { alert('Paste a job description first'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nHere is the job description I'm applying for:\n\n${atsJD}\n\n---\nAct as an ATS expert who understands systems like Workday, Greenhouse, and Lever. Optimize my resume to pass automated screening:\n- Extract and integrate exact keywords from the JD\n- Align formatting for ATS readability (no tables, clean structure)\n- Improve keyword density without sounding unnatural\n- Match skills, titles, and phrasing to the target role\n- Ensure compatibility with parsing systems\n\nOutput:\n1. Optimized resume sections\n2. Keyword match breakdown (what you added and where)\n3. ATS score estimate (before vs after) with improvements`);
+                  }}
+                  disabled={!atsJD.trim()}
+                >
+                  <textarea value={atsJD} onChange={e => setAtsJD(e.target.value)} placeholder="Paste job description here…" rows={3} className={textareaCls} />
+                </InputCard>
+                <InputCard
+                  emoji="🎪" title="Role Alignment" subtitle="Dual pass: ATS parsing + human recruiter rewrite for your target role" color="orange"
+                  onLaunch={() => {
+                    if (!roleAlignRole.trim()) { alert('Enter a target role first'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nI'm targeting the role of ${roleAlignRole}${roleAlignType ? ` at a ${roleAlignType} company` : ''}.\n\nAct as both an ATS system and a human recruiter. Do a dual-pass rewrite:\n1. ATS pass: identify missing keywords for this role, restructure bullets for parsing, align titles and skills section\n2. Human pass: make the resume compelling to a real recruiter — strong narrative, clear career progression, standout achievements\n\nOutput the rewritten resume with notes on what changed in each pass and why.`);
+                  }}
+                  disabled={!roleAlignRole.trim()}
+                >
+                  <input type="text" value={roleAlignRole} onChange={e => setRoleAlignRole(e.target.value)} placeholder="Target role (e.g. Product Manager)" className={inputCls} />
+                  <input type="text" value={roleAlignType} onChange={e => setRoleAlignType(e.target.value)} placeholder="Company type (e.g. Series B startup) — optional" className={`${inputCls} mt-1.5`} />
+                </InputCard>
+              </div>
+            )}
+          </div>
+
+          {/* ── 🔗 LinkedIn & Brand ──────────────────────────────── */}
+          <div className="ny-card rounded-lg border ny-border overflow-hidden">
+            <SectionHeader sectionKey="linkedin" icon="🔗" title="LinkedIn & Brand" count={1} color="blue" />
+            {openSections.linkedin && (
+              <div className="p-4 pt-2">
+                <InputCard
+                  emoji="💼" title="LinkedIn Optimizer" subtitle="Rewrites headline, About, skills, and top 3 experiences for your target role" color="blue"
+                  onLaunch={() => {
+                    if (!linkedinRole.trim()) { alert('Enter a target role first'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nI want to optimize my LinkedIn profile for the role of ${linkedinRole}.\n\nRewrite the following LinkedIn sections using my resume as source material:\n1. Headline — punchy, keyword-rich, under 220 characters\n2. About section — first-person, story-driven, 3–5 short paragraphs, ends with a clear call to action\n3. Top 3 experience descriptions — achievement-focused, not job-description style\n4. Skills section — ranked by relevance to ${linkedinRole}, top 10 to feature\n\nMake it sound human and confident, not like a robot wrote it.`);
+                  }}
+                  disabled={!linkedinRole.trim()}
+                >
+                  <input type="text" value={linkedinRole} onChange={e => setLinkedinRole(e.target.value)} placeholder="Target role (e.g. Growth Marketer)" className={inputCls} />
+                </InputCard>
+              </div>
+            )}
+          </div>
+
+          {/* ── 📬 Outreach ──────────────────────────────────────── */}
+          <div className="ny-card rounded-lg border ny-border overflow-hidden">
+            <SectionHeader sectionKey="outreach" icon="📬" title="Outreach" count={3} color="green" />
+            {openSections.outreach && (
+              <div className="p-4 pt-2 space-y-3">
+                <InputCard
+                  emoji="📝" title="Cover Letter" subtitle="250–300 words, bold opener, cultural fit, 90-day contribution, marks customizable sections" color="green"
+                  onLaunch={() => {
+                    if (!coverRole.trim() || !coverCompany.trim()) { alert('Enter role and company name'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\n${coverJD ? `Here is the job description:\n\n${coverJD}\n\n---\n` : ''}Act as a recruitment director at Robert Half. Write a 250–300 word cover letter for the role of ${coverRole} at ${coverCompany} that gets interviews:\n- Strong opening tied to ${coverCompany}'s context (no generic intro)\n- Show research (product, strategy, or recent move by the company)\n- Match 3 key skills from my resume to the job requirements\n- Include one quantified achievement\n- Demonstrate cultural fit naturally\n- Suggest a relevant contribution in the first 90 days\n- Close confidently with a clear next step\n\nOutput:\n1. Ready-to-send cover letter\n2. Mark in brackets any sections I should customize per application`);
+                  }}
+                  disabled={!coverRole.trim() || !coverCompany.trim()}
+                >
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={coverRole} onChange={e => setCoverRole(e.target.value)} placeholder="Role (e.g. UX Designer)" className={inputCls} />
+                    <input type="text" value={coverCompany} onChange={e => setCoverCompany(e.target.value)} placeholder="Company name" className={inputCls} />
+                  </div>
+                  <textarea value={coverJD} onChange={e => setCoverJD(e.target.value)} placeholder="Job description (optional but recommended)…" rows={2} className={`${textareaCls} mt-1.5`} />
+                </InputCard>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <InputCard
+                    emoji="💬" title="Cold DM" subtitle="LinkedIn message to hiring manager, under 75 words" color="teal"
+                    onLaunch={() => {
+                      if (!coldCompany.trim() || !coldRole.trim()) { alert('Enter company and role'); return; }
+                      launch(`Here is my resume:\n\n${resumeText}\n\n---\nWrite a cold LinkedIn DM I can send to a hiring manager at ${coldCompany} for the role of ${coldRole}.\n\nRules:\n- Under 75 words total\n- No "I hope this message finds you well" or generic openers\n- Lead with a specific insight about ${coldCompany} or the role\n- Connect one concrete achievement from my background to their likely pain point\n- End with one low-friction ask (not "Can we have a 30-min call?")\n- Sound like a person, not a template`);
+                    }}
+                    disabled={!coldCompany.trim() || !coldRole.trim()}
+                  >
+                    <input type="text" value={coldCompany} onChange={e => setColdCompany(e.target.value)} placeholder="Company name" className={inputCls} />
+                    <input type="text" value={coldRole} onChange={e => setColdRole(e.target.value)} placeholder="Role (e.g. Marketing Lead)" className={`${inputCls} mt-1.5`} />
+                  </InputCard>
+
+                  <InputCard
+                    emoji="📨" title="Follow-Up Email" subtitle="Warm professional follow-up after interview or application" color="indigo"
+                    onLaunch={() => {
+                      if (!followupContext.trim()) { alert('Describe the context first'); return; }
+                      launch(`Here is my resume:\n\n${resumeText}\n\n---\nContext: ${followupContext}${followupName ? `\nRecipient: ${followupName}` : ''}\n\nWrite a follow-up email that is:\n- Warm but professional — not desperate or overly formal\n- References something specific from our interaction\n- Reinforces one key reason I'm the right fit\n- Under 120 words\n- Ends with a clear but soft next step\n\nDon't use "I wanted to follow up" or "Just checking in" as an opener.`);
+                    }}
+                    disabled={!followupContext.trim()}
+                  >
+                    <input type="text" value={followupContext} onChange={e => setFollowupContext(e.target.value)} placeholder="Context (e.g. interviewed at Razorpay last Tuesday)" className={inputCls} />
+                    <input type="text" value={followupName} onChange={e => setFollowupName(e.target.value)} placeholder="Recipient name — optional" className={`${inputCls} mt-1.5`} />
+                  </InputCard>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── 🗓️ Strategy & Prep ───────────────────────────────── */}
+          <div className="ny-card rounded-lg border ny-border overflow-hidden">
+            <SectionHeader sectionKey="strategy" icon="🗓️" title="Strategy & Prep" count={2} color="violet" />
+            {openSections.strategy && (
+              <div className="p-4 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <InputCard
+                  emoji="🗺️" title="7-Day Blueprint" subtitle="Day-by-day job hunt execution plan for your role + city" color="violet"
+                  onLaunch={() => {
+                    if (!blueprintRole.trim()) { alert('Enter a target role first'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nI'm looking for a ${blueprintRole} role${blueprintCity ? ` in ${blueprintCity}` : ''}.\n\nBuild me a detailed 7-day job hunt execution plan. For each day include:\n- Specific tasks (not vague goals)\n- Exact platforms or tools to use\n- Scripts or templates where relevant\n- Metrics to hit (e.g. "apply to 5 roles", "send 3 cold DMs")\n\nBase the strategy on my actual background from the resume above. Make it realistic and actionable, not motivational fluff.`);
+                  }}
+                  disabled={!blueprintRole.trim()}
+                >
+                  <input type="text" value={blueprintRole} onChange={e => setBlueprintRole(e.target.value)} placeholder="Target role (e.g. Data Analyst)" className={inputCls} />
+                  <input type="text" value={blueprintCity} onChange={e => setBlueprintCity(e.target.value)} placeholder="City / Remote — optional" className={`${inputCls} mt-1.5`} />
+                </InputCard>
+
+                <InputCard
+                  emoji="🎤" title="Interview Domination" subtitle="10 questions + STAR frameworks + red flags for your role" color="rose"
+                  onLaunch={() => {
+                    if (!interviewRole.trim()) { alert('Enter a target role first'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nI have an interview for ${interviewRole}${interviewCompany ? ` at ${interviewCompany}` : ''}.\n\nGive me:\n1. 10 most likely interview questions for this role (mix of behavioural, technical, and situational)\n2. For each question: a STAR-format answer framework using specific details from my resume\n3. 3 red flags an interviewer might notice from my background — and how to pre-empt or reframe them\n4. 2 smart questions I should ask the interviewer\n\nBe direct. Don't give me generic advice — anchor everything to my actual experience.`);
+                  }}
+                  disabled={!interviewRole.trim()}
+                >
+                  <input type="text" value={interviewRole} onChange={e => setInterviewRole(e.target.value)} placeholder="Role (e.g. Software Engineer)" className={inputCls} />
+                  <input type="text" value={interviewCompany} onChange={e => setInterviewCompany(e.target.value)} placeholder="Company name — optional" className={`${inputCls} mt-1.5`} />
+                </InputCard>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView, setSavedResumeToLoad, exportData, importData, clearAllData, mode }) => {
@@ -2234,6 +2566,9 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
             </button>
             <button onClick={() => setCurrentView('wizard')} className="px-4 py-2 ny-btn-secondary rounded-lg">
               Edit Profile
+            </button>
+            <button onClick={() => setCurrentView('coach')} className="px-4 py-2 rounded-lg border ny-border ny-text-1 hover:bg-purple-500/10 hover:border-purple-400/60 flex items-center gap-2 transition-colors">
+              🤖 AI Coach
             </button>
             <button onClick={exportData} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
               <Download className="w-4 h-4" />Export Backup
@@ -3639,26 +3974,9 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
   const [selectedTemplate, setSelectedTemplate] = useState(() => savedResumeToLoad?.template || defaultTemplate);
   const [resumeName, setResumeName] = useState('');
   const [includeAllItems, setIncludeAllItems] = useState(false);
-  const [coachingJD, setCoachingJD] = useState('');
-  const [coachingCompanies, setCoachingCompanies] = useState('');
-  const [coachingToast, setCoachingToast] = useState('');
 
-  const launchInClaude = (prompt) => {
-    const url = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
-    window.open(url, '_blank', 'noopener');
-    setCoachingToast('Opening Claude… if the prompt didn\'t auto-fill, press Ctrl+V / ⌘V to paste.');
-    setTimeout(() => setCoachingToast(''), 5000);
-  };
 
-  const resumeText = profileToResumeText(profile);
-  const allBullets = [
-    ...(profile.workExperience || []).flatMap(j =>
-      (j.bullets || []).filter(b => b.trim()).map(b => `[${j.title || 'Role'} @ ${j.company || ''}] ${b}`)
-    ),
-    ...(profile.researchExperience || []).flatMap(r =>
-      (r.bullets || []).filter(b => b.trim()).map(b => `[${r.title || 'Research'} @ ${r.institution || ''}] ${b}`)
-    ),
-  ].join('\n');
+
 
   useEffect(() => {
     if (savedResumeToLoad) setSavedResumeToLoad(null);
@@ -4250,108 +4568,6 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
             </div>
           </div>
 
-          {/* ─── AI COACHING PANEL ─────────────────────────────────────── */}
-          <div className="ny-card rounded-lg p-6 border ny-border mt-6">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">🤖</span>
-              <h3 className="text-lg font-bold ny-text-1">AI Coaching</h3>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-medium ml-1">Opens Claude</span>
-            </div>
-            <p className="ny-text-3 text-sm mb-5">One click → Claude opens in a new tab with your resume pre-loaded. Each prompt targets a specific weakness.</p>
-
-            {coachingToast && (
-              <div className="mb-4 px-4 py-2 rounded-lg bg-green-500/20 text-green-300 text-sm border border-green-500/30">
-                ✅ {coachingToast}
-              </div>
-            )}
-
-            {/* Row 1: standalone prompts */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <button
-                onClick={() => launchInClaude(
-                  `Here is my resume:\n\n${resumeText}\n\n---\nYou are a senior hiring manager at a top company in my industry. Tell me honestly: what's weak, what's missing, and what would make you reject this resume immediately. Be direct, not encouraging.`
-                )}
-                className="group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-red-400/60 bg-red-500/5 hover:bg-red-500/10 transition-all text-left"
-              >
-                <span className="text-base font-semibold ny-text-1 group-hover:text-red-300 transition-colors">🔥 Brutal Review</span>
-                <span className="text-xs ny-text-3">Hiring manager tears it apart</span>
-              </button>
-
-              <button
-                onClick={() => launchInClaude(
-                  `Here are my resume bullet points:\n\n${allBullets || '[No bullets found — please add experience bullet points first]'}\n\n---\nRewrite each bullet point using the formula: Action Verb + Task + Measurable Result. If I haven't given you numbers, ask me targeted questions to help me find them. Output each rewritten bullet alongside the original.`
-                )}
-                className="group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-blue-400/60 bg-blue-500/5 hover:bg-blue-500/10 transition-all text-left"
-              >
-                <span className="text-base font-semibold ny-text-1 group-hover:text-blue-300 transition-colors">⚡ Bullet Transformer</span>
-                <span className="text-xs ny-text-3">Action Verb + Task + Result formula</span>
-              </button>
-
-              <button
-                onClick={() => launchInClaude(
-                  `Here is my resume:\n\n${resumeText}\n\n---\nDo a final polish review. Check for: (1) consistency in verb tense across bullet points, (2) clichés or overused phrases like "team player", "hardworking", "detail-oriented", "passionate", "results-driven" — flag every instance, (3) anything that sounds generic and could apply to any candidate. For each issue found, replace it with specific, powerful language that reflects my actual experience.`
-                )}
-                className="group flex flex-col items-start gap-1 p-4 rounded-lg border ny-border hover:border-green-400/60 bg-green-500/5 hover:bg-green-500/10 transition-all text-left"
-              >
-                <span className="text-base font-semibold ny-text-1 group-hover:text-green-300 transition-colors">✨ Final Polish</span>
-                <span className="text-xs ny-text-3">Kill clichés, fix tense, add specificity</span>
-              </button>
-            </div>
-
-            {/* Row 2: prompts requiring extra input */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-4 rounded-lg border ny-border bg-amber-500/5 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-semibold ny-text-1">🎯 ATS Optimizer</span>
-                </div>
-                <p className="text-xs ny-text-3">Paste the job description to find keyword gaps</p>
-                <textarea
-                  value={coachingJD}
-                  onChange={e => setCoachingJD(e.target.value)}
-                  placeholder="Paste job description here…"
-                  rows={3}
-                  className="w-full text-xs ny-input rounded-lg p-2 resize-none border ny-border"
-                />
-                <button
-                  onClick={() => {
-                    if (!coachingJD.trim()) { alert('Paste a job description first'); return; }
-                    launchInClaude(
-                      `Here is my resume:\n\n${resumeText}\n\n---\nHere is the job description I'm applying for:\n\n${coachingJD}\n\n---\nCompare them and tell me: (1) exactly which keywords from the JD are missing from my resume, (2) which of my skills I should highlight more prominently, (3) how I should restructure my bullet points to pass ATS screening for this specific role. Be specific — list the exact keywords and suggested rewrites.`
-                    );
-                  }}
-                  className="w-full py-2 rounded-lg ny-btn-primary text-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <span>Open in Claude →</span>
-                </button>
-              </div>
-
-              <div className="p-4 rounded-lg border ny-border bg-purple-500/5 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-semibold ny-text-1">🎨 Tone Match</span>
-                </div>
-                <p className="text-xs ny-text-3">Rewrite summary & skills to match target company voice</p>
-                <input
-                  type="text"
-                  value={coachingCompanies}
-                  onChange={e => setCoachingCompanies(e.target.value)}
-                  placeholder="e.g. Google, Stripe, McKinsey"
-                  className="w-full text-xs ny-input rounded-lg p-2 border ny-border"
-                />
-                <button
-                  onClick={() => {
-                    if (!coachingCompanies.trim()) { alert('Enter at least one target company'); return; }
-                    launchInClaude(
-                      `Here is my resume:\n\n${resumeText}\n\n---\nBased on the tone, language, values, and culture of companies like ${coachingCompanies}, rewrite my professional summary and skills section so it sounds like I genuinely belong in their world — not like a generic applicant. Mirror the language they use in job postings and their public communications.`
-                    );
-                  }}
-                  className="w-full py-2 rounded-lg ny-btn-primary text-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <span>Open in Claude →</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* ─────────────────────────────────────────────────────────────── */}
 
         </div>
       </div>
