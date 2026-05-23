@@ -425,7 +425,7 @@ IMPORTANT RULES:
   );
 
   if (currentView === 'landing') {
-    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} theme={theme} mode={mode} toggleMode={toggleMode} /><ThemeToggle /></>;
+    return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} theme={theme} mode={mode} toggleMode={toggleMode} importData={importData} /><ThemeToggle /></>;
   }
 
   if (currentView === 'wizard') {
@@ -470,7 +470,7 @@ const ModeToggle = ({ mode, toggleMode }) => (
 );
 // ─────────────────────────────────────────────────────────────────────────────
 
-const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes, theme, mode, toggleMode }) => {
+const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes, theme, mode, toggleMode, importData }) => {
   return (
     <div className="min-h-screen ny-bg flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
@@ -535,13 +535,21 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
             </div>
           </div>
 
-          {(profile.personal.fullName || savedResumes.length > 0) && (
-            <div className="text-center pt-4 border-t ny-divider">
-              <button onClick={() => setCurrentView('dashboard')} className="ny-accent hover:opacity-80 flex items-center gap-2 mx-auto">
-                <FileText className="w-4 h-4" />Continue to Dashboard
-              </button>
-            </div>
-          )}
+          <div className="pt-4 border-t ny-divider flex flex-col sm:flex-row items-center justify-center gap-4">
+            <label className="flex items-center gap-2 text-sm ny-text-2 hover:ny-text-1 cursor-pointer transition-colors group">
+              <Upload className="w-4 h-4 group-hover:ny-accent transition-colors" />
+              <span>Import backup (.json)</span>
+              <input type="file" accept=".json" onChange={importData} className="hidden" />
+            </label>
+            {(profile.personal.fullName || savedResumes.length > 0) && (
+              <>
+                <span className="ny-text-3 hidden sm:block">·</span>
+                <button onClick={() => setCurrentView('dashboard')} className="ny-accent hover:opacity-80 flex items-center gap-2 text-sm">
+                  <FileText className="w-4 h-4" />Continue to Dashboard
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="text-center mt-6 ny-text-3 text-sm">
