@@ -2287,7 +2287,7 @@ const CoachView = ({ profile, setCurrentView }) => {
           <span className="font-semibold ny-text-1">{title}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full ${c.badge}`}>{count} prompts</span>
         </div>
-        <span className="ny-text-2 text-sm">{openSections[sectionKey] ? '▲' : '▼'}</span>
+        <span className="ny-text-3 text-sm">{openSections[sectionKey] ? '▲' : '▼'}</span>
       </button>
     );
   };
@@ -2335,7 +2335,7 @@ const CoachView = ({ profile, setCurrentView }) => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold ny-heading-gradient">AI Coach</h1>
-            <p className="ny-text-3 text-sm mt-1">
+            <p className="ny-text-2 text-sm mt-1">
               {aiModel === 'claude' && 'One click → Claude opens with your resume pre-loaded'}
               {aiModel === 'chatgpt' && 'Prompt copies to clipboard + ChatGPT opens → just paste'}
               {aiModel === 'other' && 'Prompt copies to clipboard → paste it in any AI tool'}

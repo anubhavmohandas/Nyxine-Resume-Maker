@@ -37,10 +37,10 @@
   --ny-accent-dim:      rgba(56, 189, 248, 0.14);
   --ny-accent-glow:     rgba(56, 189, 248, 0.08);
 
-  /* Text — 87% off-white to prevent retina burn */
-  --ny-text-1:          #DCE8F2;   /* ~12:1 contrast on bg, cool blue-white   */
-  --ny-text-2:          #7AAEC8;   /* Muted sky blue — secondary info (~5:1)  */
-  --ny-text-3:          #4A7A9B;   /* Dim blue — hints / placeholders (~3:1)  */
+  /* Text */
+  --ny-text-1:          #DCE8F2;   /* Primary — cool blue-white (~12:1)       */
+  --ny-text-2:          #A8C8DF;   /* Secondary — readable muted blue (~7:1)  */
+  --ny-text-3:          #7AAEC8;   /* Tertiary — hints / placeholders (~5:1)  */
 
   /* Semantic colours */
   --ny-success:         #22C55E;
