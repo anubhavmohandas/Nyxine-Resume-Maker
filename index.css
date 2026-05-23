@@ -195,6 +195,12 @@
   }
   .ny-input::placeholder { color: var(--ny-text-3); }
 
+  /* ── Text selection ──────────────────────────────────────────────────── */
+  ::selection {
+    background-color: rgba(56, 189, 248, 0.35);  /* accent tint             */
+    color: #ffffff;                               /* always white on select  */
+  }
+
   /* ── Buttons ─────────────────────────────────────────────────────────── */
   .ny-btn-primary {
     background-color: var(--ny-accent-btn);
