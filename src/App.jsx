@@ -2324,33 +2324,42 @@ const CoachView = ({ profile, setCurrentView }) => {
         </div>
 
         {/* Model Selector */}
-        <div className="flex items-center gap-3 mb-5 p-3 ny-card rounded-lg border ny-border">
+        <div className="flex items-center gap-3 mb-5 p-3 ny-card rounded-lg border ny-border flex-wrap">
           <span className="text-sm ny-text-2 font-medium shrink-0">Open prompt in:</span>
           <div className="flex gap-2 flex-wrap">
-            {[
-              { id: 'claude', label: '✦ Claude', desc: 'Recommended', color: 'orange' },
-              { id: 'chatgpt', label: '⬡ ChatGPT', desc: 'Copies + opens', color: 'green' },
-              { id: 'other', label: '📋 Other', desc: 'Copy only', color: 'gray' },
-            ].map(({ id, label, desc, color }) => (
-              <button
-                key={id}
-                onClick={() => setAiModel(id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
-                  aiModel === id
-                    ? `bg-${color}-500/20 border-${color}-400/60 text-${color}-300`
-                    : 'ny-border ny-text-3 hover:ny-text-2 hover:bg-white/5'
-                }`}
-              >
-                {label}
-                {id === 'claude' && aiModel !== 'claude' && (
-                  <span className="text-xs opacity-60">({desc})</span>
-                )}
-                {aiModel === id && <span className="text-xs opacity-70">✓</span>}
-              </button>
-            ))}
+            <button
+              onClick={() => setAiModel('claude')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                aiModel === 'claude'
+                  ? 'bg-orange-500/20 border-orange-400/60 text-orange-300'
+                  : 'ny-border ny-text-2 hover:bg-white/5'
+              }`}
+            >
+              ✦ Claude {aiModel === 'claude' && <span className="text-xs">✓</span>}
+            </button>
+            <button
+              onClick={() => setAiModel('chatgpt')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                aiModel === 'chatgpt'
+                  ? 'bg-green-500/20 border-green-400/60 text-green-300'
+                  : 'ny-border ny-text-2 hover:bg-white/5'
+              }`}
+            >
+              ⬡ ChatGPT {aiModel === 'chatgpt' && <span className="text-xs">✓</span>}
+            </button>
+            <button
+              onClick={() => setAiModel('other')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                aiModel === 'other'
+                  ? 'bg-slate-500/20 border-slate-400/60 text-slate-300'
+                  : 'ny-border ny-text-2 hover:bg-white/5'
+              }`}
+            >
+              📋 Other {aiModel === 'other' && <span className="text-xs">✓</span>}
+            </button>
           </div>
           {aiModel === 'chatgpt' && (
-            <span className="text-xs ny-text-3 ml-auto hidden sm:block">Prompt copies to clipboard, ChatGPT opens in new tab</span>
+            <span className="text-xs ny-text-3 ml-auto hidden sm:block">Copies prompt + opens ChatGPT → paste with Ctrl+V</span>
           )}
           {aiModel === 'other' && (
             <span className="text-xs ny-text-3 ml-auto hidden sm:block">Prompt will be copied to your clipboard</span>

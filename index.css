@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* ── Tailwind v4 safelist — dynamic classes used in CoachView ─────────────
+   @source inline forces JIT to include classes built via template literals. */
+@source inline("bg-{red,blue,green,amber,orange,purple,teal,indigo,violet,rose,gray,slate}-500/{5,10,20}");
+@source inline("hover:bg-{red,blue,green,amber,orange,purple,teal,indigo,violet,rose,gray,slate}-500/{5,10}");
+@source inline("text-{red,blue,green,amber,orange,purple,teal,indigo,violet,rose,gray,slate}-300");
+@source inline("border-{red,blue,green,amber,orange,purple,teal,indigo,violet,rose,gray,slate}-400/60");
+@source inline("hover:border-{red,blue,green,amber,orange,purple,teal,indigo,violet,rose,gray,slate}-400/60");
+
 /* ══════════════════════════════════════════════════════════════════════════
    NYXINE — Deep Navy + Neon Mint Design System
    Dark mode: deep navy base with proper elevation model + neon mint accent
