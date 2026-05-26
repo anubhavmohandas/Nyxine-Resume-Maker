@@ -163,3 +163,6 @@ Open `http://localhost:5173` in your browser.
 Open-source. Use, modify, and share freely.
 
 Built with React, Vite, Tailwind CSS. AI Coaching powered by Claude (Anthropic).
+
+---
+- **Created with ❤️**
