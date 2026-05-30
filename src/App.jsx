@@ -120,7 +120,7 @@ const NyxineResumeMaker = () => {
   const toggleMode = () => setMode(m => m === 'industry' ? 'academic' : 'industry');
   // ────────────────────────────────────────────────────────────────────────
 
-  const [currentView, setCurrentView] = useState('landing');
+  const [currentView, setCurrentView] = useState('marketing');
   const [currentStep, setCurrentStep] = useState(0);
   const [showStorageWarning, setShowStorageWarning] = useState(true);
   const [profile, setProfile] = useState({
@@ -495,6 +495,10 @@ IMPORTANT RULES:
     </button>
   );
 
+  if (currentView === 'marketing') {
+    return <><MarketingView setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} mode={mode} toggleMode={toggleMode} profile={profile} importData={importData} theme={theme} toggleTheme={toggleTheme} /><ThemeToggle /></>;
+  }
+
   if (currentView === 'landing') {
     return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} theme={theme} mode={mode} toggleMode={toggleMode} importData={importData} /><ThemeToggle /></>;
   }
@@ -517,6 +521,547 @@ IMPORTANT RULES:
 
   return null;
 };
+
+// ── Marketing Landing Page ────────────────────────────────────────────────────
+const TEMPLATES = [
+  { name: 'ATS-Optimized',  best: 'Online applications & tracking systems', ats: 95 },
+  { name: 'Academic CV',    best: 'Research roles, faculty, grant apps',     ats: 95 },
+  { name: 'Classic',        best: 'Finance, law, conservative industries',   ats: 75 },
+  { name: 'Harvard',        best: 'Business, consulting, traditional',       ats: 70 },
+  { name: 'Professional',   best: 'Corporate, human-reviewed applications',  ats: 55 },
+  { name: 'Modern',         best: 'Tech & startups, direct email',           ats: 40 },
+  { name: 'Creative',       best: 'Portfolio submissions, direct outreach',  ats: 20 },
+  { name: 'Bold',           best: 'Portfolio sites & design roles',          ats: 15 },
+];
+const MKT_FAQS = [
+  { q: 'Is NYXINE really free?', a: 'Yes — completely. It\'s an open-source project under the MIT license with no tiers, no paywalled features, and no card required. Every template, both modes, and all AI coaches are included.' },
+  { q: 'Where is my data stored?', a: 'Entirely in your browser\'s local storage. Your profile, saved resumes, and job targets never touch a server. Clearing your browser cache deletes them, so export a JSON backup regularly.' },
+  { q: 'What\'s the difference between Industry and Academic mode?', a: 'Industry is a focused 7-step wizard for company applications. Academic adds a 9-step flow with research-specific fields — publications with DOIs, presentations, grants, ORCID — and defaults to a single-column Academic CV template.' },
+  { q: 'How does the AI coaching work?', a: 'Each coach bakes your resume into a purpose-built prompt and opens Claude in a new tab. You get tailored feedback — a brutal review, bullet rewrites, ATS keyword gaps, and more — with no copy-pasting.' },
+  { q: 'What does the ATS score on each template mean?', a: 'It estimates how cleanly an Applicant Tracking System can parse that layout. Simple single-column templates score highest (ATS-Optimized hits 95%), while bold multi-column designs are best for direct outreach.' },
+  { q: 'Can I self-host or contribute?', a: 'Absolutely. The full source is on GitHub — clone it, run it locally with Vite, deploy your own instance, or open a pull request.' },
+];
+const atsColor = (n) => n >= 80 ? 'var(--ny-success)' : n >= 50 ? 'var(--ny-warning)' : 'var(--ny-danger)';
+
+const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profile, importData, theme, toggleTheme }) => {
+  const [scrolled, setScrolled]     = useState(false);
+  const [openFaq,  setOpenFaq]      = useState(null);
+  const hasProfile = profile.personal.fullName && profile.personal.email;
+
+  // Nav scroll shadow
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Scroll reveal
+  useEffect(() => {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
+    document.querySelectorAll('.mkt-reveal').forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  const startBuilding = () => { setCurrentView('wizard'); setCurrentStep(0); };
+  const scrollTo = (id) => { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); };
+
+  const CheckIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  );
+  const GithubIcon = ({ size = 17 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.9 18.3 5.2 18.3 5.2c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5Z"/></svg>
+  );
+
+  return (
+    <div className="ny-bg" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+
+      {/* ── NAV ── */}
+      <nav className={`mkt-nav ${scrolled ? 'scrolled' : ''}`}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68 }}>
+          <span className="ny-logo-gradient mkt-disp" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '.02em', cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>NYXINE</span>
+          <div className="hidden md:flex items-center gap-8">
+            {['features','modes','coaching','templates','how','pricing'].map(id => (
+              <button key={id} onClick={() => scrollTo(id)} className="ny-text-2 hover:ny-text-1 text-sm font-medium capitalize transition-colors" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>{id === 'how' ? 'How it works' : id.charAt(0).toUpperCase() + id.slice(1)}</button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            {hasProfile && (
+              <button onClick={() => setCurrentView('dashboard')} className="ny-text-2 text-sm font-medium hover:ny-text-1 transition-colors" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Dashboard</button>
+            )}
+            <button onClick={toggleTheme} className="ny-theme-toggle border w-9 h-9 rounded-xl flex items-center justify-center" aria-label="Toggle theme">
+              {theme === 'dark' ? <Sun className="w-4 h-4" style={{ color: 'var(--ny-accent)' }} /> : <Moon className="w-4 h-4" style={{ color: 'var(--ny-accent)' }} />}
+            </button>
+            <button onClick={startBuilding} className="ny-btn-primary px-4 py-2 rounded-xl text-sm font-semibold mkt-disp">Start Building</button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── HERO ── */}
+      <section style={{ padding: '80px 0 90px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div className="grid md:grid-cols-2 gap-14 items-center">
+            {/* Left */}
+            <div className="mkt-reveal">
+              <span className="mkt-eyebrow">Privacy-first resume builder</span>
+              <h1 className="mkt-disp" style={{ fontSize: 'clamp(42px,5.5vw,70px)', fontWeight: 700, lineHeight: 1.0, marginTop: 24, letterSpacing: '-0.03em' }}>
+                Build once.<br /><span className="mkt-grad-title">Generate many.</span>
+              </h1>
+              <p className="ny-text-2" style={{ fontSize: 19, marginTop: 22, maxWidth: 500, lineHeight: 1.6 }}>
+                One master profile. Unlimited targeted resumes for every role — industry or academic. Everything stays in your browser. No account, no tracking.
+              </p>
+
+              {/* Mode toggle in hero */}
+              <div className="mt-7 p-4 ny-card rounded-xl border ny-border inline-flex flex-col gap-2">
+                <p className="text-xs ny-text-3 font-medium uppercase tracking-wider mkt-disp">Choose your track</p>
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-semibold transition-colors ${mode === 'industry' ? 'ny-accent' : 'ny-text-3'}`}>Industry</span>
+                  <button onClick={toggleMode} className="relative w-14 h-7 rounded-full border ny-border-strong transition-all focus:outline-none"
+                    style={{ background: mode === 'academic' ? 'var(--ny-accent)' : 'var(--ny-subcard)', opacity: 1 }} aria-label="Toggle mode">
+                    <span className="absolute top-0.5 w-6 h-6 rounded-full transition-all shadow"
+                      style={{ left: mode === 'academic' ? 'calc(100% - 1.75rem)' : '0.125rem', background: 'white' }} />
+                  </button>
+                  <span className={`text-sm font-semibold transition-colors ${mode === 'academic' ? 'ny-accent' : 'ny-text-3'}`}>Academic</span>
+                </div>
+                <p className="text-xs ny-text-3">
+                  {mode === 'industry' ? '7-step wizard — work, skills, projects' : '9-step wizard — research, publications, ORCID'}
+                </p>
+              </div>
+
+              <div className="flex gap-3 mt-7 flex-wrap">
+                <button onClick={startBuilding} className="ny-btn-primary px-6 py-3 rounded-xl text-base font-semibold mkt-disp flex items-center gap-2">
+                  Launch the app — it's free
+                </button>
+                <a href="https://github.com/anubhavmohandas/Nyxine-Resume-Maker" target="_blank" rel="noopener" className="ny-btn-secondary px-6 py-3 rounded-xl text-base font-semibold mkt-disp flex items-center gap-2 border ny-border-strong" style={{ textDecoration: 'none' }}>
+                  <GithubIcon /> Star on GitHub
+                </a>
+              </div>
+
+              <div className="flex gap-6 mt-6 flex-wrap">
+                {['100% local storage', 'No sign-up required', 'Open source'].map(t => (
+                  <span key={t} className="flex items-center gap-2 ny-text-3 text-sm font-medium">
+                    <CheckIcon />{t}
+                  </span>
+                ))}
+              </div>
+
+              {/* Import / Continue links */}
+              <div className="flex items-center gap-4 mt-5 flex-wrap">
+                <label className="flex items-center gap-2 text-sm ny-text-3 hover:ny-text-2 cursor-pointer transition-colors">
+                  <Upload className="w-3.5 h-3.5" />Import backup (.json)
+                  <input type="file" accept=".json" onChange={importData} className="hidden" />
+                </label>
+                {hasProfile && <>
+                  <span className="ny-text-3 text-xs">·</span>
+                  <button onClick={() => setCurrentView('dashboard')} className="flex items-center gap-2 text-sm ny-text-3 hover:ny-text-2 transition-colors" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <FileText className="w-3.5 h-3.5" />Continue to Dashboard
+                  </button>
+                </>}
+              </div>
+            </div>
+
+            {/* App window mockup — right */}
+            <div className="mkt-reveal hidden md:block" style={{ transitionDelay: '.12s' }}>
+              <div className="mkt-window">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '13px 16px', background: 'var(--ny-card)', borderBottom: '1px solid var(--ny-border)' }}>
+                  <span className="mkt-dot" style={{ width: 11, height: 11, borderRadius: '50%', background: '#E84040', display: 'inline-block' }}></span>
+                  <span className="mkt-dot" style={{ width: 11, height: 11, borderRadius: '50%', background: '#F0B030', display: 'inline-block' }}></span>
+                  <span className="mkt-dot" style={{ width: 11, height: 11, borderRadius: '50%', background: '#22C55E', display: 'inline-block' }}></span>
+                  <span className="ny-text-3 mkt-mono" style={{ marginLeft: 12, fontSize: 12 }}>nyxine.app / generate</span>
+                </div>
+                <div style={{ padding: 22 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                    <span className="mkt-grad-title mkt-disp" style={{ fontWeight: 700, fontSize: 22 }}>NYXINE</span>
+                    <span style={{ display: 'inline-flex', background: 'var(--ny-subcard)', border: '1px solid var(--ny-border-strong)', borderRadius: 999, padding: 3, fontSize: 11.5, fontWeight: 600 }}>
+                      <span style={{ padding: '5px 12px', borderRadius: 999, background: 'linear-gradient(135deg,var(--ny-accent-btn),var(--ny-accent-btn-end))', color: '#fff' }}>Industry</span>
+                      <span className="ny-text-3" style={{ padding: '5px 12px' }}>Academic</span>
+                    </span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 16 }}>
+                    <div>
+                      <div className="ny-text-3 mkt-disp" style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 9 }}>Template</div>
+                      {[['ATS-Optimized','95%','var(--ny-success)',true],['Harvard','70%','var(--ny-warning)',false],['Modern','40%','var(--ny-danger)',false]].map(([n,s,c,sel]) => (
+                        <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, border: `1px solid ${sel ? 'var(--ny-accent)' : 'var(--ny-border)'}`, marginBottom: 7, fontSize: 12.5, color: sel ? 'var(--ny-text-1)' : 'var(--ny-text-2)', background: sel ? 'var(--ny-info-bg)' : 'var(--ny-subcard)', fontWeight: sel ? 600 : 400 }}>
+                          {n}<span style={{ marginLeft: 'auto', fontSize: 10.5, fontWeight: 700, color: c, fontFamily: 'JetBrains Mono,monospace' }}>{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: '#fff', borderRadius: 8, padding: '18px', boxShadow: '0 6px 20px rgba(0,0,0,.3)' }}>
+                      <div style={{ fontFamily: 'Space Grotesk', fontWeight: 700, fontSize: 15, color: '#1A0840' }}>Alex Rivera</div>
+                      <div style={{ fontSize: 9, color: '#6b6480', marginTop: 3 }}>Senior Product Engineer · alex@email.com</div>
+                      <div style={{ height: 6, borderRadius: 3, background: 'linear-gradient(90deg,#7C3AED,#D97706)', marginTop: 13, width: '38%' }}></div>
+                      {['Experience','Skills','Education'].map(h => (
+                        <div key={h}>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: '#7C3AED', letterSpacing: '.05em', textTransform: 'uppercase', margin: '13px 0 6px' }}>{h}</div>
+                          <div style={{ height: 4, borderRadius: 2, background: '#e7e2f0', marginBottom: 5 }}></div>
+                          <div style={{ height: 4, borderRadius: 2, background: '#e7e2f0', width: '80%' }}></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TRUST STRIP ── */}
+      <div className="mkt-trust">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '26px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }} className="mkt-reveal">
+          {[['8','professional templates'],['Zero','data sent to servers'],['2','modes — industry & academic'],['17','AI coaching prompts']].map(([b,t]) => (
+            <div key={t} className="flex items-center gap-3 ny-text-2 font-medium text-sm">
+              <Award className="w-5 h-5 ny-accent flex-shrink-0" style={{ color: 'var(--ny-accent)' }} />
+              <span><strong className="ny-text-1 mkt-disp">{b}</strong> {t}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── FEATURES ── */}
+      <section style={{ padding: '96px 0' }} id="features">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div className="mkt-reveal">
+            <span className="mkt-eyebrow">The master profile model</span>
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+              Enter your history <span className="mkt-grad-head">once</span>. Tailor it forever.
+            </h2>
+            <p className="ny-text-2" style={{ fontSize: 18, marginTop: 18, maxWidth: 620, lineHeight: 1.65 }}>
+              Most builders make you start over for every application. NYXINE flips it — keep one complete profile, then let the keyword matcher assemble the sharpest version for each job.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-16 items-center mt-16">
+            <div className="mkt-reveal mkt-window hidden md:block">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '13px 16px', background: 'var(--ny-card)', borderBottom: '1px solid var(--ny-border)' }}>
+                <span style={{ width: 11, height: 11, borderRadius: '50%', background: '#E84040', display: 'inline-block' }}></span>
+                <span style={{ width: 11, height: 11, borderRadius: '50%', background: '#F0B030', display: 'inline-block' }}></span>
+                <span style={{ width: 11, height: 11, borderRadius: '50%', background: '#22C55E', display: 'inline-block' }}></span>
+                <span className="ny-text-3 mkt-mono" style={{ marginLeft: 12, fontSize: 12 }}>nyxine.app / wizard</span>
+              </div>
+              <div style={{ padding: 22 }}>
+                <div className="ny-text-3 mkt-disp" style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 4 }}>Master profile · step 3 of 7</div>
+                <div style={{ display: 'flex', gap: 5, margin: '8px 0 18px' }}>
+                  {[1,2,3,4,5,6,7].map(i => (
+                    <div key={i} style={{ flex: 1, height: 5, borderRadius: 3, background: i < 3 ? 'var(--ny-success)' : i === 3 ? 'linear-gradient(90deg,var(--ny-accent-btn),var(--ny-accent-btn-end))' : 'var(--ny-border-strong)' }}></div>
+                  ))}
+                </div>
+                {[['Senior Product Engineer','Lumen Labs · 2021 — Present'],['Software Engineer II','Northwind · 2018 — 2021']].map(([t,s]) => (
+                  <div key={t} style={{ padding: 14, borderRadius: 9, border: '1px solid var(--ny-border)', marginBottom: 7, background: 'var(--ny-subcard)' }}>
+                    <div className="ny-text-1 mkt-disp" style={{ fontWeight: 700, fontSize: 13 }}>{t}</div>
+                    <div className="ny-text-3" style={{ fontSize: 11, marginTop: 2 }}>{s}</div>
+                  </div>
+                ))}
+                <div className="ny-accent mkt-disp" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: 11, border: '1px dashed var(--ny-border-strong)', borderRadius: 9, fontSize: 12.5, fontWeight: 600, justifyContent: 'center', marginTop: 4, cursor: 'default' }}>
+                  <Plus className="w-3.5 h-3.5" /> Add field
+                </div>
+              </div>
+            </div>
+            <div className="mkt-reveal space-y-6" style={{ transitionDelay: '.1s' }}>
+              {[
+                { icon: <FileText className="w-5 h-5" />, title: 'Build once, generate many', desc: 'One complete history powers unlimited targeted resumes — no re-typing per application.' },
+                { icon: <Sparkles className="w-5 h-5" />, title: 'Smart keyword matching', desc: 'Paste a job description and a local algorithm scores each experience by relevance — no API call.' },
+                { icon: <Code className="w-5 h-5" />, title: 'Two levels of customization', desc: 'Add custom fields inside any entry, or create entirely new named sections — Patents, Grants, Clinical Rotations.' },
+                { icon: <Save className="w-5 h-5" />, title: 'Save unlimited versions', desc: 'Store a named resume per application with its template, job target, and match analysis. Export anytime.' },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} className="flex gap-4">
+                  <div className="mkt-feat-ico">{icon}</div>
+                  <div>
+                    <h4 className="mkt-disp ny-text-1" style={{ fontSize: 17, fontWeight: 600, marginBottom: 3 }}>{title}</h4>
+                    <p className="ny-text-3" style={{ fontSize: 14.5 }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MODES ── */}
+      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="modes">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+          <div className="mkt-reveal">
+            <span className="mkt-eyebrow">Two tailored workflows</span>
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+              Industry or <span className="mkt-grad-head">Academic</span> — switch anytime
+            </h2>
+            <p className="ny-text-2" style={{ fontSize: 18, marginTop: 18, maxWidth: 580, margin: '18px auto 0', lineHeight: 1.65 }}>
+              A single pill toggle reshapes the entire wizard. Pick the track that fits the role.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 mt-14">
+            {[
+              { tag: 'Industry', title: 'The standard track', desc: 'A focused 7-step wizard for company applications and tech, business, and corporate roles.', items: ['Personal info, work, education, skills', 'Projects & additional info', 'Custom sections for anything else'], steps: '7-step wizard' },
+              { tag: 'Academic', title: 'The research track', desc: 'A 9-step wizard with research-specific fields and a single-column Academic CV template by default.', items: ['Research experience & publications with DOI', 'Presentations, awards, leadership', 'ORCID, ResearchGate, thesis & coursework'], steps: '9-step wizard · Academic CV template' },
+            ].map(({ tag, title, desc, items, steps }, i) => (
+              <div key={tag} className={`mkt-reveal ny-card border ny-border rounded-2xl p-8 text-left`} style={{ transitionDelay: `${i * .1}s` }}>
+                <span className="mkt-grad-head mkt-disp" style={{ fontWeight: 700, fontSize: 13, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tag}</span>
+                <h3 className="mkt-disp ny-text-1" style={{ fontSize: 26, fontWeight: 700, margin: '14px 0 6px' }}>{title}</h3>
+                <p className="ny-text-2" style={{ fontSize: 15 }}>{desc}</p>
+                <ul style={{ listStyle: 'none', marginTop: 20, display: 'flex', flexDirection: 'column', gap: 11 }}>
+                  {items.map(it => (
+                    <li key={it} className="flex gap-3 ny-text-2" style={{ fontSize: 14, alignItems: 'flex-start' }}>
+                      <span style={{ color: 'var(--ny-accent)', flexShrink: 0, marginTop: 2 }}><CheckIcon /></span>{it}
+                    </li>
+                  ))}
+                </ul>
+                <div className="ny-accent mkt-mono" style={{ marginTop: 18, fontSize: 12, fontWeight: 500 }}>{steps}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── AI COACHING ── */}
+      <section style={{ padding: '96px 0' }} id="coaching">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+          <div className="mkt-reveal">
+            <span className="mkt-eyebrow">AI coaching panel</span>
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+              17 prompts that open <span className="mkt-grad-head">Claude</span> with your resume loaded
+            </h2>
+            <p className="ny-text-2" style={{ fontSize: 18, marginTop: 18, maxWidth: 620, margin: '18px auto 0', lineHeight: 1.65 }}>
+              One click bakes your resume into a purpose-built prompt and opens Claude in a new tab. No copy-pasting — just brutally honest feedback.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, marginTop: 56 }}>
+            {[
+              { e: '⚡', t: '6-Second Filter', d: 'Google recruiter lens — XYZ rewrite + before/afters.' },
+              { e: '📊', t: 'Bullet Rewriter', d: 'McKinsey quantification + XYZ formula on every bullet.' },
+              { e: '✨', t: 'Final Polish', d: 'Kill clichés, fix tense, replace generic language.' },
+              { e: '🎯', t: 'ATS Deep Scan', d: 'Workday/Greenhouse keyword analysis + ATS score estimate.' },
+              { e: '🎨', t: 'Tone Match', d: 'Rewrite summary & skills to mirror target company voice.' },
+              { e: '🔎', t: 'Brand Audit', d: 'Gap between how you present vs how the market sees you.' },
+              { e: '✍️', t: 'Magnetic Headline', d: '3 LinkedIn headline variations — authority, outcome, curiosity.' },
+              { e: '📖', t: 'Summary as Story', d: 'Gary Vee voice — hook, origin, proof, CTA.' },
+            ].map(({ e, t, d }, i) => (
+              <div key={t} className={`mkt-reveal ny-card border ny-border rounded-2xl p-6 text-left transition-all hover:-translate-y-1`} style={{ transitionDelay: `${(i % 4) * .05}s` }}>
+                <div style={{ fontSize: 26 }}>{e}</div>
+                <h4 className="mkt-disp ny-text-1" style={{ fontSize: 17, fontWeight: 600, margin: '14px 0 8px' }}>{t}</h4>
+                <p className="ny-text-3" style={{ fontSize: 14 }}>{d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TEMPLATES ── */}
+      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="templates">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+          <div className="mkt-reveal">
+            <span className="mkt-eyebrow">8 professional templates</span>
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+              From <span className="mkt-grad-head">ATS-proof</span> to portfolio-bold
+            </h2>
+            <p className="ny-text-2" style={{ fontSize: 18, marginTop: 18, maxWidth: 580, margin: '18px auto 0', lineHeight: 1.65 }}>
+              Every template shows its ATS-friendliness up front so you pick the right one for the channel.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, marginTop: 56 }}>
+            {TEMPLATES.map((t, i) => (
+              <div key={t.name} className="mkt-reveal ny-card border ny-border rounded-2xl p-6 text-left" style={{ transitionDelay: `${(i % 4) * .05}s` }}>
+                <div className="mkt-disp ny-text-1" style={{ fontWeight: 700, fontSize: 17 }}>{t.name}</div>
+                <div className="ny-text-3" style={{ fontSize: 13, marginTop: 6, minHeight: 38 }}>{t.best}</div>
+                <div className="ny-text-3 mkt-disp" style={{ fontSize: 10.5, letterSpacing: '.08em', textTransform: 'uppercase', marginTop: 14, fontWeight: 600 }}>ATS score</div>
+                <div className="flex items-center gap-3 mt-2">
+                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--ny-subcard)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${t.ats}%`, borderRadius: 3, background: atsColor(t.ats) }}></div>
+                  </div>
+                  <div className="mkt-mono" style={{ fontSize: 13, fontWeight: 700, color: atsColor(t.ats), minWidth: 38, textAlign: 'right' }}>{t.ats}%</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section style={{ padding: '96px 0' }} id="how">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+          <div className="mkt-reveal">
+            <span className="mkt-eyebrow">How it works</span>
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+              From blank page to <span className="mkt-grad-head">tailored PDF</span> in five steps
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-5 mt-16">
+            {[
+              { n: '1', t: 'Choose your mode', d: 'Industry or Academic — toggle right in the hero.' },
+              { n: '2', t: 'Build your profile', d: 'Complete the wizard once with your full history.' },
+              { n: '3', t: 'Generate targeted', d: 'Paste a job, pick a template, let the matcher select.' },
+              { n: '4', t: 'Refine with AI', d: 'Open Claude pre-loaded, iterate on feedback, regenerate.' },
+              { n: '5', t: 'Download PDF', d: 'Print → Save as PDF straight from the preview.' },
+            ].map(({ n, t, d }, i) => (
+              <div key={n} className="mkt-reveal text-left" style={{ transitionDelay: `${i * .06}s` }}>
+                <div className="mkt-step-num mb-4">{n}</div>
+                <h4 className="mkt-disp ny-text-1" style={{ fontSize: 16, fontWeight: 600, marginBottom: 7 }}>{t}</h4>
+                <p className="ny-text-3" style={{ fontSize: 14 }}>{d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRIVACY ── */}
+      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="privacy">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="mkt-reveal">
+              <span className="mkt-eyebrow">Privacy & data</span>
+              <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,42px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+                Your résumé never <span className="mkt-grad-head">leaves your browser</span>
+              </h2>
+              <p className="ny-text-2" style={{ fontSize: 17, marginTop: 18, lineHeight: 1.65 }}>
+                No account, no database, no tracking. The wizard, templates, and keyword matching all run entirely offline on your device.
+              </p>
+              <div className="ny-warning-box border rounded-xl p-4 flex gap-3 mt-6">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ny-warning)' }} />
+                <p style={{ fontSize: 13.5 }}>Clearing browser cache or localStorage deletes your profile. Export a JSON backup regularly.</p>
+              </div>
+            </div>
+            <div className="mkt-reveal space-y-4" style={{ transitionDelay: '.1s' }}>
+              {[
+                { t: '100% local storage', d: 'Everything is saved in your browser — nothing is ever sent to a server.' },
+                { t: 'No account required', d: 'Start immediately — no email, no sign-up, no password to forget.' },
+                { t: 'Offline core features', d: 'Wizard, templates, and keyword matching need no external API.' },
+                { t: 'Export & clear anytime', d: 'Download your full profile as JSON, or wipe all data with one click.' },
+              ].map(({ t, d }) => (
+                <div key={t} className="flex gap-3">
+                  <div className="mkt-priv-ico"><Check className="w-4 h-4" /></div>
+                  <div>
+                    <h4 className="mkt-disp ny-text-1" style={{ fontSize: 15.5, fontWeight: 600 }}>{t}</h4>
+                    <p className="ny-text-3" style={{ fontSize: 14 }}>{d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING ── */}
+      <section style={{ padding: '96px 0' }} id="pricing">
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+          <div className="mkt-reveal">
+            <span className="mkt-eyebrow">Pricing</span>
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+              Free. <span className="mkt-grad-head">Open source.</span> Forever.
+            </h2>
+            <p className="ny-text-2" style={{ fontSize: 18, marginTop: 18, maxWidth: 560, margin: '18px auto 0' }}>
+              No tiers, no paywalls, no "upgrade to export." MIT licensed — clone it, fork it, self-host it.
+            </p>
+          </div>
+          <div className="mkt-reveal ny-card border ny-border rounded-2xl p-10 mt-14 text-left" style={{ transitionDelay: '.08s' }}>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <div className="mkt-grad-title mkt-disp" style={{ fontSize: 'clamp(48px,8vw,80px)', fontWeight: 700, lineHeight: 1 }}>$0</div>
+                <div className="ny-text-3" style={{ fontSize: 15, marginTop: 4 }}>/ forever · no card required</div>
+              </div>
+              <span className="mkt-eyebrow">MIT Licensed</span>
+            </div>
+            <p className="ny-text-2" style={{ fontSize: 16, marginTop: 20, maxWidth: 560 }}>
+              Every template, both modes, all 17 AI coaches, unlimited saved versions — the complete app with nothing held back.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-8">
+              {['All 8 templates','Industry & Academic modes','17 AI coaching prompts','Unlimited saved versions','PDF & JSON export','No ads, no tracking'].map(f => (
+                <div key={f} className="flex items-center gap-2 ny-text-2 text-sm">
+                  <CheckIcon />{f}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3 mt-10 flex-wrap">
+              <button onClick={startBuilding} className="ny-btn-primary px-6 py-3 rounded-xl text-base font-semibold mkt-disp">Launch the app free</button>
+              <a href="https://github.com/anubhavmohandas/Nyxine-Resume-Maker" target="_blank" rel="noopener" className="ny-btn-secondary border ny-border-strong px-6 py-3 rounded-xl text-base font-semibold mkt-disp flex items-center gap-2" style={{ textDecoration: 'none' }}>
+                <GithubIcon />Self-host it
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="faq">
+        <div style={{ maxWidth: 780, margin: '0 auto', padding: '0 32px' }}>
+          <div className="mkt-reveal text-center mb-14">
+            <span className="mkt-eyebrow">FAQ</span>
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
+              Questions, <span className="mkt-grad-head">answered</span>
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {MKT_FAQS.map((f, i) => (
+              <div key={i} className="mkt-reveal ny-card border ny-border rounded-xl overflow-hidden" style={{ transitionDelay: `${(i % 3) * .05}s` }}>
+                <button className="w-full flex items-center justify-between p-5 text-left" onClick={() => setOpenFaq(openFaq === i ? null : i)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <span className="mkt-disp ny-text-1 font-semibold" style={{ fontSize: 16 }}>{f.q}</span>
+                  <ChevronRight className={`w-5 h-5 ny-text-3 flex-shrink-0 ml-4 transition-transform ${openFaq === i ? 'rotate-90' : ''}`} />
+                </button>
+                <div className={`mkt-faq-a ${openFaq === i ? 'open' : ''}`}>
+                  <p className="ny-text-2 px-5 pb-5" style={{ fontSize: 15, lineHeight: 1.65 }}>{f.a}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ── */}
+      <section style={{ padding: '96px 0' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div className="mkt-reveal ny-card border ny-border rounded-3xl p-16 text-center mkt-cta-glow relative">
+            <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(30px,4.5vw,52px)', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
+              Stop rewriting.<br /><span className="mkt-grad-title">Start tailoring.</span>
+            </h2>
+            <p className="ny-text-2" style={{ fontSize: 19, margin: '20px auto 36px', maxWidth: 520 }}>
+              Build your master profile once and generate a sharp, ATS-ready resume for every role in minutes.
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <button onClick={startBuilding} className="ny-btn-primary px-8 py-4 rounded-xl text-lg font-semibold mkt-disp">Launch the app free</button>
+              <a href="https://github.com/anubhavmohandas/Nyxine-Resume-Maker" target="_blank" rel="noopener" className="ny-btn-secondary border ny-border-strong px-8 py-4 rounded-xl text-lg font-semibold mkt-disp flex items-center gap-2" style={{ textDecoration: 'none' }}>
+                <GithubIcon size={20} />View on GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ borderTop: '1px solid var(--ny-border)', padding: '54px 0 40px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div className="flex justify-between gap-10 flex-wrap items-start">
+            <div style={{ maxWidth: 280 }}>
+              <span className="ny-logo-gradient mkt-disp" style={{ fontSize: 22, fontWeight: 700 }}>NYXINE</span>
+              <p className="ny-text-3" style={{ fontSize: 14, marginTop: 14, lineHeight: 1.6 }}>Smart, privacy-first resume generation for industry professionals and academic researchers.</p>
+            </div>
+            <div className="flex gap-16 flex-wrap">
+              {[
+                { heading: 'Product', links: [['Features','#features'],['Templates','#templates'],['How it works','#how'],['Pricing','#pricing'],['FAQ','#faq']] },
+                { heading: 'Resources', links: [['GitHub repo','https://github.com/anubhavmohandas/Nyxine-Resume-Maker'],['Privacy','#privacy']] },
+                { heading: 'Built with', links: [['React 19 + Vite','#'],['Tailwind CSS','#'],['Claude (Anthropic)','#']] },
+              ].map(({ heading, links }) => (
+                <div key={heading}>
+                  <h5 className="mkt-disp ny-text-2" style={{ fontSize: 13, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 16 }}>{heading}</h5>
+                  {links.map(([label, href]) => (
+                    <a key={label} href={href} className="mkt-foot-link" style={{ display: 'block', color: 'var(--ny-text-3)', textDecoration: 'none', fontSize: 14, marginBottom: 10 }}
+                      onMouseEnter={e => e.target.style.color = 'var(--ny-text-1)'} onMouseLeave={e => e.target.style.color = 'var(--ny-text-3)'}>
+                      {label}
+                    </a>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center flex-wrap gap-4 mt-12 pt-6" style={{ borderTop: '1px solid var(--ny-border)' }}>
+            <span className="ny-text-3" style={{ fontSize: 14 }}>© 2026 NYXINE · Open source under MIT</span>
+            <span className="ny-text-3" style={{ fontSize: 14 }}>Created by <a href="https://github.com/anubhavmohandas" target="_blank" rel="noopener" style={{ color: 'var(--ny-accent)', textDecoration: 'none' }}>Anubhav</a></span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ── Mode Toggle Component ─────────────────────────────────────────────────────
 const ModeToggle = ({ mode, toggleMode }) => (
