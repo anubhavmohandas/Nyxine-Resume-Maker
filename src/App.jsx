@@ -606,7 +606,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
             {/* Left */}
             <div className="mkt-reveal">
               <span className="mkt-eyebrow">Privacy-first resume builder</span>
-              <h1 className="mkt-disp" style={{ fontSize: 'clamp(42px,5.5vw,70px)', fontWeight: 700, lineHeight: 1.0, marginTop: 24, letterSpacing: '-0.03em' }}>
+              <h1 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(42px,5.5vw,70px)', fontWeight: 700, lineHeight: 1.0, marginTop: 24, letterSpacing: '-0.03em' }}>
                 Build once.<br /><span className="mkt-grad-title">Generate many.</span>
               </h1>
               <p className="ny-text-2" style={{ fontSize: 19, marginTop: 22, maxWidth: 500, lineHeight: 1.6 }}>
