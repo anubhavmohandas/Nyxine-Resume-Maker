@@ -955,7 +955,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
           <div className="mkt-reveal ny-card border ny-border rounded-2xl p-10 mt-14 text-left" style={{ transitionDelay: '.08s' }}>
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <div className="mkt-grad-title mkt-disp" style={{ fontSize: 'clamp(48px,8vw,80px)', fontWeight: 700, lineHeight: 1 }}>$0</div>
+                <div className="mkt-disp" style={{ fontSize: 'clamp(48px,8vw,80px)', fontWeight: 700, lineHeight: 1 }}><span className="mkt-grad-title" style={{ display: 'inline-block' }}>$0</span></div>
                 <div className="ny-text-3" style={{ fontSize: 15, marginTop: 4 }}>/ forever · no card required</div>
               </div>
               <span className="mkt-eyebrow">MIT Licensed</span>
@@ -1053,7 +1053,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
           </div>
           <div className="flex justify-between items-center flex-wrap gap-4 mt-12 pt-6" style={{ borderTop: '1px solid var(--ny-border)' }}>
             <span className="ny-text-3" style={{ fontSize: 14 }}>© 2026 NYXINE · Open source under MIT</span>
-            <span className="ny-text-3" style={{ fontSize: 14 }}>Created by <a href="https://github.com/anubhavmohandas" target="_blank" rel="noopener" style={{ color: 'var(--ny-accent)', textDecoration: 'none' }}>Anubhav</a></span>
+            <span className="ny-text-3" style={{ fontSize: 14 }}>Created by <a href="https://github.com/anubhavmohandas" target="_blank" rel="noopener" className="mkt-name-grad">Anubhav</a></span>
           </div>
         </div>
       </footer>
