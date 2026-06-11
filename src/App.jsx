@@ -421,13 +421,65 @@ IMPORTANT RULES:
     }
   };
 
-  const exportData = () => {
+  // ── Crypto helpers (AES-GCM, PBKDF2) ───────────────────────────────────
+  const deriveKey = async (passphrase, salt) => {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  };
+
+  const exportData = async () => {
+    const passphrase = window.prompt('🔒 Set a passphrase to protect your backup:\n(Leave blank to export without encryption)');
+    if (passphrase === null) return; // cancelled
+
     const dataStr = JSON.stringify({ profile, savedResumes }, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
+    const filename = `nyxine-backup-${new Date().toISOString().split('T')[0]}`;
+    let blob;
+
+    if (passphrase.trim() === '') {
+      // Plain JSON export
+      blob = new Blob([dataStr], { type: 'application/json' });
+      triggerDownload(blob, `${filename}.json`);
+    } else {
+      // Encrypted export
+      try {
+        const enc = new TextEncoder();
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv   = crypto.getRandomValues(new Uint8Array(12));
+        const key  = await deriveKey(passphrase, salt);
+        const ciphertext = await crypto.subtle.encrypt(
+          { name: 'AES-GCM', iv },
+          key,
+          enc.encode(dataStr)
+        );
+        // Pack: 4-byte magic + salt(16) + iv(12) + ciphertext
+        const magic = new Uint8Array([0x4E, 0x59, 0x58, 0x45]); // "NYXE"
+        const payload = new Uint8Array(4 + 16 + 12 + ciphertext.byteLength);
+        payload.set(magic, 0);
+        payload.set(salt, 4);
+        payload.set(iv, 20);
+        payload.set(new Uint8Array(ciphertext), 32);
+        blob = new Blob([payload], { type: 'application/octet-stream' });
+        triggerDownload(blob, `${filename}.nyxine`);
+      } catch (err) {
+        alert('Export failed: ' + err.message);
+      }
+    }
+  };
+
+  const triggerDownload = (blob, filename) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `nyxine-backup-${new Date().toISOString().split('T')[0]}.json`);
+    link.setAttribute('download', filename);
     link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
@@ -438,33 +490,72 @@ IMPORTANT RULES:
   const importData = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    // Reset input so same file can be re-imported if needed
     e.target.value = '';
+
     const reader = new FileReader();
-    reader.onload = (event) => {
-      let data;
-      try {
-        data = JSON.parse(event.target.result);
-      } catch {
-        alert('Import failed — the file is not valid JSON. Please export a fresh backup and try again.');
-        return;
-      }
+
+    const applyData = (data) => {
       try {
         if (!data || typeof data !== 'object') {
           alert('Import failed — unexpected file structure.');
           return;
         }
-        // Support both { profile, savedResumes } and bare profile object
         const rawProfile = data.profile || (data.personal ? data : null);
         if (rawProfile) setProfile(migrateDatesInProfile(rawProfile));
         if (data.savedResumes && Array.isArray(data.savedResumes)) setSavedResumes(data.savedResumes);
         alert('✅ Data imported successfully!');
         setCurrentView('dashboard');
       } catch (err) {
-        alert(`Import failed — ${err.message || 'could not apply the data. Try exporting a fresh backup.'}`);
+        alert(`Import failed — ${err.message || 'could not apply the data.'}`);
       }
     };
-    reader.readAsText(file);
+
+    if (file.name.endsWith('.nyxine')) {
+      // Encrypted file
+      reader.onload = async (event) => {
+        try {
+          const buf = new Uint8Array(event.target.result);
+          const magic = buf.slice(0, 4);
+          if (String.fromCharCode(...magic) !== 'NYXE') {
+            alert('Import failed — not a valid Nyxine encrypted backup.');
+            return;
+          }
+          const passphrase = window.prompt('🔒 Enter the passphrase for this backup:');
+          if (passphrase === null) return;
+          const salt = buf.slice(4, 20);
+          const iv   = buf.slice(20, 32);
+          const ciphertext = buf.slice(32);
+          try {
+            const key = await deriveKey(passphrase, salt);
+            const plaintext = await crypto.subtle.decrypt(
+              { name: 'AES-GCM', iv },
+              key,
+              ciphertext
+            );
+            const data = JSON.parse(new TextDecoder().decode(plaintext));
+            applyData(data);
+          } catch {
+            alert('❌ Wrong passphrase or corrupted file.');
+          }
+        } catch (err) {
+          alert('Import failed — ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      // Plain JSON file
+      reader.onload = (event) => {
+        let data;
+        try {
+          data = JSON.parse(event.target.result);
+        } catch {
+          alert('Import failed — the file is not valid JSON.');
+          return;
+        }
+        applyData(data);
+      };
+      reader.readAsText(file);
+    }
   };
 
   const clearAllData = () => {
@@ -660,7 +751,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
               <div className="flex items-center gap-4 mt-5 flex-wrap">
                 <label className="flex items-center gap-2 text-sm ny-text-3 hover:ny-text-2 cursor-pointer transition-colors">
                   <Upload className="w-3.5 h-3.5" />Import backup (.json)
-                  <input type="file" accept=".json" onChange={importData} className="hidden" />
+                  <input type="file" accept=".json,.nyxine" onChange={importData} className="hidden" />
                 </label>
                 {hasProfile && <>
                   <span className="ny-text-3 text-xs">·</span>
@@ -1164,7 +1255,7 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
             <label className="flex items-center gap-2 text-sm ny-text-2 hover:ny-text-1 cursor-pointer transition-colors group">
               <Upload className="w-4 h-4 group-hover:ny-accent transition-colors" />
               <span>Import backup (.json)</span>
-              <input type="file" accept=".json" onChange={importData} className="hidden" />
+              <input type="file" accept=".json,.nyxine" onChange={importData} className="hidden" />
             </label>
             {(profile.personal.fullName || savedResumes.length > 0) && (
               <>
@@ -3213,7 +3304,7 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
               </button>
               <label className="px-3 py-2 ny-btn-secondary rounded text-sm flex items-center gap-1.5 cursor-pointer">
                 <Upload className="w-4 h-4" />Import
-                <input type="file" accept=".json" onChange={importData} className="hidden" />
+                <input type="file" accept=".json,.nyxine" onChange={importData} className="hidden" />
               </label>
             </div>
           </div>
