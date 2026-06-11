@@ -427,9 +427,12 @@ IMPORTANT RULES:
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `nyxine-backup-${new Date().toISOString().split('T')[0]}.json`;
+    link.setAttribute('download', `nyxine-backup-${new Date().toISOString().split('T')[0]}.json`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const importData = (e) => {
@@ -1094,10 +1097,10 @@ const ModeToggle = ({ mode, toggleMode }) => (
 
 const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView, setCurrentStep, profile, savedResumes, theme, mode, toggleMode, importData }) => {
   return (
-    <div className="min-h-screen ny-bg flex items-center justify-center p-6">
+    <div className="min-h-screen ny-bg flex items-center justify-center p-3 sm:p-6">
       <div className="max-w-4xl w-full">
         {showStorageWarning && (
-          <div className="mb-6 ny-card border ny-border rounded-lg p-6">
+          <div className="mb-4 sm:mb-6 ny-card border ny-border rounded-lg p-4 sm:p-6">
             <div className="flex items-start gap-4">
               <AlertCircle className="w-6 h-6 ny-accent flex-shrink-0 mt-1" />
               <div className="flex-1">
@@ -1117,11 +1120,11 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
           </div>
         )}
 
-        <div className="ny-card rounded-2xl shadow-2xl p-8 border ny-border">
-          <div className="text-center mb-8">
-            <h1 className={`text-5xl font-bold mb-4 ${theme === 'dark' ? 'ny-title-dark' : 'ny-title-light'}`} style={{ letterSpacing: '0.08em' }}>NYXINE</h1>
-            <p className="text-xl ny-text-2">Smart Resume Builder</p>
-            <p className="ny-text-2 mt-2">Enter once. Generate targeted resumes. Stay authentic.</p>
+        <div className="ny-card rounded-2xl shadow-2xl p-5 sm:p-8 border ny-border">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className={`text-4xl sm:text-5xl font-bold mb-3 sm:mb-4 ${theme === 'dark' ? 'ny-title-dark' : 'ny-title-light'}`} style={{ letterSpacing: '0.08em' }}>NYXINE</h1>
+            <p className="text-lg sm:text-xl ny-text-2">Smart Resume Builder</p>
+            <p className="ny-text-2 mt-2 text-sm sm:text-base">Enter once. Generate targeted resumes. Stay authentic.</p>
 
             {/* Mode Toggle */}
             <div className="mt-5 flex flex-col items-center gap-2">
@@ -1275,34 +1278,40 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
   };
 
   return (
-    <div className="min-h-screen ny-bg p-6">
+    <div className="min-h-screen ny-bg p-3 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="ny-card rounded-lg p-6 mb-6 border ny-border">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold ny-text-1">Build Your Profile</h2>
-            <div className="flex items-center gap-4">
+        <div className="ny-card rounded-lg p-3 sm:p-6 mb-4 sm:mb-6 border ny-border">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base sm:text-lg font-semibold ny-text-1">Build Your Profile</h2>
+            <div className="flex items-center gap-2 sm:gap-4">
               <ModeToggle mode={mode} toggleMode={() => { toggleMode(); setCurrentStep(0); }} />
-              <span className="ny-text-2 text-sm">{currentStep + 1} of {steps.length}</span>
+              <span className="ny-text-2 text-xs sm:text-sm whitespace-nowrap">{currentStep + 1}/{steps.length}</span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             {steps.map((step, idx) => (
-              <div key={idx} className={`flex-1 h-2 rounded-full transition-all ${idx < currentStep ? 'ny-progress-done' : idx === currentStep ? 'ny-progress-active' : 'ny-progress-pending'}`} />
+              <div key={idx} className={`flex-1 h-1.5 sm:h-2 rounded-full transition-all ${idx < currentStep ? 'ny-progress-done' : idx === currentStep ? 'ny-progress-active' : 'ny-progress-pending'}`} />
             ))}
           </div>
-          <div className="flex justify-between mt-3">
-            {steps.map((step, idx) => (
-              <div key={idx} className={`text-xs ${idx === currentStep ? 'ny-accent font-semibold' : idx < currentStep ? 'ny-success-text' : 'ny-text-3'}`}>
-                {step.name}
-              </div>
-            ))}
+          {/* On mobile: show only current step name. On sm+: show all labels */}
+          <div className="mt-2 sm:mt-3">
+            <div className="sm:hidden text-xs ny-accent font-semibold">
+              {steps[currentStep].name}
+            </div>
+            <div className="hidden sm:flex justify-between">
+              {steps.map((step, idx) => (
+                <div key={idx} className={`text-xs ${idx === currentStep ? 'ny-accent font-semibold' : idx < currentStep ? 'ny-success-text' : 'ny-text-3'}`}>
+                  {step.name}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="ny-card rounded-lg p-8 border ny-border">
-          <div className="flex items-center gap-3 mb-6">
-            <CurrentStepIcon className="w-8 h-8 ny-accent" />
-            <h2 className="text-2xl font-bold ny-text-1">{steps[currentStep].name}</h2>
+        <div className="ny-card rounded-lg p-4 sm:p-8 border ny-border">
+          <div className="flex items-center gap-3 mb-5 sm:mb-6">
+            <CurrentStepIcon className="w-6 h-6 sm:w-8 sm:h-8 ny-accent" />
+            <h2 className="text-xl sm:text-2xl font-bold ny-text-1">{steps[currentStep].name}</h2>
           </div>
 
           {/* Industry mode steps */}
@@ -1324,8 +1333,8 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
           {mode === 'academic' && currentStep === 7 && <ActivitiesStep profile={profile} setProfile={setProfile} />}
           {mode === 'academic' && currentStep === 8 && <CustomSectionsStep profile={profile} setProfile={setProfile} />}
 
-          <div className="flex justify-between mt-8 pt-6 border-t ny-divider">
-            <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : setCurrentView('landing')} className="px-6 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
+          <div className="flex justify-between mt-6 sm:mt-8 pt-4 sm:pt-6 border-t ny-divider">
+            <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : setCurrentView('landing')} className="px-4 sm:px-6 py-2 ny-btn-secondary rounded-lg flex items-center gap-1.5 text-sm sm:text-base">
               <ChevronLeft className="w-4 h-4" />{currentStep === 0 ? 'Back' : 'Previous'}
             </button>
             {currentStep < steps.length - 1 ? (
@@ -1333,7 +1342,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
                 if (validateStep(currentStep)) {
                   setCurrentStep(currentStep + 1);
                 }
-              }} className="px-6 py-2 ny-btn-primary rounded-lg flex items-center gap-2">
+              }} className="px-4 sm:px-6 py-2 ny-btn-primary rounded-lg flex items-center gap-1.5 text-sm sm:text-base">
                 Next<ChevronRight className="w-4 h-4" />
               </button>
             ) : (
@@ -1341,7 +1350,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
                 if (validateStep(currentStep)) {
                   setCurrentView('dashboard');
                 }
-              }} className="px-6 py-2 ny-btn-success rounded-lg flex items-center gap-2">
+              }} className="px-4 sm:px-6 py-2 ny-btn-success rounded-lg flex items-center gap-1.5 text-sm sm:text-base">
                 <Check className="w-4 h-4" />Complete
               </button>
             )}
@@ -3190,57 +3199,59 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
   };
 
   return (
-    <div className="min-h-screen ny-bg p-6">
+    <div className="min-h-screen ny-bg p-3 sm:p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="ny-card rounded-lg p-4 mb-6 border ny-border flex items-center justify-between">
-          <div className="flex items-center gap-3 text-sm ny-text-2">
-            <AlertCircle className="w-4 h-4" />
-            <span>💾 Data stored locally in your browser</span>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={exportData} className="px-4 py-2 ny-btn-secondary rounded text-sm flex items-center gap-2">
-              <Download className="w-4 h-4" />Export
-            </button>
-            <label className="px-4 py-2 ny-btn-secondary rounded text-sm flex items-center gap-2 cursor-pointer">
-              <Upload className="w-4 h-4" />Import
-              <input type="file" accept=".json" onChange={importData} className="hidden" />
-            </label>
+        <div className="ny-card rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border ny-border">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm ny-text-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>💾 Data stored locally in your browser</span>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button onClick={exportData} className="px-3 py-2 ny-btn-secondary rounded text-sm flex items-center gap-1.5">
+                <Download className="w-4 h-4" />Export
+              </button>
+              <label className="px-3 py-2 ny-btn-secondary rounded text-sm flex items-center gap-1.5 cursor-pointer">
+                <Upload className="w-4 h-4" />Import
+                <input type="file" accept=".json" onChange={importData} className="hidden" />
+              </label>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold ny-heading-gradient">Dashboard</h1>
-          <button onClick={() => setCurrentView('landing')} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2 text-sm">
+        <div className="flex items-center justify-between mb-5 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold ny-heading-gradient">Dashboard</h1>
+          <button onClick={() => setCurrentView('landing')} className="px-3 sm:px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2 text-sm">
             <Home className="w-4 h-4" />Home
           </button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          <div className="ny-card rounded-lg p-6 border ny-border">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+          <div className="ny-card rounded-lg p-4 sm:p-6 border ny-border">
             <h2 className="text-xl font-semibold ny-text-1 mb-4">Master Profile</h2>
             <div className="space-y-3 ny-text-2 mb-6">
-              <div className="flex justify-between">
-                <span className="ny-text-2">Name:</span>
-                <span className="font-medium">{profile.personal.fullName || 'Not set'}</span>
+              <div className="flex justify-between gap-2">
+                <span className="ny-text-2 shrink-0">Name:</span>
+                <span className="font-medium text-right truncate">{profile.personal.fullName || 'Not set'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="ny-text-2">Email:</span>
-                <span>{profile.personal.email || 'Not set'}</span>
+              <div className="flex justify-between gap-2">
+                <span className="ny-text-2 shrink-0">Email:</span>
+                <span className="text-right truncate text-sm">{profile.personal.email || 'Not set'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="ny-text-2">Work Experiences:</span>
+              <div className="flex justify-between gap-2">
+                <span className="ny-text-2 shrink-0">Work Experiences:</span>
                 <span className="font-semibold">{profile.workExperience.length}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="ny-text-2">Education:</span>
+              <div className="flex justify-between gap-2">
+                <span className="ny-text-2 shrink-0">Education:</span>
                 <span className="font-semibold">{profile.education.length}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="ny-text-2">Skills:</span>
+              <div className="flex justify-between gap-2">
+                <span className="ny-text-2 shrink-0">Skills:</span>
                 <span className="font-semibold">{profile.skills.technical.length + profile.skills.soft.length}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="ny-text-2">Projects:</span>
+              <div className="flex justify-between gap-2">
+                <span className="ny-text-2 shrink-0">Projects:</span>
                 <span className="font-semibold">{profile.projects.length}</span>
               </div>
             </div>
@@ -3287,22 +3298,22 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
           </div>
         </div>
 
-        <div className="ny-card rounded-lg p-6 border ny-border">
+        <div className="ny-card rounded-lg p-4 sm:p-6 border ny-border">
           <h2 className="text-lg font-semibold ny-text-1 mb-4">Quick Actions</h2>
-          <div className="flex flex-wrap gap-3">
-            <button onClick={() => setCurrentView('generate')} className="px-4 py-2 ny-btn-success rounded-lg flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />Generate Resume
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+            <button onClick={() => setCurrentView('generate')} className="px-3 sm:px-4 py-2 ny-btn-success rounded-lg flex items-center justify-center gap-2 text-sm">
+              <Sparkles className="w-4 h-4" />Generate
             </button>
-            <button onClick={() => setCurrentView('wizard')} className="px-4 py-2 ny-btn-secondary rounded-lg">
+            <button onClick={() => setCurrentView('wizard')} className="px-3 sm:px-4 py-2 ny-btn-secondary rounded-lg text-sm">
               Edit Profile
             </button>
-            <button onClick={() => setCurrentView('coach')} className="px-4 py-2 rounded-lg border ny-border ny-text-1 hover:bg-purple-500/10 hover:border-purple-400/60 flex items-center gap-2 transition-colors">
+            <button onClick={() => setCurrentView('coach')} className="px-3 sm:px-4 py-2 rounded-lg border ny-border ny-text-1 hover:bg-purple-500/10 hover:border-purple-400/60 flex items-center justify-center gap-2 transition-colors text-sm">
               🤖 AI Coach
             </button>
-            <button onClick={exportData} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2">
-              <Download className="w-4 h-4" />Export Backup
+            <button onClick={exportData} className="px-3 sm:px-4 py-2 ny-btn-secondary rounded-lg flex items-center justify-center gap-2 text-sm">
+              <Download className="w-4 h-4" />Export
             </button>
-            <button onClick={clearAllData} className="px-4 py-2 ny-btn-danger rounded-lg">
+            <button onClick={clearAllData} className="col-span-2 sm:col-span-1 px-3 sm:px-4 py-2 ny-btn-danger rounded-lg text-sm">
               Clear All Data
             </button>
           </div>
