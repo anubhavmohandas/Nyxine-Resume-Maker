@@ -73,6 +73,7 @@ const migrateDatesInProfile = (p) => {
       ...e,
       graduationDate: migrate(e.graduationDate),
       startDate: migrate(e.startDate),
+      gradeType: e.gradeType || 'GPA',
     })),
     publications: (p.publications || []).map(pub => ({
       ...pub,
@@ -1700,6 +1701,7 @@ const EducationStep = ({ profile, setProfile, mode }) => {
         location: '',
         graduationDate: '',
         gpa: '',
+        gradeType: 'GPA',
         thesis: '',
         coursework: '',
         customFields: []
@@ -1826,14 +1828,27 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
             />
           </div>
           <div>
-            <label className="block text-sm ny-text-2 mb-2">GPA (optional)</label>
-            <input
-              type="text"
-              value={local.gpa}
-              onChange={(e) => setLocal(prev => ({ ...prev, gpa: e.target.value }))}
-              className="w-full px-4 py-2 ny-input rounded-lg transition-all"
-              placeholder="3.8/4.0"
-            />
+            <label className="block text-sm ny-text-2 mb-2">Grade (optional)</label>
+            <div className="flex gap-2">
+              <select
+                value={local.gradeType || 'GPA'}
+                onChange={(e) => setLocal(prev => ({ ...prev, gradeType: e.target.value }))}
+                className="px-3 py-2 ny-input rounded-lg transition-all w-36 shrink-0"
+              >
+                <option value="GPA">GPA</option>
+                <option value="Percentage">Percentage</option>
+                <option value="CGPA">CGPA</option>
+                <option value="First Class">First Class</option>
+                <option value="Distinction">Distinction</option>
+              </select>
+              <input
+                type="text"
+                value={local.gpa}
+                onChange={(e) => setLocal(prev => ({ ...prev, gpa: e.target.value }))}
+                className="flex-1 px-4 py-2 ny-input rounded-lg transition-all"
+                placeholder={(local.gradeType || 'GPA') === 'GPA' ? '3.8/4.0' : (local.gradeType || 'GPA') === 'Percentage' ? '85%' : (local.gradeType || 'GPA') === 'CGPA' ? '8.5/10' : ''}
+              />
+            </div>
           </div>
         </div>
 
@@ -3361,7 +3376,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
                   <div className="text-gray-700 font-medium">{edu.major}</div>
                   <div className="text-gray-600">{edu.school}</div>
                   <div className="text-gray-500 text-xs mt-0.5">{formatDate(edu.graduationDate)}</div>
-                  {edu.gpa && <div className="text-gray-500 text-xs">GPA: {edu.gpa}</div>}
+                  {edu.gpa && <div className="text-gray-500 text-xs">{edu.gradeType || 'GPA'}: {edu.gpa}</div>}
                   {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                     <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
                   ))}
@@ -3519,7 +3534,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                   </div>
                   <span className="text-sm whitespace-nowrap ml-4">{formatDate(edu.graduationDate)}</span>
                 </div>
-                {edu.gpa && <p className="text-sm text-gray-700 mt-1">GPA: {edu.gpa}</p>}
+                {edu.gpa && <p className="text-sm text-gray-700 mt-1">{edu.gradeType || 'GPA'}: {edu.gpa}</p>}
                 {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                   <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
                 ))}
@@ -3645,7 +3660,7 @@ const HarvardTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
                   {edu.location && <span style={{ textTransform: 'uppercase', marginLeft: '10px', flexShrink: 0 }}>{edu.location}</span>}
                 </div>
                 <p style={{ marginBottom: '1px' }}>{edu.degree}{edu.major ? ` in ${edu.major}` : ''}</p>
-                {edu.gpa && <p>GPA: {edu.gpa}</p>}
+                {edu.gpa && <p>{edu.gradeType || 'GPA'}: {edu.gpa}</p>}
                 {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                   <p key={f.id} style={{ fontSize: '9.5pt', marginTop: '2px' }}><strong>{f.label}:</strong> {f.value}</p>
                 ))}
@@ -3842,7 +3857,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
                   {formatDate(edu.graduationDate)}
                 </span>
               </div>
-              {edu.gpa && <p className="text-sm mt-1" style={{ color: '#000000' }}>GPA: {edu.gpa}</p>}
+              {edu.gpa && <p className="text-sm mt-1" style={{ color: '#000000' }}>{edu.gradeType || 'GPA'}: {edu.gpa}</p>}
               {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                 <p key={f.id} className="text-xs mt-0.5" style={{color:'#000'}}><span className="font-semibold">{f.label}:</span> {f.value}</p>
               ))}
@@ -4047,7 +4062,7 @@ const CreativeTemplate = ({ profile, selectedJobs, displaySkills, displayProject
                     <div className="text-sm text-gray-700">{edu.major}</div>
                     <div className="text-sm text-gray-600">{edu.school}</div>
                     <div className="text-xs text-gray-500 mt-1">{formatDate(edu.graduationDate)}</div>
-                    {edu.gpa && <div className="text-xs text-gray-500">GPA: {edu.gpa}</div>}
+                    {edu.gpa && <div className="text-xs text-gray-500">{edu.gradeType || 'GPA'}: {edu.gpa}</div>}
                     {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                       <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
                     ))}
@@ -4140,7 +4155,7 @@ const ProfessionalColorTemplate = ({ profile, selectedJobs, displaySkills, displ
                     </div>
                     <span className="text-sm text-gray-600 whitespace-nowrap ml-4">{formatDate(edu.graduationDate)}</span>
                   </div>
-                  {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
+                  {edu.gpa && <p className="text-sm text-gray-600 mt-1">{edu.gradeType || 'GPA'}: {edu.gpa}</p>}
                   {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                     <p key={f.id} className="text-xs text-gray-600 mt-0.5"><span className="font-semibold">{f.label}:</span> {f.value}</p>
                   ))}
@@ -4303,7 +4318,7 @@ const BoldTemplate = ({ profile, selectedJobs, displaySkills, displayProjects, d
                     <div className="text-slate-300 text-xs">{edu.major}</div>
                     <div className="text-slate-400 text-xs">{edu.school}</div>
                     <div className="text-slate-500 text-xs mt-1">{formatDate(edu.graduationDate)}</div>
-                    {edu.gpa && <div className="text-slate-500 text-xs">GPA: {edu.gpa}</div>}
+                    {edu.gpa && <div className="text-slate-500 text-xs">{edu.gradeType || 'GPA'}: {edu.gpa}</div>}
                     {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
                       <p key={f.id} className="text-xs text-slate-400 mt-0.5"><span className="font-semibold text-slate-300">{f.label}:</span> {f.value}</p>
                     ))}
@@ -4452,7 +4467,7 @@ const AcademicTemplate = ({ profile }) => {
                 <div>
                   <strong>{edu.degree}{edu.major ? ` in ${edu.major}` : ''}</strong>
                   <div>{edu.school}{edu.location ? `, ${edu.location}` : ''}</div>
-                  {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
+                  {edu.gpa && <div style={{ fontSize: '10pt' }}>{edu.gradeType || 'GPA'}: {edu.gpa}</div>}
                   {edu.coursework && <div style={{ fontSize: '10pt' }}><em>Relevant Coursework:</em> {edu.coursework}</div>}
                   {edu.thesis && <div style={{ fontSize: '10pt' }}><em>Thesis:</em> {edu.thesis}</div>}
                   {(edu.customFields||[]).filter(f=>f.label&&f.value).map(f=>(
@@ -4624,7 +4639,7 @@ const profileToResumeText = (prof) => {
     lines.push('\nEDUCATION');
     prof.education.forEach(e => {
       lines.push(`${e.degree || ''} in ${e.major || ''}, ${e.school || ''} (${e.graduationDate || ''})`);
-      if (e.gpa) lines.push('GPA: ' + e.gpa);
+      if (e.gpa) lines.push((e.gradeType || 'GPA') + ': ' + e.gpa);
       if (e.thesis) lines.push('Thesis: ' + e.thesis);
     });
   }
