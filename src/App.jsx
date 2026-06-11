@@ -680,7 +680,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
 
       {/* ── NAV ── */}
       <nav className={`mkt-nav ${scrolled ? 'scrolled' : ''}`}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68 }}>
+        <div className="flex items-center justify-between" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px', height: 68 }}>
           <span className="ny-logo-gradient mkt-disp" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '.02em', cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>NYXINE</span>
           <div className="hidden md:flex items-center gap-8">
             {['features','modes','coaching','templates','how','pricing'].map(id => (
@@ -700,8 +700,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ padding: '80px 0 90px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+      <section style={{ padding: 'clamp(40px,8vw,80px) 0 clamp(48px,9vw,90px)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
           <div className="grid md:grid-cols-2 gap-14 items-center">
             {/* Left */}
             <div className="mkt-reveal">
@@ -810,7 +810,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
 
       {/* ── TRUST STRIP ── */}
       <div className="mkt-trust">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '26px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }} className="mkt-reveal">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px,3vw,26px) clamp(16px,4vw,32px)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(12px,3vw,24px)', flexWrap: 'wrap' }} className="mkt-reveal">
           {[['8','professional templates'],['Zero','data sent to servers'],['2','modes — industry & academic'],['17','AI coaching prompts']].map(([b,t]) => (
             <div key={t} className="flex items-center gap-3 ny-text-2 font-medium text-sm">
               <Award className="w-5 h-5 ny-accent flex-shrink-0" style={{ color: 'var(--ny-accent)' }} />
@@ -821,8 +821,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </div>
 
       {/* ── FEATURES ── */}
-      <section style={{ padding: '96px 0' }} id="features">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0' }} id="features">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
           <div className="mkt-reveal">
             <span className="mkt-eyebrow">The master profile model</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
@@ -879,8 +879,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── MODES ── */}
-      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="modes">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0', background: 'var(--ny-surface)' }} id="modes">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)', textAlign: 'center' }}>
           <div className="mkt-reveal">
             <span className="mkt-eyebrow">Two tailored workflows</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
@@ -914,8 +914,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── AI COACHING ── */}
-      <section style={{ padding: '96px 0' }} id="coaching">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0' }} id="coaching">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)', textAlign: 'center' }}>
           <div className="mkt-reveal">
             <span className="mkt-eyebrow">AI coaching panel</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
@@ -947,8 +947,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── TEMPLATES ── */}
-      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="templates">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0', background: 'var(--ny-surface)' }} id="templates">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)', textAlign: 'center' }}>
           <div className="mkt-reveal">
             <span className="mkt-eyebrow">8 professional templates</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
@@ -977,8 +977,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section style={{ padding: '96px 0' }} id="how">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0' }} id="how">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)', textAlign: 'center' }}>
           <div className="mkt-reveal">
             <span className="mkt-eyebrow">How it works</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
@@ -1004,8 +1004,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── PRIVACY ── */}
-      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="privacy">
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0', background: 'var(--ny-surface)' }} id="privacy">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="mkt-reveal">
               <span className="mkt-eyebrow">Privacy & data</span>
@@ -1041,8 +1041,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── PRICING ── */}
-      <section style={{ padding: '96px 0' }} id="pricing">
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0' }} id="pricing">
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)', textAlign: 'center' }}>
           <div className="mkt-reveal">
             <span className="mkt-eyebrow">Pricing</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
@@ -1052,7 +1052,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
               No tiers, no paywalls, no "upgrade to export." MIT licensed — clone it, fork it, self-host it.
             </p>
           </div>
-          <div className="mkt-reveal ny-card border ny-border rounded-2xl p-10 mt-14 text-left" style={{ transitionDelay: '.08s' }}>
+          <div className="mkt-reveal ny-card border ny-border rounded-2xl mt-14 text-left" style={{ transitionDelay: '.08s', padding: 'clamp(20px,5vw,40px)' }}>
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <div className="mkt-disp" style={{ fontSize: 'clamp(48px,8vw,80px)', fontWeight: 700, lineHeight: 1 }}><span className="mkt-grad-title" style={{ display: 'inline-block' }}>$0</span></div>
@@ -1081,8 +1081,8 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── FAQ ── */}
-      <section style={{ padding: '96px 0', background: 'var(--ny-surface)' }} id="faq">
-        <div style={{ maxWidth: 780, margin: '0 auto', padding: '0 32px' }}>
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0', background: 'var(--ny-surface)' }} id="faq">
+        <div style={{ maxWidth: 780, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
           <div className="mkt-reveal text-center mb-14">
             <span className="mkt-eyebrow">FAQ</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
@@ -1106,9 +1106,9 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section style={{ padding: '96px 0' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
-          <div className="mkt-reveal ny-card border ny-border rounded-3xl p-16 text-center mkt-cta-glow relative">
+      <section style={{ padding: 'clamp(48px,8vw,96px) 0' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
+          <div className="mkt-reveal ny-card border ny-border rounded-3xl text-center mkt-cta-glow relative" style={{ padding: 'clamp(32px,6vw,64px)' }}>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(30px,4.5vw,52px)', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
               Stop rewriting.<br /><span className="mkt-grad-title">Start tailoring.</span>
             </h2>
@@ -1126,14 +1126,14 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid var(--ny-border)', padding: '54px 0 40px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+      <footer style={{ borderTop: '1px solid var(--ny-border)', padding: 'clamp(28px,5vw,54px) 0 clamp(20px,4vw,40px)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
           <div className="flex justify-between gap-10 flex-wrap items-start">
             <div style={{ maxWidth: 280 }}>
               <span className="ny-logo-gradient mkt-disp" style={{ fontSize: 22, fontWeight: 700 }}>NYXINE</span>
               <p className="ny-text-3" style={{ fontSize: 14, marginTop: 14, lineHeight: 1.6 }}>Smart, privacy-first resume generation for industry professionals and academic researchers.</p>
             </div>
-            <div className="flex gap-16 flex-wrap">
+            <div className="flex gap-8 sm:gap-16 flex-wrap">
               {[
                 { heading: 'Product', links: [['Features','#features'],['Templates','#templates'],['How it works','#how'],['Pricing','#pricing'],['FAQ','#faq']] },
                 { heading: 'Resources', links: [['GitHub repo','https://github.com/anubhavmohandas/Nyxine-Resume-Maker'],['Privacy','#privacy']] },
@@ -1228,7 +1228,7 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
+          <div className="grid sm:grid-cols-2 gap-4 mb-6">
             <div className="ny-subcard rounded-lg p-6 border ny-border-strong opacity-60 relative transition-colors">
               <div className="absolute top-3 right-3 ny-badge-warning text-xs px-2 py-1 rounded-full border">
                 🚧 Coming Soon
@@ -1474,7 +1474,7 @@ const PersonalInfoStep = ({ profile, setProfile, mode }) => {
           placeholder="John Doe"
         />
       </div>
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium ny-text-2 mb-2">Email *</label>
           <input
@@ -1518,7 +1518,7 @@ const PersonalInfoStep = ({ profile, setProfile, mode }) => {
         />
         <p className="text-xs ny-text-3 mt-1">{(local.summary || '').length}/500 characters</p>
       </div>
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium ny-text-2 mb-2">LinkedIn</label>
           <input
@@ -1672,7 +1672,7 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
   };
 
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Job #{idx + 1}</h3>
         <button onClick={() => removeJob(job.id)} className="ny-danger-text hover:opacity-80">
@@ -1681,7 +1681,7 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
       </div>
 
       <div className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Job Title *</label>
             <input
@@ -1704,7 +1704,7 @@ const JobForm = ({ job, idx, setProfile, removeJob }) => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Location</label>
             <input
@@ -1862,7 +1862,7 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
   }, [local, edu.id, setProfile]);
 
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Education #{idx + 1}</h3>
         <button onClick={() => removeEdu(edu.id)} className="ny-danger-text hover:opacity-80">
@@ -1871,7 +1871,7 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
       </div>
 
       <div className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Degree *</label>
             <input
@@ -1894,7 +1894,7 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">School *</label>
             <input
@@ -1917,7 +1917,7 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Graduation Date</label>
             <input
@@ -2172,7 +2172,7 @@ const ProjectForm = ({ proj, idx, setProfile, removeProject }) => {
   }, [local, proj.id, setProfile]);
 
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Project #{idx + 1}</h3>
         <button onClick={() => removeProject(proj.id)} className="ny-danger-text hover:opacity-80">
@@ -2203,7 +2203,7 @@ const ProjectForm = ({ proj, idx, setProfile, removeProject }) => {
           />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Technologies Used</label>
             <input
@@ -2336,13 +2336,13 @@ const ResearchEntryForm = ({ entry, idx, setProfile, removeEntry }) => {
   const addBullet = () => setLocal(prev => ({ ...prev, bullets: [...prev.bullets, ''] }));
   const removeBullet = (i) => { if (local.bullets.length > 1) setLocal(prev => ({ ...prev, bullets: prev.bullets.filter((_, bi) => bi !== i) })); };
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Research Role #{idx + 1}</h3>
         <button onClick={() => removeEntry(entry.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
       </div>
       <div className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Role / Position *</label>
             <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Junior Research Fellow" />
@@ -2352,7 +2352,7 @@ const ResearchEntryForm = ({ entry, idx, setProfile, removeEntry }) => {
             <input type="text" value={local.institution} onChange={e => setLocal(p => ({ ...p, institution: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
           </div>
         </div>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Location</label>
             <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Puducherry, India" />
@@ -2427,7 +2427,7 @@ const PubForm = ({ pub, idx, setProfile, removePub }) => {
     return () => clearTimeout(t);
   }, [local, pub.id, setProfile]);
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Publication #{idx + 1}</h3>
         <button onClick={() => removePub(pub.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
@@ -2441,7 +2441,7 @@ const PubForm = ({ pub, idx, setProfile, removePub }) => {
           <label className="block text-sm ny-text-2 mb-2">Authors</label>
           <input type="text" value={local.authors} onChange={e => setLocal(p => ({ ...p, authors: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Mathew A.A., Kumar S., et al." />
         </div>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Type</label>
             <select value={local.type} onChange={e => setLocal(p => ({ ...p, type: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg">
@@ -2507,7 +2507,7 @@ const PresForm = ({ pres, idx, setProfile, removePres }) => {
     return () => clearTimeout(t);
   }, [local, pres.id, setProfile]);
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Presentation #{idx + 1}</h3>
         <button onClick={() => removePres(pres.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
@@ -2517,7 +2517,7 @@ const PresForm = ({ pres, idx, setProfile, removePres }) => {
           <label className="block text-sm ny-text-2 mb-2">Title *</label>
           <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Identification of free-living amoebae using PCR..." />
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Type</label>
             <select value={local.type} onChange={e => setLocal(p => ({ ...p, type: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg">
@@ -2532,7 +2532,7 @@ const PresForm = ({ pres, idx, setProfile, removePres }) => {
             <input type="month" value={local.date} onChange={e => setLocal(p => ({ ...p, date: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" />
           </div>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Event / Conference</label>
             <input type="text" value={local.event} onChange={e => setLocal(p => ({ ...p, event: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="10th Annual Research Day 2025" />
@@ -2584,13 +2584,13 @@ const AwardForm = ({ award, idx, setProfile, removeAward }) => {
     return () => clearTimeout(t);
   }, [local, award.id, setProfile]);
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Award #{idx + 1}</h3>
         <button onClick={() => removeAward(award.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
       </div>
       <div className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Award / Honor Title *</label>
             <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="GJ-STRAUS Awardee 2024" />
@@ -2600,7 +2600,7 @@ const AwardForm = ({ award, idx, setProfile, removeAward }) => {
             <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
           </div>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Year</label>
             <input type="text" value={local.year} onChange={e => setLocal(p => ({ ...p, year: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="2024" />
@@ -2663,13 +2663,13 @@ const ActivityForm = ({ activity, idx, setProfile, removeActivity }) => {
     return () => clearTimeout(t);
   }, [local, activity.id, setProfile]);
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold ny-text-1">Activity #{idx + 1}</h3>
         <button onClick={() => removeActivity(activity.id)} className="ny-danger-text hover:opacity-80"><Trash2 className="w-4 h-4" /></button>
       </div>
       <div className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Activity / Event Name *</label>
             <input type="text" value={local.name} onChange={e => setLocal(p => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="HIPRACON 2024 National Conference" />
@@ -2679,7 +2679,7 @@ const ActivityForm = ({ activity, idx, setProfile, removeActivity }) => {
             <input type="text" value={local.role} onChange={e => setLocal(p => ({ ...p, role: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Attendee / Organizer / Speaker" />
           </div>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Organizer / Institution</label>
             <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Dept. of Biochemistry, JIPMER" />
@@ -2821,7 +2821,7 @@ const CustomSectionCard = ({ section, sIdx, onUpdate, onRemove }) => {
   const updateEntry = (eId, text) => onUpdate({ ...section, entries: section.entries.map(e => e.id === eId ? { ...e, text } : e) });
 
   return (
-    <div className="ny-subcard rounded-lg p-6 border ny-border-strong">
+    <div className="ny-subcard rounded-lg p-4 sm:p-6 border ny-border-strong">
       <div className="flex items-start justify-between mb-4 gap-4">
         <div className="flex-1">
           <label className="block text-xs ny-text-3 uppercase tracking-wider mb-1">Section Title</label>
@@ -2997,16 +2997,16 @@ const CoachView = ({ profile, setCurrentView }) => {
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start justify-between gap-3 mb-5 sm:mb-6">
           <div>
-            <h1 className="text-3xl font-bold ny-heading-gradient">AI Coach</h1>
-            <p className="ny-text-2 text-sm mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold ny-heading-gradient">AI Coach</h1>
+            <p className="ny-text-2 text-xs sm:text-sm mt-1">
               {aiModel === 'claude' && 'One click → Claude opens with your resume pre-loaded'}
               {aiModel === 'chatgpt' && 'Prompt copies to clipboard + ChatGPT opens → just paste'}
               {aiModel === 'other' && 'Prompt copies to clipboard → paste it in any AI tool'}
             </p>
           </div>
-          <button onClick={() => setCurrentView('dashboard')} className="px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2 text-sm">
+          <button onClick={() => setCurrentView('dashboard')} className="shrink-0 px-3 sm:px-4 py-2 ny-btn-secondary rounded-lg flex items-center gap-2 text-sm">
             <Home className="w-4 h-4" />Dashboard
           </button>
         </div>
@@ -5148,12 +5148,12 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
 
   if (step === 'input') {
     return (
-      <div className="min-h-screen ny-bg p-6">
+      <div className="min-h-screen ny-bg p-3 sm:p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="ny-card rounded-lg p-8 border ny-border">
-            <div className="flex items-center gap-3 mb-6">
-              <Sparkles className="w-8 h-8 ny-accent" />
-              <h2 className="text-2xl font-bold ny-text-1">Generate Targeted Resume</h2>
+          <div className="ny-card rounded-lg p-4 sm:p-8 border ny-border">
+            <div className="flex items-center gap-3 mb-5 sm:mb-6">
+              <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 ny-accent" />
+              <h2 className="text-xl sm:text-2xl font-bold ny-text-1">Generate Targeted Resume</h2>
             </div>
             <p className="ny-text-2 mb-6">Smart keyword matching will analyze the job and select your most relevant experiences.</p>
 
@@ -5369,27 +5369,27 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
                 <button
                   onClick={() => setCurrentView('dashboard')}
-                  className="px-6 py-3 ny-btn-secondary rounded-lg"
+                  className="px-4 sm:px-6 py-3 ny-btn-secondary rounded-lg text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={generateFullResume}
-                  className="px-6 py-3 ny-btn-secondary rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                  className="px-4 sm:px-6 py-3 ny-btn-secondary rounded-lg font-medium flex items-center justify-center gap-2 transition-colors text-sm sm:text-base"
                   title="Include all your experiences, skills and projects — no filtering"
                 >
-                  <FileText className="w-5 h-5" />
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                   Full Resume
                 </button>
                 <button
                   onClick={analyzeWithAI}
                   disabled={!jobTarget.trim()}
-                  className={`flex-1 px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${jobTarget.trim() ? 'ny-btn-primary' : 'opacity-40 ny-accent cursor-not-allowed ny-subcard'}`}
+                  className={`flex-1 px-4 sm:px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors text-sm sm:text-base ${jobTarget.trim() ? 'ny-btn-primary' : 'opacity-40 ny-accent cursor-not-allowed ny-subcard'}`}
                 >
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                   Analyze & Match
                 </button>
               </div>
@@ -5461,84 +5461,84 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
     };
 
     return (
-      <div className="min-h-screen ny-bg p-6">
+      <div className="min-h-screen ny-bg p-3 sm:p-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold ny-text-1 mb-6">
+          <h2 className="text-xl sm:text-3xl font-bold ny-text-1 mb-4 sm:mb-6">
             {analysisResult.fullResume ? 'Complete Resume Preview' : 'Resume Preview'}
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
             {analysisResult.fullResume ? (
               <>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className="text-4xl font-bold mb-2 ny-accent">{selectedJobs.length}</div>
-                    <p className="ny-text-2 text-sm">Experiences</p>
-                    <p className="ny-text-3 text-xs mt-1">All included</p>
+                    <div className="text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ny-accent">{selectedJobs.length}</div>
+                    <p className="ny-text-2 text-xs sm:text-sm">Experiences</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">All included</p>
                   </div>
                 </div>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'ny-success-text' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'ny-success-text' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {templateCompatibility[selectedTemplate].score}%
                     </div>
-                    <p className="ny-text-2 text-sm">Template ATS</p>
-                    <p className="ny-text-3 text-xs mt-1">Format compatibility</p>
+                    <p className="ny-text-2 text-xs sm:text-sm">Template ATS</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">Format compatibility</p>
                   </div>
                 </div>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className="text-4xl font-bold mb-2 ny-accent">{displaySkills.length}</div>
-                    <p className="ny-text-2 text-sm">Skills</p>
-                    <p className="ny-text-3 text-xs mt-1">All categories</p>
+                    <div className="text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ny-accent">{displaySkills.length}</div>
+                    <p className="ny-text-2 text-xs sm:text-sm">Skills</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">All categories</p>
                   </div>
                 </div>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.completeness >= 80 ? 'ny-success-text' : analysisResult.completeness >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ${analysisResult.completeness >= 80 ? 'ny-success-text' : analysisResult.completeness >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.completeness}%
                     </div>
-                    <p className="ny-text-2 text-sm">Profile Complete</p>
-                    <p className="ny-text-3 text-xs mt-1">Sections filled</p>
+                    <p className="ny-text-2 text-xs sm:text-sm">Profile Complete</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">Sections filled</p>
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.atsScore >= 80 ? 'ny-success-text' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ${analysisResult.atsScore >= 80 ? 'ny-success-text' : analysisResult.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.atsScore}%
                     </div>
-                    <p className="ny-text-2 text-sm">Content Match</p>
-                    <p className="ny-text-3 text-xs mt-1">Keywords & relevance</p>
+                    <p className="ny-text-2 text-xs sm:text-sm">Content Match</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">Keywords & relevance</p>
                   </div>
                 </div>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'ny-success-text' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ${templateCompatibility[selectedTemplate].score >= 80 ? 'ny-success-text' : templateCompatibility[selectedTemplate].score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {templateCompatibility[selectedTemplate].score}%
                     </div>
-                    <p className="ny-text-2 text-sm">Template ATS</p>
-                    <p className="ny-text-3 text-xs mt-1">Format compatibility</p>
+                    <p className="ny-text-2 text-xs sm:text-sm">Template ATS</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">Format compatibility</p>
                   </div>
                 </div>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.keywordMatch >= 80 ? 'ny-success-text' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ${analysisResult.keywordMatch >= 80 ? 'ny-success-text' : analysisResult.keywordMatch >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.keywordMatch}%
                     </div>
-                    <p className="ny-text-2 text-sm">Keyword Match</p>
-                    <p className="ny-text-3 text-xs mt-1">Job description fit</p>
+                    <p className="ny-text-2 text-xs sm:text-sm">Keyword Match</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">Job description fit</p>
                   </div>
                 </div>
-                <div className="ny-card rounded-lg p-6 border ny-border">
+                <div className="ny-card rounded-lg p-3 sm:p-6 border ny-border">
                   <div className="text-center">
-                    <div className={`text-4xl font-bold mb-2 ${analysisResult.authenticityScore >= 80 ? 'ny-success-text' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    <div className={`text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 ${analysisResult.authenticityScore >= 80 ? 'ny-success-text' : analysisResult.authenticityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {analysisResult.authenticityScore}%
                     </div>
-                    <p className="ny-text-2 text-sm">Authenticity</p>
-                    <p className="ny-text-3 text-xs mt-1">Real profile data</p>
+                    <p className="ny-text-2 text-xs sm:text-sm">Authenticity</p>
+                    <p className="ny-text-3 text-xs mt-1 hidden sm:block">Real profile data</p>
                   </div>
                 </div>
               </>
@@ -5562,10 +5562,10 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
             </div>
           )}
 
-          {/* 🔧 FIX #5: Save Resume Feature */}
-          <div className="ny-card rounded-lg p-6 mb-6 border ny-border">
-            <h3 className="text-lg font-semibold ny-text-1 mb-3">Save This Resume</h3>
-            <div className="flex gap-3">
+          {/* Save Resume Feature */}
+          <div className="ny-card rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 border ny-border">
+            <h3 className="text-base sm:text-lg font-semibold ny-text-1 mb-3">Save This Resume</h3>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <input
                 type="text"
                 value={resumeName}
@@ -5575,7 +5575,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
               />
               <button
                 onClick={saveResume}
-                className="px-6 py-2 ny-btn-success rounded-lg flex items-center gap-2"
+                className="px-5 py-2 ny-btn-success rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 <Save className="w-4 h-4" />
                 Save
