@@ -170,6 +170,11 @@ const NyxineResumeMaker = () => {
           const parsed = JSON.parse(profileData);
           // Validate parsed data structure
           if (parsed && typeof parsed === 'object' && parsed.personal) {
+            // Ensure all skill sub-keys exist (older saves may be missing laboratory/interests)
+            const defaultSkills = { technical: [], soft: [], certifications: [], languages: [], laboratory: [], interests: [] };
+            if (parsed.skills) {
+              parsed.skills = { ...defaultSkills, ...parsed.skills };
+            }
             setProfile(migrateDatesInProfile(parsed));
           }
         } catch {
@@ -1878,10 +1883,10 @@ const SkillsStep = ({ profile, setProfile, mode }) => {
   const addSkill = (cat, inputRef) => {
     const value = inputRef.current?.value.trim();
     if (!value) return;
-    
+
     setProfile(prev => {
       const newSkills = { ...prev.skills };
-      newSkills[cat] = [...newSkills[cat], value];
+      newSkills[cat] = [...(newSkills[cat] || []), value];
       return { ...prev, skills: newSkills };
     });
     
@@ -1894,7 +1899,7 @@ const SkillsStep = ({ profile, setProfile, mode }) => {
   const removeSkill = (cat, idx) => {
     setProfile(prev => {
       const newSkills = { ...prev.skills };
-      newSkills[cat] = newSkills[cat].filter((_, i) => i !== idx);
+      newSkills[cat] = (newSkills[cat] || []).filter((_, i) => i !== idx);
       return { ...prev, skills: newSkills };
     });
   };
@@ -1963,7 +1968,7 @@ const SkillsStep = ({ profile, setProfile, mode }) => {
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
-          {profile.skills[cat].map((skill, idx) => (
+          {(profile.skills[cat] || []).map((skill, idx) => (
             <span key={idx} className={`px-3 py-1 ${colors.bg} ${colors.text} rounded-full text-sm flex items-center gap-2 border ${colors.border}`}>
               {skill}
               <button onClick={() => removeSkill(cat, idx)} className="hover:opacity-80 transition-opacity">
