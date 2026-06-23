@@ -2871,7 +2871,7 @@ const CustomSectionCard = ({ section, sIdx, onUpdate, onRemove }) => {
 // ─── AI Coach View ────────────────────────────────────────────────────────────
 const CoachView = ({ profile, setCurrentView }) => {
   const [openSections, setOpenSections] = useState({
-    review: true, ats: true, linkedin: true, outreach: true, strategy: true, linkedin_deep: false
+    review: true, ats: true, linkedin: true, outreach: true, strategy: true, linkedin_deep: false, internship: false
   });
   const [toast, setToast] = useState('');
   const [aiModel, setAiModel] = useState('claude');
@@ -2892,6 +2892,19 @@ const CoachView = ({ profile, setCurrentView }) => {
   const [blueprintCity, setBlueprintCity] = useState('');
   const [interviewRole, setInterviewRole] = useState('');
   const [interviewCompany, setInterviewCompany] = useState('');
+  // Internship Toolkit inputs
+  const [intResumeRole, setIntResumeRole] = useState('');
+  const [intLinkedinRole, setIntLinkedinRole] = useState('');
+  const [intHuntRole, setIntHuntRole] = useState('');
+  const [intHuntCity, setIntHuntCity] = useState('');
+  const [intCoverRole, setIntCoverRole] = useState('');
+  const [intCoverCompany, setIntCoverCompany] = useState('');
+  const [intCoverJD, setIntCoverJD] = useState('');
+  const [intDmRole, setIntDmRole] = useState('');
+  const [intDmCompany, setIntDmCompany] = useState('');
+  const [intInterviewRole, setIntInterviewRole] = useState('');
+  const [intInterviewCompany, setIntInterviewCompany] = useState('');
+  const [intTrackerRole, setIntTrackerRole] = useState('');
 
   const resumeText = profileToResumeText(profile);
   const allBullets = [
@@ -3269,6 +3282,104 @@ const CoachView = ({ profile, setCurrentView }) => {
                     )}
                   />
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── 🎓 Internship Toolkit ──────────────────────────── */}
+          <div className="ny-card rounded-lg border ny-border overflow-hidden">
+            <SectionHeader sectionKey="internship" icon="🎓" title="Internship Toolkit" count={7} color="teal" />
+            {openSections.internship && (
+              <div className="p-4 pt-2 space-y-3">
+                <p className="text-xs ny-text-3 px-1">Internship-specific versions of the core prompts — framed for students and early-career candidates (projects and coursework over thin work history). Your saved resume is auto-attached.</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <InputCard
+                    emoji="🎯" title="Internship Resume (ATS + 6s)" subtitle="Beats ATS filters and a 6-second human scan — projects and metrics first" color="red"
+                    onLaunch={() => {
+                      if (!intResumeRole.trim()) { alert('Enter a target internship role first'); return; }
+                      launch(`Here is my resume:\n\n${resumeText}\n\n---\nAct as a senior recruiter hiring interns for the role of ${intResumeRole}. Rewrite my resume to pass ATS keyword filters AND impress a human in under 6 seconds. I am a student / early-career candidate, so:\n- Lead with relevant projects, coursework, certifications and technical skills — do not pad thin work history\n- Convert every weak responsibility into a measurable achievement (scale, %, users, grades, rankings) — if I have not given you numbers, ask me targeted questions\n- Use strong action verbs; cut filler and any soft skill with no evidence\n- Keep it to one page, clean and ATS-parseable (no tables or columns)\n- Mirror the keywords a ${intResumeRole} internship JD would contain\n\nOutput:\n1. Full rewritten one-page resume\n2. Before vs after for my 3 weakest bullets\n3. The exact keywords you added and where`);
+                    }}
+                    disabled={!intResumeRole.trim()}
+                  >
+                    <input type="text" value={intResumeRole} onChange={e => setIntResumeRole(e.target.value)} placeholder="Target internship role (e.g. Data Science Intern)" className={inputCls} />
+                  </InputCard>
+
+                  <InputCard
+                    emoji="💼" title="Internship LinkedIn" subtitle="Headline, About, skills and experiences tuned for recruiter search" color="blue"
+                    onLaunch={() => {
+                      if (!intLinkedinRole.trim()) { alert('Enter a target internship role first'); return; }
+                      launch(`Here is my resume:\n\n${resumeText}\n\n---\nI am a student applying for a ${intLinkedinRole} internship. Rewrite my LinkedIn profile so it gets found and gets replies:\n1. Headline — keyword-rich, under 220 characters, signals the internship I want\n2. About — first person, 3-4 short paragraphs, leads with projects and what I am building toward, ends with a clear ask\n3. Featured skills — top 10 ranked for a ${intLinkedinRole} role\n4. Top experiences / projects — achievement-focused bullets, not duties\n\nMake it discoverable in recruiter searches, credible to hiring managers, and impressive to startup founders. Weave in industry keywords naturally — no buzzword stuffing.`);
+                    }}
+                    disabled={!intLinkedinRole.trim()}
+                  >
+                    <input type="text" value={intLinkedinRole} onChange={e => setIntLinkedinRole(e.target.value)} placeholder="Target internship role (e.g. Frontend Intern)" className={inputCls} />
+                  </InputCard>
+                </div>
+
+                <InputCard
+                  emoji="🗺️" title="7-Day Internship Hunt Blueprint" subtitle="Platforms, hidden openings, search keywords, daily targets, networking" color="violet"
+                  onLaunch={() => {
+                    if (!intHuntRole.trim()) { alert('Enter a target internship role first'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nI want a ${intHuntRole} internship${intHuntCity ? ` in ${intHuntCity}` : ''}. Build a realistic 7-day action plan, day by day, that includes:\n- The best internship platforms to use (name real ones and what to search on each)\n- Hidden / unposted internship opportunities and exactly how to surface them\n- The precise search keywords and boolean strings to use\n- Daily outreach targets (cold DMs / emails) and number of applications per day\n- A networking strategy (who to contact and what to say)\n\nAnchor everything to my actual background above. No motivational filler — give me tasks I can execute today, optimized for landing interview calls fast.`);
+                  }}
+                  disabled={!intHuntRole.trim()}
+                >
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={intHuntRole} onChange={e => setIntHuntRole(e.target.value)} placeholder="Internship role (e.g. ML Intern)" className={inputCls} />
+                    <input type="text" value={intHuntCity} onChange={e => setIntHuntCity(e.target.value)} placeholder="City / Remote — optional" className={inputCls} />
+                  </div>
+                </InputCard>
+
+                <InputCard
+                  emoji="📝" title="Internship Cover Letter" subtitle="Personalized to the role and description, projects and motivation forward" color="green"
+                  onLaunch={() => {
+                    if (!intCoverRole.trim() || !intCoverCompany.trim()) { alert('Enter role and company name'); return; }
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\n${intCoverJD ? `Here is the internship description:\n\n${intCoverJD}\n\n---\n` : ''}Act as a recruiter hiring for a ${intCoverRole} internship at ${intCoverCompany}. Write a personalized, concise cover letter (250-300 words) using my resume${intCoverJD ? ' and the internship description above' : ''}:\n- Open with genuine, specific interest in ${intCoverCompany} (not a generic intro)\n- Lead with my most relevant projects and skills, since I am early-career\n- Include one quantified achievement\n- Show motivation and what I want to learn and contribute\n- Stay professional and human; close with a clear next step\n\nMark in [brackets] anything I should customize per application.`);
+                  }}
+                  disabled={!intCoverRole.trim() || !intCoverCompany.trim()}
+                >
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={intCoverRole} onChange={e => setIntCoverRole(e.target.value)} placeholder="Internship role" className={inputCls} />
+                    <input type="text" value={intCoverCompany} onChange={e => setIntCoverCompany(e.target.value)} placeholder="Company name" className={inputCls} />
+                  </div>
+                  <textarea value={intCoverJD} onChange={e => setIntCoverJD(e.target.value)} placeholder="Internship description (optional but recommended)…" rows={2} className={`${textareaCls} mt-1.5`} />
+                </InputCard>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <InputCard
+                    emoji="💬" title="Cold DM That Gets Replies" subtitle="To a recruiter, founder or hiring manager — under 120 words" color="teal"
+                    onLaunch={() => {
+                      if (!intDmCompany.trim() || !intDmRole.trim()) { alert('Enter company and role'); return; }
+                      launch(`Here is my resume:\n\n${resumeText}\n\n---\nWrite a LinkedIn message to a recruiter, founder, or hiring manager at ${intDmCompany} for a ${intDmRole} internship.\n\nRules:\n- Under 120 words, personalized and professional\n- No "I hope this message finds you well" or generic openers\n- Lead with specific interest in ${intDmCompany}\n- Mention one relevant skill and one concrete project from my background\n- End with a clear but respectful call to action\n- Sound like a real person, not a template`);
+                    }}
+                    disabled={!intDmCompany.trim() || !intDmRole.trim()}
+                  >
+                    <input type="text" value={intDmCompany} onChange={e => setIntDmCompany(e.target.value)} placeholder="Company name" className={inputCls} />
+                    <input type="text" value={intDmRole} onChange={e => setIntDmRole(e.target.value)} placeholder="Internship role" className={`${inputCls} mt-1.5`} />
+                  </InputCard>
+
+                  <InputCard
+                    emoji="🎤" title="Interview Questions Predictor" subtitle="20 likely questions + answer frameworks + what they want to hear" color="rose"
+                    onLaunch={() => {
+                      if (!intInterviewRole.trim() || !intInterviewCompany.trim()) { alert('Enter role and company'); return; }
+                      launch(`Here is my resume:\n\n${resumeText}\n\n---\nI am applying for a ${intInterviewRole} internship at ${intInterviewCompany}. Predict the 20 most likely interview questions based on this role and company (mix of behavioural, technical and situational).\n\nFor each question give me:\n1. A strong answer framework (STAR where it fits), anchored to my actual resume\n2. The key points the interviewer actually wants to hear\n\nBe specific to ${intInterviewCompany} where you can — not generic advice.`);
+                    }}
+                    disabled={!intInterviewRole.trim() || !intInterviewCompany.trim()}
+                  >
+                    <input type="text" value={intInterviewRole} onChange={e => setIntInterviewRole(e.target.value)} placeholder="Internship role" className={inputCls} />
+                    <input type="text" value={intInterviewCompany} onChange={e => setIntInterviewCompany(e.target.value)} placeholder="Company name" className={`${inputCls} mt-1.5`} />
+                  </InputCard>
+                </div>
+
+                <InputCard
+                  emoji="📋" title="Application Tracker & Strategy" subtitle="Status tracker, follow-up schedule, networking log, prep checklist, weekly dashboard" color="amber"
+                  onLaunch={() => {
+                    launch(`Here is my resume:\n\n${resumeText}\n\n---\nDesign a complete internship application tracking system I can rebuild in Google Sheets or Notion${intTrackerRole ? ` for ${intTrackerRole} internships` : ''}. Give me the exact structure for each part:\n1. Application status tracker — list every column header (company, role, link, date applied, status, contact, next action, notes) and the status values to use\n2. Follow-up schedule — the rule for when to follow up after applying and after interviews\n3. Networking tracker — columns to log contacts, touchpoints and outcomes\n4. Interview preparation checklist — the repeatable steps before each interview\n5. Weekly progress dashboard — the metrics to track (applications, responses, interviews, conversion %) and simple formulas where useful\n\nInclude one filled-in example row per table. Optimize the whole system to maximize interview conversion and keep me organized.`);
+                  }}
+                >
+                  <input type="text" value={intTrackerRole} onChange={e => setIntTrackerRole(e.target.value)} placeholder="Internship focus (e.g. Product) — optional" className={inputCls} />
+                </InputCard>
               </div>
             )}
           </div>
