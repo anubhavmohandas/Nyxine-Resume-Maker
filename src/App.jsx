@@ -2526,7 +2526,7 @@ const CustomSectionsStep = ({ profile, setProfile }) => {
   );
 };
 
-const CustomSectionCard = ({ section, sIdx, onUpdate, onRemove }) => {
+const CustomSectionCard = ({ section, onUpdate, onRemove }) => {
   const addEntry = () => onUpdate({ ...section, entries: [...section.entries, { id: Date.now(), text: '' }] });
   const removeEntry = (eId) => onUpdate({ ...section, entries: section.entries.filter(e => e.id !== eId) });
   const updateEntry = (eId, text) => onUpdate({ ...section, entries: section.entries.map(e => e.id === eId ? { ...e, text } : e) });
@@ -2584,7 +2584,7 @@ const CustomSectionCard = ({ section, sIdx, onUpdate, onRemove }) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView, setSavedResumeToLoad, exportData, importData, clearAllData, mode }) => {
+const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView, setSavedResumeToLoad, exportData, importData, clearAllData }) => {
   const deleteResume = (index) => {
     if (window.confirm('Delete this resume?')) {
       setSavedResumes(prev => prev.filter((_, i) => i !== index));
