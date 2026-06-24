@@ -1,5 +1,8 @@
 # NYXINE Resume Builder
 
+<img width="1536" height="1024" alt="2026-06-24_23-53-40" src="https://github.com/user-attachments/assets/fe6a849d-a7b8-4176-94f9-187a40a18211" />
+
+
 **A privacy-first resume builder for industry professionals and academic researchers — runs entirely in your browser.**
 
 Keep one master profile, generate targeted resumes per role, and start either from scratch or by uploading an existing PDF/DOCX to auto-fill. No account, no backend, no tracking. Your profile lives in your browser; nothing leaves it unless you choose to send a prompt to your own AI.
