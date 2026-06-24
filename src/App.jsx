@@ -333,6 +333,10 @@ const NyxineResumeMaker = () => {
     return <><UploadView setProfile={setProfile} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} mode={mode} /><ThemeToggle /></>;
   }
 
+  if (currentView === 'workspace') {
+    return <><WorkspaceView profile={profile} mode={mode} toggleMode={toggleMode} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} /><ThemeToggle /></>;
+  }
+
   return null;
 };
 
@@ -356,6 +360,166 @@ const MKT_FAQS = [
   { q: 'Can I self-host or contribute?', a: 'Absolutely. The full source is on GitHub — clone it, run it locally with Vite, deploy your own instance, or open a pull request.' },
 ];
 const atsColor = (n) => n >= 80 ? 'var(--ny-success)' : n >= 50 ? 'var(--ny-warning)' : 'var(--ny-danger)';
+
+// ── Desktop workspace (3-column): wizard nav · live preview · insights ───────
+// The mockup layout, gated to lg+. Mobile keeps the existing views untouched.
+const ProfileStrengthRing = ({ pct }) => {
+  const r = 52, c = 2 * Math.PI * r;
+  return (
+    <div style={{ position: 'relative', width: 132, height: 132, margin: '0 auto' }}>
+      <svg viewBox="0 0 120 120" width="132" height="132">
+        <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="10" />
+        <circle cx="60" cy="60" r={r} fill="none" stroke="url(#wsRing)" strokeWidth="10" strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} transform="rotate(-90 60 60)" />
+        <defs>
+          <linearGradient id="wsRing" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="100%" stopColor="#a78bfa" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <span className="ny-text-1" style={{ fontSize: 28, fontWeight: 700 }}>{pct}%</span>
+        <span className="ny-text-3" style={{ fontSize: 11 }}>Profile strength</span>
+      </div>
+    </div>
+  );
+};
+
+const WsBar = ({ label, pct }) => (
+  <div style={{ marginTop: 12 }}>
+    <div className="flex items-center justify-between" style={{ fontSize: 13 }}>
+      <span className="ny-text-2">{label}</span><span className="ny-text-1 font-semibold">{pct}%</span>
+    </div>
+    <div style={{ height: 6, borderRadius: 6, background: 'rgba(255,255,255,0.08)', marginTop: 5 }}>
+      <div style={{ width: `${pct}%`, height: '100%', borderRadius: 6, background: 'linear-gradient(90deg,#60a5fa,#a78bfa)' }} />
+    </div>
+  </div>
+);
+
+const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentStep }) => {
+  const defaultTemplate = mode === 'academic' ? 'academic' : 'modern';
+  const [selectedTemplate, setSelectedTemplate] = useState(defaultTemplate);
+
+  const steps = mode === 'academic'
+    ? ['Personal Information', 'Education', 'Research Experience', 'Publications', 'Presentations', 'Awards & Honors', 'Leadership & Activities', 'Skills & Interests', 'Custom Sections']
+    : ['Personal Information', 'Work Experience', 'Education', 'Skills', 'Projects', 'Additional', 'Custom Sections'];
+
+  const TEMPLATES_LIST = [['ats', 'ATS-Optimized'], ['academic', 'Academic CV'], ['harvard', 'Harvard'], ['classic', 'Classic'], ['modern', 'Modern'], ['professional', 'Professional'], ['creative', 'Creative'], ['bold', 'Bold']];
+  const tplLabel = (TEMPLATES_LIST.find(([id]) => id === selectedTemplate) || ['', 'Resume'])[1];
+
+  // Full-data preview (no job matcher on this screen)
+  const selectedJobs = sortChronologically(profile.workExperience || [], 'startDate', 'current');
+  const displaySkills = [
+    ...(profile.skills?.technical || []),
+    ...(profile.skills?.soft || []),
+    ...(profile.skills?.languages || []),
+  ];
+  const displayCerts = profile.skills?.certifications || [];
+  const displayProjects = profile.projects || [];
+  const sortedProfile = { ...profile, education: sortChronologically(profile.education || [], 'graduationDate') };
+
+  // Honest "profile strength" — completeness, not a fabricated job match
+  const has = (v) => Array.isArray(v) ? v.length > 0 : !!(v && String(v).trim());
+  const checks = [
+    has(profile.personal?.fullName), has(profile.personal?.email), has(profile.personal?.summary),
+    has(profile.workExperience), has(profile.education), has(profile.skills?.technical), has(profile.projects),
+  ];
+  const completeness = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  const expDepth = Math.min(100, (profile.workExperience?.length || 0) * 25);
+  const skillCov = Math.min(100, ((profile.skills?.technical?.length || 0) + (profile.skills?.soft?.length || 0)) * 8);
+
+  const Tpl = {
+    modern: ModernTemplate, classic: ClassicTemplate, harvard: HarvardTemplate, ats: ATSOptimizedTemplate,
+    creative: CreativeTemplate, professional: ProfessionalColorTemplate, bold: BoldTemplate, academic: AcademicTemplate,
+  }[selectedTemplate] || ModernTemplate;
+
+  return (
+    <div className="min-h-screen ny-bg">
+      {/* Mobile: keep it simple, point back to existing views */}
+      <div className="lg:hidden min-h-screen flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <h1 className="ny-heading-gradient text-2xl font-bold">Workspace</h1>
+        <p className="ny-text-2 text-sm" style={{ maxWidth: 280 }}>The full workspace is built for larger screens. On mobile, use the dashboard and wizard.</p>
+        <button onClick={() => setCurrentView('dashboard')} className="ny-btn-primary px-5 py-2.5 rounded-lg text-sm">Go to Dashboard</button>
+      </div>
+
+      {/* Desktop 3-column workspace */}
+      <div className="hidden lg:block p-6">
+        <div className="flex items-center justify-between mb-5 px-2">
+          <span className="ny-logo-gradient" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '.02em' }}>NYXINE</span>
+          <div className="flex items-center gap-1 p-1 rounded-full ny-card border ny-border">
+            <button onClick={() => mode === 'academic' && toggleMode()} className={`px-4 py-1.5 rounded-full text-sm font-medium ${mode !== 'academic' ? 'ny-btn-primary' : 'ny-text-2'}`}>Industry Mode</button>
+            <button onClick={() => mode !== 'academic' && toggleMode()} className={`px-4 py-1.5 rounded-full text-sm font-medium ${mode === 'academic' ? 'ny-btn-primary' : 'ny-text-2'}`}>Academic Mode</button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setCurrentView('coach')} className="px-3 py-2 ny-btn-secondary rounded-lg text-sm flex items-center gap-1.5"><Sparkles className="w-4 h-4" />AI Coach</button>
+            <button onClick={() => setCurrentView('generate')} className="px-3 py-2 ny-btn-secondary rounded-lg text-sm flex items-center gap-1.5"><FileText className="w-4 h-4" />Generate</button>
+            <button onClick={() => setCurrentView('dashboard')} className="px-3 py-2 ny-btn-secondary rounded-lg text-sm flex items-center gap-1.5"><Home className="w-4 h-4" />Dashboard</button>
+          </div>
+        </div>
+
+        <div className="grid gap-5" style={{ gridTemplateColumns: '260px 1fr 300px' }}>
+          {/* Left: wizard nav */}
+          <aside className="space-y-4">
+            <div className="ny-card border ny-border rounded-xl p-4">
+              <div className="ny-text-3 text-xs font-semibold tracking-wide uppercase mb-3">Wizard Progress</div>
+              <div className="space-y-1">
+                {steps.map((s, i) => (
+                  <button key={s} onClick={() => { setCurrentStep(i); setCurrentView('wizard'); }}
+                    className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-left text-sm ny-text-2 hover:bg-white/5 transition-colors">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full text-xs border ny-border ny-text-3">{i + 1}</span>
+                    <span>{s}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button onClick={() => setCurrentView('upload')} className="w-full ny-card border ny-border rounded-xl p-3.5 flex items-center justify-center gap-2 text-sm ny-text-1 hover:bg-white/5 transition-colors">
+              <Upload className="w-4 h-4" />Upload Resume
+            </button>
+          </aside>
+
+          {/* Center: live preview */}
+          <main className="ny-card border ny-border rounded-xl p-4 overflow-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
+            <div style={{ width: 794, transform: 'scale(0.66)', transformOrigin: 'top center', margin: '0 auto' }}>
+              <div style={{ background: 'white', borderRadius: 3, padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold') ? 0 : '0.75in', boxSizing: 'border-box', minHeight: 1123 }}>
+                {selectedTemplate === 'academic'
+                  ? <AcademicTemplate profile={sortedProfile} />
+                  : <Tpl profile={sortedProfile} selectedJobs={selectedJobs} displaySkills={displaySkills} displayProjects={displayProjects} displayCerts={displayCerts} />}
+              </div>
+            </div>
+          </main>
+
+          {/* Right: insights */}
+          <aside className="space-y-4">
+            <div className="ny-card border ny-border rounded-xl p-5">
+              <div className="ny-text-3 text-xs font-semibold tracking-wide uppercase mb-3">Profile Strength</div>
+              <ProfileStrengthRing pct={completeness} />
+              <WsBar label="Sections complete" pct={completeness} />
+              <WsBar label="Experience depth" pct={expDepth} />
+              <WsBar label="Skills coverage" pct={skillCov} />
+              <p className="ny-text-3 mt-3" style={{ fontSize: 11 }}>Target a job in Generate to see a keyword match score.</p>
+            </div>
+            <div className="ny-card border ny-border rounded-xl p-5">
+              <div className="ny-text-3 text-xs font-semibold tracking-wide uppercase mb-2">Template</div>
+              <div className="ny-text-1 font-semibold">{tplLabel}</div>
+              <button onClick={() => setCurrentView('generate')} className="mt-3 w-full ny-btn-primary rounded-lg py-2 text-sm">Change Template</button>
+            </div>
+          </aside>
+        </div>
+
+        {/* Template strip */}
+        <div className="flex gap-2 mt-5 overflow-x-auto pb-1">
+          {TEMPLATES_LIST.map(([id, label]) => (
+            <button key={id} onClick={() => setSelectedTemplate(id)}
+              className={`shrink-0 px-4 py-3 rounded-lg border text-sm transition-all ${selectedTemplate === id ? 'border-purple-400/70 bg-purple-500/10 ny-text-1' : 'ny-border ny-text-2 hover:bg-white/5'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profile, importData, theme, toggleTheme }) => {
   const [scrolled, setScrolled]     = useState(false);
@@ -2704,6 +2868,9 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
             </button>
             <button onClick={() => setCurrentView('coach')} className="px-3 sm:px-4 py-2 rounded-lg border ny-border ny-text-1 hover:bg-purple-500/10 hover:border-purple-400/60 flex items-center justify-center gap-2 transition-colors text-sm">
               🤖 AI Coach
+            </button>
+            <button onClick={() => setCurrentView('workspace')} className="hidden lg:flex px-3 sm:px-4 py-2 rounded-lg border ny-border ny-text-1 hover:bg-purple-500/10 hover:border-purple-400/60 items-center justify-center gap-2 transition-colors text-sm">
+              <Sparkles className="w-4 h-4" />Workspace
             </button>
             <button onClick={exportData} className="px-3 sm:px-4 py-2 ny-btn-secondary rounded-lg flex items-center justify-center gap-2 text-sm">
               <Download className="w-4 h-4" />Export
