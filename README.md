@@ -1,19 +1,20 @@
 # NYXINE Resume Builder
 
-**Smart, privacy-first resume generation for industry professionals and academic researchers.**
+**A privacy-first resume builder for industry professionals and academic researchers — runs entirely in your browser.**
 
-NYXINE is a fully local, no-account resume builder that lets you maintain one master profile and generate targeted resumes for specific roles. All data stays in your browser — nothing is ever sent to a server.
+Keep one master profile, generate targeted resumes per role, and start either from scratch or by uploading an existing PDF/DOCX to auto-fill. No account, no backend, no tracking. Your profile lives in your browser; nothing leaves it unless you choose to send a prompt to your own AI.
 
 ---
 
 ## ✨ What Makes NYXINE Different?
 
 - **Build Once, Generate Many** — Enter your complete history once, instantly generate targeted resumes per job
+- **Upload to Auto-fill** — Drop in an existing PDF or DOCX; text is extracted on-device, contact details auto-fill, and the rest is structured by your own AI (no key needed)
 - **Industry & Academic Modes** — Two distinct workflows: standard industry wizard or full academic CV mode with research-specific fields
-- **AI Coaching Panel** — One-click prompts that open Claude with your resume pre-loaded for brutally honest feedback, ATS gap analysis, bullet rewrites, and more
+- **24 AI Coaching Prompts** — Grouped into Resume Review, ATS & Targeting, LinkedIn, Outreach, Strategy & Prep, a LinkedIn Deep Audit, and a dedicated Internship Toolkit — each opens Claude/ChatGPT with your resume already loaded
 - **Fully Customizable** — Add custom fields inside any entry and create entirely new named sections (Patents, Grants, Clinical Rotations, etc.)
 - **8 Professional Templates** — From ATS-optimized plain text to academic CV format
-- **Privacy First** — 100% localStorage, no sign-up, no tracking, no external API calls for core features
+- **Privacy First** — 100% localStorage, no sign-up, no tracking, no API key required
 
 ---
 
@@ -43,16 +44,22 @@ A dedicated **Custom Sections** step (last step in both modes) lets you create e
 
 ---
 
-### AI Coaching Panel
-Located in the **Generate Resume** view, below the template selector. Five prompts that open Claude.ai in a new tab with your resume already baked into the prompt — no copy-pasting needed.
+### AI Coach
+A dedicated **AI Coach** view with 24 one-click prompts, grouped by what you're actually trying to do. Each builds a prompt with your resume already baked in and opens it in Claude or ChatGPT — or just copies it to your clipboard. No API key, and no pasting your resume in by hand.
 
-| Prompt | What it does |
-|--------|-------------|
-| 🔥 **Brutal Review** | Hiring manager persona — flags every weakness, gap, and instant-reject trigger |
-| ⚡ **Bullet Transformer** | Rewrites every bullet using Action Verb + Task + Measurable Result; asks questions to find missing numbers |
-| ✨ **Final Polish** | Kills clichés ("team player", "passionate"), fixes tense inconsistency, replaces generic language |
-| 🎯 **ATS Optimizer** | Paste a job description → Claude identifies missing keywords and suggests exact bullet rewrites to pass ATS |
-| 🎨 **Tone Match** | Enter target companies → Claude rewrites your summary and skills to match their voice and culture |
+| Category | What's inside |
+|----------|---------------|
+| **Resume Review** | 6-second recruiter filter, bullet & impact rewriter, final polish, tone-match to target companies |
+| **ATS & Targeting** | ATS deep scan against a job description, role-alignment dual pass |
+| **LinkedIn & Brand** | Headline/About/skills optimizer, plus a 5-prompt deep audit of your whole profile |
+| **Outreach** | Cover letter, cold DM, follow-up email |
+| **Strategy & Prep** | 7-day job-hunt blueprint, interview question predictor |
+| **🎓 Internship Toolkit** | 7 internship-specific prompts: ATS resume, LinkedIn, 7-day hunt blueprint, cover letter, cold DM, interview predictor, application tracker |
+
+---
+
+### Upload Resume → Auto-fill
+Already have a resume? Upload a **PDF or DOCX** and Nyxine extracts the text in your browser — nothing is uploaded to a server. It auto-fills contact details (email, phone, LinkedIn, GitHub) by pattern-matching, then hands the heavier structuring to your own Claude/ChatGPT: it opens with a parse prompt, you paste the JSON back, and the wizard fills in. No API key required, consistent with the rest of the app.
 
 ---
 
@@ -91,7 +98,7 @@ Academic CV template defaults when Academic mode is active. Renders: ORCID in he
 
 1. **Choose your mode** — Industry (standard) or Academic (research-focused) via the toggle on the landing screen
 
-2. **Build your master profile** — Complete the step-by-step wizard once with your full history. Use custom fields for anything the standard form doesn't cover.
+2. **Build your master profile** — Complete the step-by-step wizard once with your full history, or **upload an existing PDF/DOCX** to auto-fill and edit from there. Use custom fields for anything the standard form doesn't cover.
 
 3. **Generate targeted resumes** — Go to Generate, paste a job description, pick a template, and let the keyword matcher select your most relevant experiences
 
@@ -106,7 +113,8 @@ Academic CV template defaults when Academic mode is active. Renders: ORCID in he
 - **100% Local Storage** — Your data never leaves your browser
 - **No account required** — Start immediately, no email or sign-up
 - **No external API** — Core features (wizard, templates, keyword matching) work entirely offline
-- **AI Coaching** — Opens Claude.ai in a new tab; your resume text is passed via URL parameter. Anthropic's standard privacy policy applies.
+- **Resume upload** — PDF/DOCX text extraction runs in your browser (pdfjs + mammoth). Structuring uses your own Claude/ChatGPT, so no key is stored and your resume is never sent to Nyxine
+- **AI Coaching** — Opens Claude.ai/ChatGPT in a new tab; your resume text is passed via the prompt. The provider's standard privacy policy applies.
 - **Export anytime** — Download your full profile as a JSON backup
 - **Clear all data** — One-click removal via the dashboard
 
@@ -158,11 +166,20 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
+## 👋 From the maker
+
+I built Nyxine because re-tailoring the same resume by hand for every application got old fast — and most tools that fix that want an account, a subscription, and your data on their servers. This one doesn't. It's free, it runs on your machine, and your profile never leaves your browser unless you send it to your own AI. If it saves you an afternoon, that's the whole point.
+
+— Anubhav
+
+---
+
 ## 📄 License
 
 Open-source. Use, modify, and share freely.
 
-Built with React, Vite, Tailwind CSS. AI Coaching powered by Claude (Anthropic).
+Built with React 19, Vite, and Tailwind. Resume parsing via pdfjs + mammoth. AI coaching runs on your own Claude or ChatGPT.
 
 ---
-- **Created with ❤️**
+
+Built by [Anubhav Mohandas](https://github.com/anubhavmohandas).
