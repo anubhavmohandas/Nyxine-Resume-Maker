@@ -2723,8 +2723,8 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
   const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
   const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4', background: 'linear-gradient(to right, #f3f4f6 300px, white 300px)' }}>
-      <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-8 print:gap-6">
+    <div className="bg-white p-4 sm:p-5 md:p-6 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4', background: 'linear-gradient(to right, #f3f4f6 300px, white 300px)' }}>
+      <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-6 print:gap-6">
         {/* Left sidebar - Contact & Skills */}
         <div className="p-6" style={{ backgroundColor: 'transparent' }}>
           <div className="mb-6">
