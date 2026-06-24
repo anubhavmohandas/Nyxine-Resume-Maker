@@ -525,7 +525,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
       {/* ── TRUST STRIP ── */}
       <div className="mkt-trust">
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px,3vw,26px) clamp(16px,4vw,32px)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(12px,3vw,24px)', flexWrap: 'wrap' }} className="mkt-reveal">
-          {[['8','professional templates'],['Zero','data sent to servers'],['2','modes — industry & academic'],['17','AI coaching prompts']].map(([b,t]) => (
+          {[['8','professional templates'],['Zero','data sent to servers'],['2','modes — industry & academic'],['24','AI coaching prompts']].map(([b,t]) => (
             <div key={t} className="flex items-center gap-3 ny-text-2 font-medium text-sm">
               <Award className="w-5 h-5 ny-accent flex-shrink-0" style={{ color: 'var(--ny-accent)' }} />
               <span><strong className="ny-text-1 mkt-disp">{b}</strong> {t}</span>
@@ -575,6 +575,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
             <div className="mkt-reveal space-y-6" style={{ transitionDelay: '.1s' }}>
               {[
                 { icon: <FileText className="w-5 h-5" />, title: 'Build once, generate many', desc: 'One complete history powers unlimited targeted resumes — no re-typing per application.' },
+                { icon: <Upload className="w-5 h-5" />, title: 'Upload to auto-fill', desc: 'Drop in a PDF or DOCX — text is read on your device, contacts auto-fill, and your own AI structures the rest.' },
                 { icon: <Sparkles className="w-5 h-5" />, title: 'Smart keyword matching', desc: 'Paste a job description and a local algorithm scores each experience by relevance — no API call.' },
                 { icon: <Code className="w-5 h-5" />, title: 'Two levels of customization', desc: 'Add custom fields inside any entry, or create entirely new named sections — Patents, Grants, Clinical Rotations.' },
                 { icon: <Save className="w-5 h-5" />, title: 'Save unlimited versions', desc: 'Store a named resume per application with its template, job target, and match analysis. Export anytime.' },
@@ -633,10 +634,10 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
           <div className="mkt-reveal">
             <span className="mkt-eyebrow">AI coaching panel</span>
             <h2 className="mkt-disp ny-text-1" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.1, marginTop: 20, letterSpacing: '-0.025em' }}>
-              17 prompts that open <span className="mkt-grad-head">Claude</span> with your resume loaded
+              24 prompts that open <span className="mkt-grad-head">Claude or ChatGPT</span> with your resume loaded
             </h2>
             <p className="ny-text-2" style={{ fontSize: 18, marginTop: 18, maxWidth: 620, margin: '18px auto 0', lineHeight: 1.65 }}>
-              One click bakes your resume into a purpose-built prompt and opens Claude in a new tab. No copy-pasting — just brutally honest feedback.
+              One click bakes your resume into a purpose-built prompt and opens Claude or ChatGPT in a new tab. No copy-pasting, no API key — just direct, specific feedback.
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, marginTop: 56 }}>
@@ -649,6 +650,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
               { e: '🔎', t: 'Brand Audit', d: 'Gap between how you present vs how the market sees you.' },
               { e: '✍️', t: 'Magnetic Headline', d: '3 LinkedIn headline variations — authority, outcome, curiosity.' },
               { e: '📖', t: 'Summary as Story', d: 'Gary Vee voice — hook, origin, proof, CTA.' },
+              { e: '🎓', t: 'Internship Toolkit', d: '7 internship prompts — ATS resume, 7-day hunt plan, cold DM, tracker.' },
             ].map(({ e, t, d }, i) => (
               <div key={t} className={`mkt-reveal ny-card border ny-border rounded-2xl p-6 text-left transition-all hover:-translate-y-1`} style={{ transitionDelay: `${(i % 4) * .05}s` }}>
                 <div style={{ fontSize: 26 }}>{e}</div>
@@ -775,10 +777,10 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
               <span className="mkt-eyebrow">MIT Licensed</span>
             </div>
             <p className="ny-text-2" style={{ fontSize: 16, marginTop: 20, maxWidth: 560 }}>
-              Every template, both modes, all 17 AI coaches, unlimited saved versions — the complete app with nothing held back.
+              Every template, both modes, all 24 AI coaches, resume upload, unlimited saved versions — the complete app with nothing held back.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-8">
-              {['All 8 templates','Industry & Academic modes','17 AI coaching prompts','Unlimited saved versions','PDF & JSON export','No ads, no tracking'].map(f => (
+              {['All 8 templates','Industry & Academic modes','Upload PDF/DOCX to auto-fill','24 AI coaching prompts','Unlimited saved versions','PDF & JSON export','No ads, no tracking'].map(f => (
                 <div key={f} className="flex items-center gap-2 ny-text-2 text-sm">
                   <CheckIcon />{f}
                 </div>
@@ -845,7 +847,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
           <div className="flex justify-between gap-10 flex-wrap items-start">
             <div style={{ maxWidth: 280 }}>
               <span className="ny-logo-gradient mkt-disp" style={{ fontSize: 22, fontWeight: 700 }}>NYXINE</span>
-              <p className="ny-text-3" style={{ fontSize: 14, marginTop: 14, lineHeight: 1.6 }}>Smart, privacy-first resume generation for industry professionals and academic researchers.</p>
+              <p className="ny-text-3" style={{ fontSize: 14, marginTop: 14, lineHeight: 1.6 }}>A privacy-first resume builder that runs in your browser — no account, no backend. Made by Anubhav, because re-tailoring résumés by hand got old.</p>
             </div>
             <div className="flex gap-8 sm:gap-16 flex-wrap">
               {[
