@@ -1,6 +1,7 @@
 // Nyxine Resume Maker - Updated Feb 3, 2026
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, ChevronLeft, ChevronRight, Download, AlertCircle, Check, X, Sparkles, Save, Sun, Moon, Home, BookOpen, Mic2, Star, FlaskConical, ToggleLeft, ToggleRight, Trophy, Presentation } from 'lucide-react';
+import UploadView from './views/UploadView';
 
 // ─── Date Sorting Utilities ───────────────────────────────────────────────────
 // Converts YYYY-MM date strings into a sortable integer.
@@ -142,7 +143,6 @@ const NyxineResumeMaker = () => {
   });
   const [savedResumes, setSavedResumes] = useState([]);
   const [savedResumeToLoad, setSavedResumeToLoad] = useState(null);
-  const [, setIsProcessingUpload] = useState(false); // value unused until Upload ships
   const saveTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -219,207 +219,6 @@ const NyxineResumeMaker = () => {
     { name: 'Additional', icon: Award }
   ];
 
-  // eslint-disable-next-line no-unused-vars -- wired up when Upload feature ships
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate file size (max 10MB)
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > MAX_FILE_SIZE) {
-      alert('⚠️ File too large!\n\nMaximum file size: 10MB\nYour file: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB\n\nPlease upload a smaller file or use "Start Fresh" option.');
-      return;
-    }
-
-    // Validate file type
-    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|docx|doc)$/i)) {
-      alert('Please upload a PDF or DOCX file');
-      return;
-    }
-
-    setIsProcessingUpload(true);
-
-    try {
-      let extractedText = '';
-
-      // Extract text based on file type
-      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-        // For PDF: Use basic text extraction
-        const arrayBuffer = await file.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
-        const decoder = new TextDecoder('utf-8');
-        extractedText = decoder.decode(uint8Array);
-        
-        // Clean up PDF extraction artifacts
-        extractedText = extractedText
-          .replace(/[^\x20-\x7E\n]/g, ' ') // Remove non-printable chars
-          .replace(/\s+/g, ' ') // Collapse whitespace
-          .trim();
-        
-      } else if (file.name.match(/\.docx?$/i)) {
-        // For DOCX: Read as text (basic extraction)
-        const text = await file.text();
-        extractedText = text;
-      }
-
-      // If extraction failed or text is too short
-      if (!extractedText || extractedText.length < 50) {
-        throw new Error('Could not extract text from file. The file might be image-based or corrupted.');
-      }
-
-      // Parse with AI
-      const prompt = `You are a resume parsing expert. Extract structured data from this resume text and return ONLY valid JSON.
-
-RESUME TEXT:
-${extractedText.slice(0, 6000)}
-
-Return ONLY a JSON object in this EXACT format (no markdown, no backticks, no extra text):
-{
-  "personal": {
-    "fullName": "",
-    "email": "",
-    "phone": "",
-    "location": "",
-    "linkedin": "",
-    "portfolio": "",
-    "github": ""
-  },
-  "workExperience": [
-    {
-      "title": "",
-      "company": "",
-      "location": "",
-      "startDate": "YYYY-MM",
-      "endDate": "YYYY-MM",
-      "current": false,
-      "bullets": ["achievement 1", "achievement 2"]
-    }
-  ],
-  "education": [
-    {
-      "degree": "",
-      "major": "",
-      "school": "",
-      "location": "",
-      "graduationDate": "YYYY-MM",
-      "gpa": ""
-    }
-  ],
-  "skills": {
-    "technical": [],
-    "soft": [],
-    "certifications": [],
-    "languages": []
-  },
-  "projects": [
-    {
-      "name": "",
-      "description": "",
-      "technologies": "",
-      "link": ""
-    }
-  ],
-  "additional": {
-    "volunteer": "",
-    "awards": "",
-    "publications": ""
-  }
-}
-
-IMPORTANT RULES:
-1. Extract ALL information you can find
-2. For dates, use YYYY-MM format (e.g., "2023-01")
-3. If current job, set "current": true and "endDate": ""
-4. Separate technical vs soft skills appropriately
-5. Extract complete bullet points for each job
-6. Include ALL jobs, education, and projects found
-7. Return ONLY the JSON object, no other text
-8. If a field is not found, use empty string "" or empty array []`;
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4000,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`AI parsing failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      let responseText = data.content[0].text;
-
-      // Clean up response
-      responseText = responseText
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
-
-      const parsed = JSON.parse(responseText);
-
-      // Add IDs to arrays
-      if (parsed.workExperience) {
-        parsed.workExperience = parsed.workExperience.map((job, idx) => ({
-          ...job,
-          id: Date.now() + idx,
-          bullets: Array.isArray(job.bullets) ? job.bullets : [job.bullets || '']
-        }));
-      }
-
-      if (parsed.education) {
-        parsed.education = parsed.education.map((edu, idx) => ({
-          ...edu,
-          id: Date.now() + idx + 1000
-        }));
-      }
-
-      if (parsed.projects) {
-        parsed.projects = parsed.projects.map((proj, idx) => ({
-          ...proj,
-          id: Date.now() + idx + 2000
-        }));
-      }
-
-      // Ensure skills structure
-      if (!parsed.skills) {
-        parsed.skills = { technical: [], soft: [], certifications: [], languages: [] };
-      }
-
-      // Merge with existing profile (in case user wants to keep some data)
-      setProfile(prev => ({
-        personal: { ...prev.personal, ...parsed.personal },
-        workExperience: parsed.workExperience || prev.workExperience,
-        education: parsed.education || prev.education,
-        skills: {
-          technical: parsed.skills.technical || prev.skills.technical,
-          soft: parsed.skills.soft || prev.skills.soft,
-          certifications: parsed.skills.certifications || prev.skills.certifications,
-          languages: parsed.skills.languages || prev.skills.languages
-        },
-        projects: parsed.projects || prev.projects,
-        additional: { ...prev.additional, ...parsed.additional }
-      }));
-
-      alert('✅ Resume parsed successfully! Please review and edit the extracted information.');
-      setCurrentView('wizard');
-      setCurrentStep(0);
-
-    } catch (error) {
-      console.error('Resume upload error:', error);
-      alert(`❌ Failed to parse resume: ${error.message}\n\nPlease try:\n1. A different file format\n2. Manual entry (Start Fresh)`);
-    } finally {
-      setIsProcessingUpload(false);
-      // Clear the file input
-      e.target.value = '';
-    }
-  };
 
   // ── Crypto helpers (AES-GCM, PBKDF2) ───────────────────────────────────
   const deriveKey = async (passphrase, salt) => {
@@ -617,6 +416,10 @@ IMPORTANT RULES:
 
   if (currentView === 'generate') {
     return <><GenerateView setCurrentView={setCurrentView} profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} savedResumeToLoad={savedResumeToLoad} setSavedResumeToLoad={setSavedResumeToLoad} theme={theme} mode={mode} /><ThemeToggle /></>;
+  }
+
+  if (currentView === 'upload') {
+    return <><UploadView setProfile={setProfile} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} mode={mode} /><ThemeToggle /></>;
   }
 
   return null;
@@ -1229,16 +1032,13 @@ const LandingPage = ({ showStorageWarning, setShowStorageWarning, setCurrentView
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4 mb-6">
-            <div className="ny-subcard rounded-lg p-6 border ny-border-strong opacity-60 relative transition-colors">
-              <div className="absolute top-3 right-3 ny-badge-warning text-xs px-2 py-1 rounded-full border">
-                🚧 Coming Soon
-              </div>
-              <Upload className="w-8 h-8 ny-text-3 mb-3" />
+            <div className="ny-subcard rounded-lg p-6 border ny-border-strong hover:border-purple-500/50 transition-colors">
+              <Upload className="w-8 h-8 text-purple-400 mb-3" />
               <h3 className="text-lg font-semibold ny-text-1 mb-2">Upload Resume</h3>
-              <p className="ny-text-2 text-sm mb-4">This feature is under development</p>
-              <div className="px-4 py-3 ny-subcard cursor-not-allowed ny-text-3 rounded-lg text-center">
-                Coming Soon
-              </div>
+              <p className="ny-text-2 text-sm mb-4">Import a PDF or DOCX</p>
+              <button onClick={() => setCurrentView('upload')} className="w-full px-4 py-3 ny-btn-primary rounded-lg">
+                Upload
+              </button>
             </div>
 
             <div className="ny-subcard rounded-lg p-6 border ny-border-strong hover:border-purple-500/50 transition-colors">
