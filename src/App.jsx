@@ -385,8 +385,8 @@ const ScaledResumePreview = ({ children }) => {
     return () => ro.disconnect();
   }, [children]);
   return (
-    <div ref={wrapRef} style={{ width: '100%', height: box.height || 'auto', overflow: 'hidden' }}>
-      <div ref={pageRef} style={{ width: 794, transform: `scale(${box.scale})`, transformOrigin: 'top left' }}>
+    <div ref={wrapRef} className="ws-pv-wrap" style={{ width: '100%', height: box.height || 'auto', overflow: 'hidden' }}>
+      <div ref={pageRef} className="ws-pv-page" style={{ width: 794, transform: `scale(${box.scale})`, transformOrigin: 'top left' }}>
         {children}
       </div>
     </div>
@@ -464,6 +464,59 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
     creative: CreativeTemplate, professional: ProfessionalColorTemplate, bold: BoldTemplate, academic: AcademicTemplate,
   }[selectedTemplate] || ModernTemplate;
 
+  // PDF = print the on-screen template exactly (print CSS isolates #ws-resume).
+  const exportPdf = () => window.print();
+
+  // DOCX = a clean, single-margin Word doc built from data (not the styled
+  // template) so Word's page margins never double up against template padding.
+  const exportDoc = () => {
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const stripUrl = (u) => u ? esc(u.replace(/^https?:\/\//, '')) : '';
+    const p = profile.personal || {};
+    let bdy = `<h1>${esc(p.fullName)}</h1>`;
+    const contact = [p.email, p.phone, p.location, stripUrl(p.linkedin), stripUrl(p.github), stripUrl(p.portfolio)].filter(Boolean).join(' &nbsp;|&nbsp; ');
+    if (contact) bdy += `<p class="contact">${contact}</p>`;
+    if (p.summary) bdy += `<h2>Summary</h2><p>${esc(p.summary)}</p>`;
+    if (selectedJobs.length) {
+      bdy += `<h2>Experience</h2>`;
+      selectedJobs.forEach((j) => {
+        bdy += `<div class="entry"><p class="role">${esc(j.title)}${j.company ? ` &mdash; ${esc(j.company)}` : ''} <span class="meta">${esc(j.startDate)} &ndash; ${j.current ? 'Present' : esc(j.endDate)}</span></p>`;
+        const bl = (j.bullets || []).filter((x) => x && x.trim());
+        if (bl.length) bdy += `<ul>${bl.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
+        bdy += `</div>`;
+      });
+    }
+    const edu = sortedProfile.education || [];
+    if (edu.length) {
+      bdy += `<h2>Education</h2>`;
+      edu.forEach((e) => {
+        const meta = [esc(e.school), e.graduationDate && esc(e.graduationDate), e.gpa && `${esc(e.gradeType || 'GPA')}: ${esc(e.gpa)}`].filter(Boolean).join(' &middot; ');
+        bdy += `<div class="entry"><p class="role">${esc(e.degree)}${e.major ? `, ${esc(e.major)}` : ''}</p><p class="meta">${meta}</p></div>`;
+      });
+    }
+    const sk = profile.skills || {};
+    const skillRow = (label, arr) => (arr && arr.length) ? `<p><strong>${label}:</strong> ${arr.map(esc).join(', ')}</p>` : '';
+    const skillsHtml = skillRow('Technical', sk.technical) + skillRow('Professional', sk.soft) + skillRow('Languages', sk.languages) + skillRow('Certifications', sk.certifications);
+    if (skillsHtml) bdy += `<h2>Skills</h2>${skillsHtml}`;
+    if (displayProjects.length) {
+      bdy += `<h2>Projects</h2>`;
+      displayProjects.forEach((pr) => {
+        bdy += `<div class="entry"><p class="role">${esc(pr.name)}${pr.technologies ? ` <span class="meta">${esc(pr.technologies)}</span>` : ''}</p>${pr.description ? `<p>${esc(pr.description)}</p>` : ''}${pr.link ? `<p class="meta">${stripUrl(pr.link)}</p>` : ''}</div>`;
+      });
+    }
+    const css = `@page{size:A4;margin:0.75in}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#000;line-height:1.35}h1{font-size:18pt;margin:0 0 4pt}h2{font-size:12pt;text-transform:uppercase;border-bottom:1px solid #000;margin:14pt 0 6pt;padding-bottom:2pt}p{margin:0 0 4pt}.contact{font-size:9.5pt}.entry{margin-bottom:8pt}.role{font-weight:bold}.meta{color:#444;font-weight:normal;font-size:9.5pt}ul{margin:3pt 0 0 18pt;padding:0}li{margin-bottom:2pt}`;
+    const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>${css}</style></head><body>${bdy}</body></html>`;
+    const blob = new Blob(['﻿', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(p.fullName || 'resume').replace(/\s+/g, '_')}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen ny-bg">
       {/* Mobile: keep it simple, point back to existing views */}
@@ -509,10 +562,10 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
           </aside>
 
           {/* Center: live preview */}
-          <main className="ny-card border ny-border rounded-xl p-4 overflow-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
-            <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <main className="ny-card border ny-border rounded-xl p-4">
+            <div style={{ maxWidth: 1000, margin: '0 auto' }}>
               <ScaledResumePreview key={selectedTemplate}>
-                <div style={{ background: 'white', borderRadius: 3, padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold') ? 0 : '0.75in', boxSizing: 'border-box', width: 794, minHeight: 1123 }}>
+                <div id="ws-resume" style={{ background: 'white', borderRadius: 3, padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold' || selectedTemplate === 'modern') ? 0 : '0.75in', boxSizing: 'border-box', width: 794, minHeight: 1123 }}>
                   {selectedTemplate === 'academic'
                     ? <AcademicTemplate profile={sortedProfile} />
                     : <Tpl profile={sortedProfile} selectedJobs={selectedJobs} displaySkills={displaySkills} displayProjects={displayProjects} displayCerts={displayCerts} />}
@@ -534,7 +587,7 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
             <div className="ny-card border ny-border rounded-xl p-5">
               <div className="ny-text-3 text-xs font-semibold tracking-wide uppercase mb-2">Template</div>
               <div className="ny-text-1 font-semibold">{tplLabel}</div>
-              <button onClick={() => setCurrentView('generate')} className="mt-3 w-full ny-btn-primary rounded-lg py-2 text-sm">Change Template</button>
+              <p className="ny-text-3 mt-1" style={{ fontSize: 11 }}>Switch templates from the strip below.</p>
             </div>
 
             <div className="ny-card border ny-border rounded-xl p-5">
@@ -2951,7 +3004,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
   const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
   const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
-    <div className="bg-white p-4 sm:p-5 md:p-6 max-w-6xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4', background: 'linear-gradient(to right, #f3f4f6 300px, white 300px)' }}>
+    <div className="bg-white max-w-6xl mx-auto print:max-w-none" style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', fontSize: '10pt', lineHeight: '1.4', background: 'linear-gradient(to right, #f3f4f6 300px, white 300px)' }}>
       <div className="grid grid-cols-[300px_1fr] print:grid-cols-[300px_1fr] gap-6 print:gap-6">
         {/* Left sidebar - Contact & Skills */}
         <div className="p-6" style={{ backgroundColor: 'transparent' }}>
@@ -3019,7 +3072,7 @@ const ModernTemplate = ({ profile, selectedJobs, displaySkills, displayProjects,
         </div>
 
         {/* Right main content - Summary, Experience & Projects */}
-        <div>
+        <div className="py-6 pr-6">
           {profile.personal.summary && (
             <div className="mb-5 resume-entry">
               <h2 className="text-sm font-bold text-gray-900 mb-1.5 pb-1 border-b-2 border-gray-800 uppercase tracking-widest">Summary</h2>
@@ -3100,7 +3153,7 @@ const ClassicTemplate = ({ profile, selectedJobs, displaySkills, displayProjects
   const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
   const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+    <div className="bg-white max-w-4xl mx-auto print:max-w-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
       {/* Header */}
       <div className="text-center mb-6 pb-4 border-b-2 border-black">
         <h1 className="font-bold mb-2 tracking-wide" style={{ fontSize: '16pt' }}>{profile.personal.fullName.toUpperCase()}</h1>
@@ -3397,7 +3450,7 @@ const ATSOptimizedTemplate = ({ profile, selectedJobs, displaySkills, displayPro
   const softSkills = (profile.skills?.soft || []).filter(s => displaySkills.includes(s));
   const langSkills = (profile.skills?.languages || []).filter(s => displaySkills.includes(s));
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12 max-w-4xl mx-auto print:p-0 print:max-w-none" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
+    <div className="bg-white max-w-4xl mx-auto print:max-w-none" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
       {/* Header - Simple and Clean */}
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold mb-2" style={{ color: '#000000' }}>
@@ -4596,6 +4649,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
     setSavedResumes(prev => [...prev, newResume]);
     alert('Resume saved successfully!');
     setResumeName('');
+    setCurrentView('dashboard'); // back to the Workspace (desktop) / Dashboard (mobile)
   };
 
   if (step === 'input') {
@@ -5156,7 +5210,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
               background: 'white',
               borderRadius: '3px',
               boxShadow: '0 4px 40px rgba(0,0,0,0.35)',
-              padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold') ? '0' : '0.75in',
+              padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold' || selectedTemplate === 'modern') ? '0' : '0.75in',
               boxSizing: 'border-box',
               overflow: 'hidden',
             }}
