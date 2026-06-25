@@ -1,6 +1,6 @@
 # NYXINE Resume Builder
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/c23c4ce4-9062-43fc-9fb4-6af92132d11a" />
 
-<img width="1536" height="1024" alt="2026-06-24_23-53-40" src="https://github.com/user-attachments/assets/fe6a849d-a7b8-4176-94f9-187a40a18211" />
 
 
 
@@ -97,6 +97,7 @@ Academic CV template defaults when Academic mode is active. Renders: ORCID in he
 - One-click clear for complete data removal
 
 ---
+<img width="1536" height="1024" alt="2026-06-24_23-53-40" src="https://github.com/user-attachments/assets/fe6a849d-a7b8-4176-94f9-187a40a18211" />
 
 ## 💡 How It Works
 
