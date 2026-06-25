@@ -318,7 +318,13 @@ const NyxineResumeMaker = () => {
   }
 
   if (currentView === 'dashboard') {
-    return <><DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} mode={mode} /><ThemeToggle /></>;
+    return (
+      <>
+        <div className="lg:hidden"><DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} mode={mode} /></div>
+        <div className="hidden lg:block"><WorkspaceView profile={profile} mode={mode} toggleMode={toggleMode} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} savedResumes={savedResumes} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} /></div>
+        <ThemeToggle />
+      </>
+    );
   }
 
   if (currentView === 'coach') {
@@ -331,10 +337,6 @@ const NyxineResumeMaker = () => {
 
   if (currentView === 'upload') {
     return <><UploadView setProfile={setProfile} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} mode={mode} /><ThemeToggle /></>;
-  }
-
-  if (currentView === 'workspace') {
-    return <><WorkspaceView profile={profile} mode={mode} toggleMode={toggleMode} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} /><ThemeToggle /></>;
   }
 
   return null;
@@ -363,6 +365,34 @@ const atsColor = (n) => n >= 80 ? 'var(--ny-success)' : n >= 50 ? 'var(--ny-warn
 
 // ── Desktop workspace (3-column): wizard nav · live preview · insights ───────
 // The mockup layout, gated to lg+. Mobile keeps the existing views untouched.
+// Scales an 794px (A4-width) resume page to fill its container width,
+// and reflows its height so there's no overflow or empty gutter.
+const ScaledResumePreview = ({ children }) => {
+  const wrapRef = useRef(null);
+  const pageRef = useRef(null);
+  const [box, setBox] = useState({ scale: 1, height: 0 });
+  useEffect(() => {
+    const measure = () => {
+      const wrap = wrapRef.current, page = pageRef.current;
+      if (!wrap || !page) return;
+      const scale = wrap.clientWidth / 794;
+      setBox({ scale, height: page.scrollHeight * scale });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (wrapRef.current) ro.observe(wrapRef.current);
+    if (pageRef.current) ro.observe(pageRef.current);
+    return () => ro.disconnect();
+  }, [children]);
+  return (
+    <div ref={wrapRef} style={{ width: '100%', height: box.height || 'auto', overflow: 'hidden' }}>
+      <div ref={pageRef} style={{ width: 794, transform: `scale(${box.scale})`, transformOrigin: 'top left' }}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const ProfileStrengthRing = ({ pct }) => {
   const r = 52, c = 2 * Math.PI * r;
   return (
@@ -397,7 +427,7 @@ const WsBar = ({ label, pct }) => (
   </div>
 );
 
-const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentStep }) => {
+const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentStep, savedResumes, setSavedResumeToLoad, exportData, importData, clearAllData }) => {
   const defaultTemplate = mode === 'academic' ? 'academic' : 'modern';
   const [selectedTemplate, setSelectedTemplate] = useState(defaultTemplate);
 
@@ -480,12 +510,14 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
 
           {/* Center: live preview */}
           <main className="ny-card border ny-border rounded-xl p-4 overflow-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
-            <div style={{ width: 794, transform: 'scale(0.66)', transformOrigin: 'top center', margin: '0 auto' }}>
-              <div style={{ background: 'white', borderRadius: 3, padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold') ? 0 : '0.75in', boxSizing: 'border-box', minHeight: 1123 }}>
-                {selectedTemplate === 'academic'
-                  ? <AcademicTemplate profile={sortedProfile} />
-                  : <Tpl profile={sortedProfile} selectedJobs={selectedJobs} displaySkills={displaySkills} displayProjects={displayProjects} displayCerts={displayCerts} />}
-              </div>
+            <div style={{ maxWidth: 860, margin: '0 auto' }}>
+              <ScaledResumePreview key={selectedTemplate}>
+                <div style={{ background: 'white', borderRadius: 3, padding: (selectedTemplate === 'creative' || selectedTemplate === 'bold') ? 0 : '0.75in', boxSizing: 'border-box', width: 794, minHeight: 1123 }}>
+                  {selectedTemplate === 'academic'
+                    ? <AcademicTemplate profile={sortedProfile} />
+                    : <Tpl profile={sortedProfile} selectedJobs={selectedJobs} displaySkills={displaySkills} displayProjects={displayProjects} displayCerts={displayCerts} />}
+                </div>
+              </ScaledResumePreview>
             </div>
           </main>
 
@@ -503,6 +535,36 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
               <div className="ny-text-3 text-xs font-semibold tracking-wide uppercase mb-2">Template</div>
               <div className="ny-text-1 font-semibold">{tplLabel}</div>
               <button onClick={() => setCurrentView('generate')} className="mt-3 w-full ny-btn-primary rounded-lg py-2 text-sm">Change Template</button>
+            </div>
+
+            <div className="ny-card border ny-border rounded-xl p-5">
+              <div className="ny-text-3 text-xs font-semibold tracking-wide uppercase mb-3">Saved Resumes</div>
+              {savedResumes && savedResumes.length > 0 ? (
+                <div className="space-y-2">
+                  {savedResumes.slice(0, 6).map((r, i) => (
+                    <button key={r.id || i} onClick={() => { setSavedResumeToLoad(r); setCurrentView('generate'); }}
+                      className="w-full text-left px-3 py-2 rounded-lg border ny-border ny-text-2 hover:bg-white/5 transition-colors text-sm flex items-center justify-between gap-2">
+                      <span className="truncate">{r.name || r.jobTarget || 'Saved resume'}</span>
+                      {typeof r.matchScore === 'number' && <span className="text-xs ny-text-3 shrink-0">{r.matchScore}%</span>}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="ny-text-3 text-sm">No resumes yet. Use Generate to create your first targeted resume.</p>
+              )}
+              <button onClick={() => setCurrentView('generate')} className="mt-3 w-full ny-btn-primary rounded-lg py-2 text-sm">Generate New Resume</button>
+            </div>
+
+            <div className="ny-card border ny-border rounded-xl p-5">
+              <div className="ny-text-3 text-xs font-semibold tracking-wide uppercase mb-3">Your Data</div>
+              <div className="flex flex-col gap-2">
+                <button onClick={exportData} className="w-full ny-btn-secondary rounded-lg py-2 text-sm flex items-center justify-center gap-2"><Download className="w-4 h-4" />Export backup</button>
+                <label className="w-full ny-btn-secondary rounded-lg py-2 text-sm flex items-center justify-center gap-2 cursor-pointer">
+                  <Upload className="w-4 h-4" />Import backup
+                  <input type="file" accept=".json,.nyxine" onChange={importData} className="hidden" />
+                </label>
+                <button onClick={clearAllData} className="w-full ny-btn-danger rounded-lg py-2 text-sm">Clear all data</button>
+              </div>
             </div>
           </aside>
         </div>
@@ -2868,9 +2930,6 @@ const DashboardView = ({ profile, savedResumes, setSavedResumes, setCurrentView,
             </button>
             <button onClick={() => setCurrentView('coach')} className="px-3 sm:px-4 py-2 rounded-lg border ny-border ny-text-1 hover:bg-purple-500/10 hover:border-purple-400/60 flex items-center justify-center gap-2 transition-colors text-sm">
               🤖 AI Coach
-            </button>
-            <button onClick={() => setCurrentView('workspace')} className="hidden lg:flex px-3 sm:px-4 py-2 rounded-lg border ny-border ny-text-1 hover:bg-purple-500/10 hover:border-purple-400/60 items-center justify-center gap-2 transition-colors text-sm">
-              <Sparkles className="w-4 h-4" />Workspace
             </button>
             <button onClick={exportData} className="px-3 sm:px-4 py-2 ny-btn-secondary rounded-lg flex items-center justify-center gap-2 text-sm">
               <Download className="w-4 h-4" />Export
