@@ -321,6 +321,16 @@ const NyxineResumeMaker = () => {
   }
 
   if (currentView === 'dashboard') {
+    // Nothing built yet → don't open an empty Workspace; send them to the entry screen.
+    const profileEmpty = !profile.personal?.fullName?.trim()
+      && !(profile.workExperience?.length)
+      && !(profile.education?.length)
+      && !(profile.projects?.length)
+      && !(profile.skills?.technical?.length)
+      && !(savedResumes?.length);
+    if (profileEmpty) {
+      return <><LandingPage showStorageWarning={showStorageWarning} setShowStorageWarning={setShowStorageWarning} setCurrentView={setCurrentView} setCurrentStep={setCurrentStep} profile={profile} savedResumes={savedResumes} theme={theme} mode={mode} toggleMode={toggleMode} importData={importData} /><ThemeToggle /></>;
+    }
     return (
       <>
         <div className="lg:hidden"><DashboardView profile={profile} savedResumes={savedResumes} setSavedResumes={setSavedResumes} setCurrentView={setCurrentView} setSavedResumeToLoad={setSavedResumeToLoad} exportData={exportData} importData={importData} clearAllData={clearAllData} mode={mode} /></div>
