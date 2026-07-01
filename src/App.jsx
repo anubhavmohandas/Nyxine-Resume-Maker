@@ -1484,12 +1484,11 @@ const PersonalInfoStep = ({ profile, setProfile, mode }) => {
         </div>
       )}
 
-      <div
-        className="ny-info-box border rounded-lg p-3 text-sm"
-        dangerouslySetInnerHTML={{ __html: mode === 'academic'
-          ? '💡 <strong>Tip:</strong> Include your ORCID — required by many journals and grant applications'
-          : '💡 <strong>Tip:</strong> No photo needed - not recommended for US/Canada resumes' }}
-      />
+      <div className="ny-info-box border rounded-lg p-3 text-sm">
+        💡 <strong>Tip:</strong> {mode === 'academic'
+          ? 'Include your ORCID — required by many journals and grant applications'
+          : 'No photo needed — not recommended for US/Canada resumes'}
+      </div>
     </div>
   );
 };
@@ -3191,7 +3190,6 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
       setStep('preview');
     } catch (error) {
       console.error('Analysis Error:', error);
-      console.error('Error stack:', error.stack);
 
       // Fallback with simple mock data so it still works
       const fallbackResult = {

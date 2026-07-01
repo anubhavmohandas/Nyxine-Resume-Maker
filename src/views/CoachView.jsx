@@ -51,8 +51,16 @@ const CoachView = ({ profile, setCurrentView }) => {
 
   const launch = (prompt) => {
     if (aiModel === 'claude') {
-      window.open(`https://claude.ai/new?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener');
-      setToast("Opening Claude… if the prompt didn't auto-fill, press Ctrl+V / ⌘V to paste.");
+      const q = encodeURIComponent(prompt);
+      if (q.length > 6000) {
+        // Too long for a URL (browsers truncate) — copy + open Claude blank.
+        navigator.clipboard.writeText(prompt).catch(() => {});
+        window.open('https://claude.ai/new', '_blank', 'noopener');
+        setToast('Prompt too long for the URL — copied to clipboard. Paste into Claude with Ctrl+V / ⌘V.');
+      } else {
+        window.open(`https://claude.ai/new?q=${q}`, '_blank', 'noopener');
+        setToast("Opening Claude… if the prompt didn't auto-fill, press Ctrl+V / ⌘V to paste.");
+      }
     } else if (aiModel === 'chatgpt') {
       navigator.clipboard.writeText(prompt).catch(() => {});
       window.open('https://chatgpt.com/', '_blank', 'noopener');

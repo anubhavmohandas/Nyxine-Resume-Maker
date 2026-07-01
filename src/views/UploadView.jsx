@@ -64,8 +64,16 @@ const UploadView = ({ setProfile, setCurrentView, setCurrentStep }) => {
   const launchParse = () => {
     const prompt = buildResumeParsePrompt(text);
     if (aiTarget === 'claude') {
-      window.open(`https://claude.ai/new?q=${encodeURIComponent(prompt)}`, '_blank', 'noopener');
-      flash("Opening Claude. If the prompt didn't auto-fill, paste it with Ctrl/⌘+V.");
+      const q = encodeURIComponent(prompt);
+      if (q.length > 6000) {
+        // Resume prompts are long — copy + open Claude blank so nothing truncates.
+        navigator.clipboard.writeText(prompt).catch(() => {});
+        window.open('https://claude.ai/new', '_blank', 'noopener');
+        flash('Prompt too long for the URL — copied to clipboard. Paste into Claude with Ctrl/⌘+V.');
+      } else {
+        window.open(`https://claude.ai/new?q=${q}`, '_blank', 'noopener');
+        flash("Opening Claude. If the prompt didn't auto-fill, paste it with Ctrl/⌘+V.");
+      }
     } else if (aiTarget === 'chatgpt') {
       navigator.clipboard.writeText(prompt).catch(() => {});
       window.open('https://chatgpt.com/', '_blank', 'noopener');
