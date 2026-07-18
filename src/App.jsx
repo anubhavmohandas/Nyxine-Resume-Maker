@@ -4,6 +4,7 @@ import { Upload, FileText, Briefcase, GraduationCap, Code, Award, Plus, Trash2, 
 import UploadView from './views/UploadView';
 import CoachView from './views/CoachView';
 import { parseDateForSort, sortChronologically, migrateDatesInProfile } from './lib/dates';
+import { buildResumeDocxBlob } from './lib/exportDocx';
 import { ModernTemplate, ClassicTemplate, HarvardTemplate, ATSOptimizedTemplate, CreativeTemplate, ProfessionalColorTemplate, BoldTemplate, AcademicTemplate } from './views/templates';
 import LandingPage from './views/LandingPage';
 import ModeToggle from './components/ModeToggle';
@@ -480,54 +481,30 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
   // PDF = print the on-screen template exactly (print CSS isolates #ws-resume).
   const exportPdf = () => window.print();
 
-  // DOCX = a clean, single-margin Word doc built from data (not the styled
-  // template) so Word's page margins never double up against template padding.
-  const exportDoc = () => {
-    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const stripUrl = (u) => u ? esc(u.replace(/^https?:\/\//, '')) : '';
+  // DOCX = a real OOXML document built with the `docx` library (not an HTML
+  // string wearing a .doc extension — that trick only renders in Microsoft
+  // Word itself and comes out blank in Pages, Preview, Google Docs, LibreOffice).
+  const exportDoc = async () => {
     const p = profile.personal || {};
-    let bdy = `<h1>${esc(p.fullName)}</h1>`;
-    const contact = [p.email, p.phone, p.location, stripUrl(p.linkedin), stripUrl(p.github), stripUrl(p.portfolio)].filter(Boolean).join(' &nbsp;|&nbsp; ');
-    if (contact) bdy += `<p class="contact">${contact}</p>`;
-    if (p.summary) bdy += `<h2>Summary</h2><p>${esc(p.summary)}</p>`;
-    if (selectedJobs.length) {
-      bdy += `<h2>Experience</h2>`;
-      selectedJobs.forEach((j) => {
-        bdy += `<div class="entry"><p class="role">${esc(j.title)}${j.company ? ` &mdash; ${esc(j.company)}` : ''} <span class="meta">${esc(j.startDate)} &ndash; ${j.current ? 'Present' : esc(j.endDate)}</span></p>`;
-        const bl = (j.bullets || []).filter((x) => x && x.trim());
-        if (bl.length) bdy += `<ul>${bl.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
-        bdy += `</div>`;
+    try {
+      const blob = await buildResumeDocxBlob({
+        personal: p,
+        selectedJobs,
+        education: sortedProfile.education || [],
+        skills: profile.skills || {},
+        projects: displayProjects,
       });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(p.fullName || 'resume').replace(/\s+/g, '_')}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('DOCX export failed: ' + err.message);
     }
-    const edu = sortedProfile.education || [];
-    if (edu.length) {
-      bdy += `<h2>Education</h2>`;
-      edu.forEach((e) => {
-        const meta = [esc(e.school), e.graduationDate && esc(e.graduationDate), e.gpa && `${esc(e.gradeType || 'GPA')}: ${esc(e.gpa)}`].filter(Boolean).join(' &middot; ');
-        bdy += `<div class="entry"><p class="role">${esc(e.degree)}${e.major ? `, ${esc(e.major)}` : ''}</p><p class="meta">${meta}</p></div>`;
-      });
-    }
-    const sk = profile.skills || {};
-    const skillRow = (label, arr) => (arr && arr.length) ? `<p><strong>${label}:</strong> ${arr.map(esc).join(', ')}</p>` : '';
-    const skillsHtml = skillRow('Technical', sk.technical) + skillRow('Professional', sk.soft) + skillRow('Languages', sk.languages) + skillRow('Certifications', sk.certifications);
-    if (skillsHtml) bdy += `<h2>Skills</h2>${skillsHtml}`;
-    if (displayProjects.length) {
-      bdy += `<h2>Projects</h2>`;
-      displayProjects.forEach((pr) => {
-        bdy += `<div class="entry"><p class="role">${esc(pr.name)}${pr.technologies ? ` <span class="meta">${esc(pr.technologies)}</span>` : ''}</p>${pr.description ? `<p>${esc(pr.description)}</p>` : ''}${pr.link ? `<p class="meta">${stripUrl(pr.link)}</p>` : ''}</div>`;
-      });
-    }
-    const css = `@page{size:A4;margin:0.75in}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#000;line-height:1.35}h1{font-size:18pt;margin:0 0 4pt}h2{font-size:12pt;text-transform:uppercase;border-bottom:1px solid #000;margin:14pt 0 6pt;padding-bottom:2pt}p{margin:0 0 4pt}.contact{font-size:9.5pt}.entry{margin-bottom:8pt}.role{font-weight:bold}.meta{color:#444;font-weight:normal;font-size:9.5pt}ul{margin:3pt 0 0 18pt;padding:0}li{margin-bottom:2pt}`;
-    const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>${css}</style></head><body>${bdy}</body></html>`;
-    const blob = new Blob(['﻿', html], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(p.fullName || 'resume').replace(/\s+/g, '_')}.doc`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
   };
 
   return (
