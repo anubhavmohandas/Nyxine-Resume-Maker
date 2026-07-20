@@ -3532,19 +3532,23 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
   if (step === 'preview' && analysisResult) {
     // Full resume / includeAllItems → date-sorted (newest first)
     // Analyzed + filtered → sort by relevance score (highest first), date as tiebreaker
+    const rankedByRelevance = (profile.workExperience || [])
+      .slice()
+      .sort((a, b) => {
+        const scoreA = analysisResult.rankedExperiences.find(r => r.id === a.id)?.relevanceScore || 0;
+        const scoreB = analysisResult.rankedExperiences.find(r => r.id === b.id)?.relevanceScore || 0;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return parseDateForSort(b.startDate, b.current) - parseDateForSort(a.startDate, a.current);
+      });
+    const relevanceFiltered = rankedByRelevance.filter(job => {
+      const rank = analysisResult.rankedExperiences.find(r => r.id === job.id);
+      return rank && rank.relevanceScore >= 60;
+    });
+    // If the keyword match was too weak to clear the 60-score bar for anything,
+    // fall back to the full ranked list rather than rendering a blank resume.
     const selectedJobs = analysisResult.fullResume || analysisResult.includeAllItems
       ? sortChronologically(profile.workExperience || [], 'startDate', 'current')
-      : (profile.workExperience || [])
-          .filter(job => {
-            const rank = analysisResult.rankedExperiences.find(r => r.id === job.id);
-            return rank && rank.relevanceScore >= 60;
-          })
-          .sort((a, b) => {
-            const scoreA = analysisResult.rankedExperiences.find(r => r.id === a.id)?.relevanceScore || 0;
-            const scoreB = analysisResult.rankedExperiences.find(r => r.id === b.id)?.relevanceScore || 0;
-            if (scoreB !== scoreA) return scoreB - scoreA;
-            return parseDateForSort(b.startDate, b.current) - parseDateForSort(a.startDate, a.current);
-          });
+      : (relevanceFiltered.length > 0 ? relevanceFiltered : rankedByRelevance);
 
     const displaySkills = analysisResult.fullResume || analysisResult.includeAllItems
       ? [
