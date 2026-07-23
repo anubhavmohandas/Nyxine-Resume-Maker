@@ -1274,7 +1274,7 @@ const AcademicTemplate = ({ profile }) => {
           <h2 style={sectionHeading}>Skills &amp; Interests</h2>
           <div style={{ fontSize: '10pt', lineHeight: '1.6' }}>
             {techSkills.length > 0 && <p><strong>Technical: </strong>{techSkills.join(', ')}</p>}
-            {labSkills.length > 0 && <p><strong>Laboratory: </strong>{labSkills.join(', ')}</p>}
+            {labSkills.length > 0 && <p><strong>Methods &amp; Tools: </strong>{labSkills.join(', ')}</p>}
             {langSkills.length > 0 && <p><strong>Languages: </strong>{langSkills.join(', ')}</p>}
             {interests.length > 0 && <p><strong>Interests: </strong>{interests.join(', ')}</p>}
           </div>

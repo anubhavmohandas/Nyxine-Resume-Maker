@@ -407,6 +407,36 @@ const ScaledResumePreview = ({ children }) => {
   );
 };
 
+// Shrinks the fixed 794px (A4) resume page to fit narrow screens, so phones show
+// the whole page instead of clipping it off the right edge. Never scales past 1:1,
+// so desktop keeps true A4 size. The transform is reset for print (see the print
+// CSS in GenerateView) so the PDF still comes out full size.
+const FitToWidth = ({ children }) => {
+  const wrapRef = useRef(null);
+  const pageRef = useRef(null);
+  const [box, setBox] = useState({ scale: 1, height: 0 });
+  useEffect(() => {
+    const measure = () => {
+      const wrap = wrapRef.current, page = pageRef.current;
+      if (!wrap || !page) return;
+      const scale = Math.min(1, wrap.clientWidth / 794);
+      setBox({ scale, height: page.scrollHeight * scale });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (wrapRef.current) ro.observe(wrapRef.current);
+    if (pageRef.current) ro.observe(pageRef.current);
+    return () => ro.disconnect();
+  }, [children]);
+  return (
+    <div ref={wrapRef} className="rp-fit-wrap" style={{ width: '100%', height: box.height || 'auto', overflow: 'hidden' }}>
+      <div ref={pageRef} className="rp-fit-page" style={{ width: 794, transform: `scale(${box.scale})`, transformOrigin: 'top left' }}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const ProfileStrengthRing = ({ pct }) => {
   const r = 52, c = 2 * Math.PI * r;
   return (
@@ -445,8 +475,10 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
   const defaultTemplate = mode === 'academic' ? 'academic' : 'modern';
   const [selectedTemplate, setSelectedTemplate] = useState(defaultTemplate);
 
+  // Order MUST match WizardView's step order (App renders steps by index), or the
+  // sidebar labels jump to the wrong form.
   const steps = mode === 'academic'
-    ? ['Personal Information', 'Education', 'Research Experience', 'Publications', 'Presentations', 'Awards & Honors', 'Leadership & Activities', 'Skills & Interests', 'Custom Sections']
+    ? ['Personal Information', 'Research Experience', 'Education', 'Skills & Interests', 'Publications', 'Presentations', 'Awards & Honors', 'Leadership & Activities', 'Custom Sections']
     : ['Personal Information', 'Work Experience', 'Education', 'Skills', 'Projects', 'Additional', 'Custom Sections'];
 
   const TEMPLATES_LIST = [['ats', 'ATS-Optimized'], ['academic', 'Academic CV'], ['harvard', 'Harvard'], ['classic', 'Classic'], ['modern', 'Modern'], ['professional', 'Professional'], ['creative', 'Creative'], ['bold', 'Bold']];
@@ -493,6 +525,12 @@ const WorkspaceView = ({ profile, mode, toggleMode, setCurrentView, setCurrentSt
         education: sortedProfile.education || [],
         skills: profile.skills || {},
         projects: displayProjects,
+        researchExperience: sortChronologically(profile.researchExperience || [], 'startDate', 'current'),
+        publications: profile.publications || [],
+        presentations: profile.presentations || [],
+        awards: profile.awards || [],
+        activities: profile.activities || [],
+        customSections: profile.customSections || [],
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -869,7 +907,7 @@ const MarketingView = ({ setCurrentView, setCurrentStep, mode, toggleMode, profi
                 { icon: <FileText className="w-5 h-5" />, title: 'Build once, generate many', desc: 'One complete history powers unlimited targeted resumes — no re-typing per application.' },
                 { icon: <Upload className="w-5 h-5" />, title: 'Upload to auto-fill', desc: 'Drop in a PDF or DOCX — text is read on your device, contacts auto-fill, and your own AI structures the rest.' },
                 { icon: <Sparkles className="w-5 h-5" />, title: 'Smart keyword matching', desc: 'Paste a job description and a local algorithm scores each experience by relevance — no API call.' },
-                { icon: <Code className="w-5 h-5" />, title: 'Two levels of customization', desc: 'Add custom fields inside any entry, or create entirely new named sections — Patents, Grants, Clinical Rotations.' },
+                { icon: <Code className="w-5 h-5" />, title: 'Two levels of customization', desc: 'Add custom fields inside any entry, or create entirely new named sections — Grants, Fieldwork, Volunteering, whatever fits.' },
                 { icon: <Save className="w-5 h-5" />, title: 'Save unlimited versions', desc: 'Store a named resume per application with its template, job target, and match analysis. Export anytime.' },
               ].map(({ icon, title, desc }) => (
                 <div key={title} className="flex gap-4">
@@ -1215,7 +1253,20 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
         }
         return true;
         
-      case 1: // Work Experience
+      case 1: // Work Experience (industry) — in academic mode, step 1 is Research Experience
+        if (mode === 'academic') {
+          const research = profile.researchExperience || [];
+          if (research.length === 0) {
+            return window.confirm('No research experience added. Continue anyway?');
+          }
+          for (let r of research) {
+            if (!r.title.trim() || !r.institution.trim()) {
+              alert('Please fill in the role and institution for each research entry');
+              return false;
+            }
+          }
+          return true;
+        }
         if (profile.workExperience.length === 0) {
           return window.confirm('No work experience added. Continue anyway?');
         }
@@ -1248,7 +1299,7 @@ const WizardView = ({ currentStep, setCurrentStep, steps: _steps, profile, setPr
         return true;
         
       case 3: { // Skills
-        const totalSkills = profile.skills.technical.length + profile.skills.soft.length;
+        const totalSkills = profile.skills.technical.length + profile.skills.soft.length + (profile.skills.laboratory?.length || 0);
         if (totalSkills === 0) {
           return window.confirm('No skills added. Continue anyway?');
         }
@@ -1856,7 +1907,7 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
                 value={local.thesis || ''}
                 onChange={(e) => setLocal(prev => ({ ...prev, thesis: e.target.value }))}
                 className="w-full px-4 py-2 ny-input rounded-lg transition-all"
-                placeholder="e.g., Identification of free-living amoebae using PCR..."
+                placeholder="e.g., the title of your final-year thesis or major project"
               />
             </div>
             <div>
@@ -1866,7 +1917,7 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
                 onChange={(e) => setLocal(prev => ({ ...prev, coursework: e.target.value }))}
                 rows={2}
                 className="w-full px-4 py-2 ny-input rounded-lg transition-all resize-y"
-                placeholder="e.g., Biochemistry, Microbiology, Pathology, Molecular Biology..."
+                placeholder="e.g., the main subjects most relevant to the role you want"
               />
             </div>
           </>
@@ -1880,8 +1931,57 @@ const EduForm = ({ edu, idx, setProfile, removeEdu, mode }) => {
   );
 };
 
+// Color mapping for skill badges (Tailwind needs to see full class names)
+const SKILL_COLORS = {
+  technical:      { button: 'bg-blue-500',  bg: 'bg-blue-500/20',  text: 'text-blue-100',  border: 'border-blue-400/30' },
+  soft:           { button: 'bg-cyan-400',  bg: 'bg-cyan-400/20',  text: 'text-cyan-100',  border: 'border-cyan-300/30' },
+  certifications: { button: 'bg-green-500', bg: 'bg-green-500/20', text: 'text-green-100', border: 'border-green-400/30' },
+  languages:      { button: 'bg-amber-400', bg: 'bg-amber-400/20', text: 'text-amber-100', border: 'border-amber-300/30' },
+  laboratory:     { button: 'bg-teal-500',  bg: 'bg-teal-500/20',  text: 'text-teal-100',  border: 'border-teal-400/30' },
+  interests:      { button: 'bg-pink-400',  bg: 'bg-pink-400/20',  text: 'text-pink-100',  border: 'border-pink-300/30' },
+};
+
+// Hoisted out of SkillsStep: defining it inline gave it a new function identity
+// on every render, so React remounted all six inputs each time a skill was added
+// and the input lost focus mid-flow.
+const SkillSection = ({ title, cat, placeholder, inputRef, items, onAdd, onRemove }) => {
+  const colors = SKILL_COLORS[cat];
+  return (
+    <div>
+      <label className="block text-sm ny-text-2 mb-2">{title}</label>
+      <div className="flex gap-2 mb-2">
+        <input
+          ref={inputRef}
+          type="text"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              onAdd(cat, inputRef);
+            }
+          }}
+          className="flex-1 px-4 py-2 ny-input rounded-lg transition-all"
+          placeholder={placeholder}
+        />
+        <button onClick={() => onAdd(cat, inputRef)} className={`px-4 py-2 ${colors.button} text-white rounded-lg transition-colors`}>
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {items.map((skill, idx) => (
+          <span key={idx} className={`px-3 py-1 ${colors.bg} ${colors.text} rounded-full text-sm flex items-center gap-2 border ${colors.border}`}>
+            {skill}
+            <button onClick={() => onRemove(cat, idx)} className="hover:opacity-80 transition-opacity">
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const SkillsStep = ({ profile, setProfile, mode }) => {
-  // 🔧 FIX: Use refs to prevent re-render on every keystroke
+  // Refs keep the inputs uncontrolled so typing doesn't re-render the whole step.
   const technicalInputRef = useRef(null);
   const softInputRef = useRef(null);
   const certificationsInputRef = useRef(null);
@@ -1892,13 +1992,11 @@ const SkillsStep = ({ profile, setProfile, mode }) => {
   const addSkill = (cat, inputRef) => {
     const value = inputRef.current?.value.trim();
     if (!value) return;
-
     setProfile(prev => {
       const newSkills = { ...prev.skills };
       newSkills[cat] = [...(newSkills[cat] || []), value];
       return { ...prev, skills: newSkills };
     });
-    
     if (inputRef.current) {
       inputRef.current.value = '';
       inputRef.current.focus();
@@ -1913,94 +2011,19 @@ const SkillsStep = ({ profile, setProfile, mode }) => {
     });
   };
 
-  // Color mapping for skill badges (Tailwind needs to see full class names)
-  const colorMap = {
-    'technical': {
-      button: 'bg-blue-500',
-      bg: 'bg-blue-500/20',
-      text: 'text-blue-100',
-      border: 'border-blue-400/30'
-    },
-    'soft': {
-      button: 'bg-cyan-400',
-      bg: 'bg-cyan-400/20',
-      text: 'text-cyan-100',
-      border: 'border-cyan-300/30'
-    },
-    'certifications': {
-      button: 'bg-green-500',
-      bg: 'bg-green-500/20',
-      text: 'text-green-100',
-      border: 'border-green-400/30'
-    },
-    'languages': {
-      button: 'bg-amber-400',
-      bg: 'bg-amber-400/20',
-      text: 'text-amber-100',
-      border: 'border-amber-300/30'
-    },
-    'laboratory': {
-      button: 'bg-teal-500',
-      bg: 'bg-teal-500/20',
-      text: 'text-teal-100',
-      border: 'border-teal-400/30'
-    },
-    'interests': {
-      button: 'bg-pink-400',
-      bg: 'bg-pink-400/20',
-      text: 'text-pink-100',
-      border: 'border-pink-300/30'
-    }
-  };
-
-  const SkillSection = ({ title, cat, placeholder, inputRef }) => {
-    const colors = colorMap[cat];
-
-    return (
-      <div>
-        <label className="block text-sm ny-text-2 mb-2">{title}</label>
-        <div className="flex gap-2 mb-2">
-          <input
-            ref={inputRef}
-            type="text"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                addSkill(cat, inputRef);
-              }
-            }}
-            className="flex-1 px-4 py-2 ny-input rounded-lg transition-all"
-            placeholder={placeholder}
-          />
-          <button onClick={() => addSkill(cat, inputRef)} className={`px-4 py-2 ${colors.button} text-white rounded-lg transition-colors`}>
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {(profile.skills[cat] || []).map((skill, idx) => (
-            <span key={idx} className={`px-3 py-1 ${colors.bg} ${colors.text} rounded-full text-sm flex items-center gap-2 border ${colors.border}`}>
-              {skill}
-              <button onClick={() => removeSkill(cat, idx)} className="hover:opacity-80 transition-opacity">
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  const sectionProps = { onAdd: addSkill, onRemove: removeSkill };
 
   return (
     <div className="space-y-6">
       <p className="ny-text-2 text-sm">Type a skill and press Enter or click + to add. List 10-15 skills most relevant to your target jobs.</p>
-      <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." inputRef={technicalInputRef} />
-      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." inputRef={softInputRef} />
-      <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." inputRef={certificationsInputRef} />
-      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." inputRef={languagesInputRef} />
+      <SkillSection title="Technical Skills" cat="technical" placeholder="e.g., Python, React, AWS..." inputRef={technicalInputRef} items={profile.skills.technical || []} {...sectionProps} />
+      <SkillSection title="Soft Skills" cat="soft" placeholder="e.g., Leadership, Communication..." inputRef={softInputRef} items={profile.skills.soft || []} {...sectionProps} />
+      <SkillSection title="Certifications" cat="certifications" placeholder="e.g., AWS Certified, RHCSA..." inputRef={certificationsInputRef} items={profile.skills.certifications || []} {...sectionProps} />
+      <SkillSection title="Languages" cat="languages" placeholder="e.g., English (Native), Spanish (Fluent)..." inputRef={languagesInputRef} items={profile.skills.languages || []} {...sectionProps} />
       {mode === 'academic' && (
         <>
-          <SkillSection title="Laboratory Skills" cat="laboratory" placeholder="e.g., PCR, ELISA, MALDI-TOF, Flow Cytometry..." inputRef={laboratoryInputRef} />
-          <SkillSection title="Interests" cat="interests" placeholder="e.g., Photography, Badminton, Bioinformatics..." inputRef={interestsInputRef} />
+          <SkillSection title="Methods & Tools" cat="laboratory" placeholder="e.g., SPSS, statistical analysis, interviewing, lab techniques" inputRef={laboratoryInputRef} items={profile.skills.laboratory || []} {...sectionProps} />
+          <SkillSection title="Interests" cat="interests" placeholder="e.g., Photography, Chess, Science writing" inputRef={interestsInputRef} items={profile.skills.interests || []} {...sectionProps} />
         </>
       )}
     </div>
@@ -2239,17 +2262,17 @@ const ResearchEntryForm = ({ entry, idx, setProfile, removeEntry }) => {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Role / Position *</label>
-            <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Junior Research Fellow" />
+            <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="e.g., Research Assistant, Lab Intern" />
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Institution *</label>
-            <input type="text" value={local.institution} onChange={e => setLocal(p => ({ ...p, institution: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
+            <input type="text" value={local.institution} onChange={e => setLocal(p => ({ ...p, institution: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="e.g., your university, lab, or hospital" />
           </div>
         </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Location</label>
-            <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Puducherry, India" />
+            <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="City, Country" />
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Start Date</label>
@@ -2273,7 +2296,7 @@ const ResearchEntryForm = ({ entry, idx, setProfile, removeEntry }) => {
           <div className="space-y-2">
             {local.bullets.map((b, bi) => (
               <div key={bi} className="flex gap-2">
-                <input type="text" value={b} onChange={e => { const nb = [...local.bullets]; nb[bi] = e.target.value; setLocal(p => ({ ...p, bullets: nb })); }} className="flex-1 px-4 py-2 ny-input rounded-lg" placeholder="Performed PCR on 48 water samples..." />
+                <input type="text" value={b} onChange={e => { const nb = [...local.bullets]; nb[bi] = e.target.value; setLocal(p => ({ ...p, bullets: nb })); }} className="flex-1 px-4 py-2 ny-input rounded-lg" placeholder="e.g., what you worked on, the method you used, and the result" />
                 {local.bullets.length > 1 && <button onClick={() => removeBullet(bi)} className="ny-danger-text hover:opacity-80"><X className="w-4 h-4" /></button>}
               </div>
             ))}
@@ -2298,7 +2321,7 @@ const PublicationsStep = ({ profile, setProfile }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <p className="ny-text-2 text-sm">Add journal articles, conference papers, preprints, and book chapters</p>
+        <p className="ny-text-2 text-sm">List anything you've published — papers, articles, conference write-ups, or book chapters</p>
         <button onClick={addPub} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2"><Plus className="w-4 h-4" />Add Publication</button>
       </div>
       {pubs.length === 0 && (
@@ -2329,11 +2352,11 @@ const PubForm = ({ pub, idx, setProfile, removePub }) => {
       <div className="space-y-4">
         <div>
           <label className="block text-sm ny-text-2 mb-2">Title *</label>
-          <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Evaluating the Presence of Free-Living Amoebae in Hostel Water Systems..." />
+          <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="The title of your paper or article" />
         </div>
         <div>
           <label className="block text-sm ny-text-2 mb-2">Authors</label>
-          <input type="text" value={local.authors} onChange={e => setLocal(p => ({ ...p, authors: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Mathew A.A., Kumar S., et al." />
+          <input type="text" value={local.authors} onChange={e => setLocal(p => ({ ...p, authors: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="You and any co-authors, e.g., Sharma R., Patel A., et al." />
         </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
@@ -2348,7 +2371,7 @@ const PubForm = ({ pub, idx, setProfile, removePub }) => {
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Journal / Venue</label>
-            <input type="text" value={local.journal} onChange={e => setLocal(p => ({ ...p, journal: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Int. J. Adv. Med. Health Res." />
+            <input type="text" value={local.journal} onChange={e => setLocal(p => ({ ...p, journal: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Name of the journal or conference" />
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Year</label>
@@ -2356,8 +2379,9 @@ const PubForm = ({ pub, idx, setProfile, removePub }) => {
           </div>
         </div>
         <div>
-          <label className="block text-sm ny-text-2 mb-2">DOI / URL</label>
-          <input type="text" value={local.doi} onChange={e => setLocal(p => ({ ...p, doi: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="10.4103/ijamr.ijamr_277_24" />
+          <label className="block text-sm ny-text-2 mb-2">Link or DOI (optional)</label>
+          <input type="text" value={local.doi} onChange={e => setLocal(p => ({ ...p, doi: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="A web link to the paper, or its DOI" />
+          <p className="text-xs ny-text-3 mt-1">A DOI is the short ID printed on a published paper (e.g., 10.1000/example). Leave blank if you don't have one.</p>
         </div>
         <CustomFieldsBlock
           fields={local.customFields || []}
@@ -2409,7 +2433,7 @@ const PresForm = ({ pres, idx, setProfile, removePres }) => {
       <div className="space-y-4">
         <div>
           <label className="block text-sm ny-text-2 mb-2">Title *</label>
-          <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Identification of free-living amoebae using PCR..." />
+          <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Title of your talk or poster" />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
@@ -2433,7 +2457,7 @@ const PresForm = ({ pres, idx, setProfile, removePres }) => {
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Location / Institution</label>
-            <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
+            <input type="text" value={local.location} onChange={e => setLocal(p => ({ ...p, location: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="City or institution" />
           </div>
         </div>
         <CustomFieldsBlock
@@ -2487,11 +2511,11 @@ const AwardForm = ({ award, idx, setProfile, removeAward }) => {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Award / Honor Title *</label>
-            <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="GJ-STRAUS Awardee 2024" />
+            <input type="text" value={local.title} onChange={e => setLocal(p => ({ ...p, title: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="e.g., Dean's List, Best Paper, Merit Scholarship" />
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Awarding Organization</label>
-            <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="JIPMER, Puducherry" />
+            <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Who gave the award" />
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -2501,7 +2525,7 @@ const AwardForm = ({ award, idx, setProfile, removeAward }) => {
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Brief Description (optional)</label>
-            <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Top position with 80.5% aggregate across 3.5 years" />
+            <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="A short note about why you received it" />
           </div>
         </div>
         <CustomFieldsBlock
@@ -2566,7 +2590,7 @@ const ActivityForm = ({ activity, idx, setProfile, removeActivity }) => {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Activity / Event Name *</label>
-            <input type="text" value={local.name} onChange={e => setLocal(p => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="HIPRACON 2024 National Conference" />
+            <input type="text" value={local.name} onChange={e => setLocal(p => ({ ...p, name: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="e.g., a club, conference, or volunteer role" />
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Your Role</label>
@@ -2576,7 +2600,7 @@ const ActivityForm = ({ activity, idx, setProfile, removeActivity }) => {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm ny-text-2 mb-2">Organizer / Institution</label>
-            <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Dept. of Biochemistry, JIPMER" />
+            <input type="text" value={local.org} onChange={e => setLocal(p => ({ ...p, org: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Who organised it" />
           </div>
           <div>
             <label className="block text-sm ny-text-2 mb-2">Date / Year</label>
@@ -2585,7 +2609,7 @@ const ActivityForm = ({ activity, idx, setProfile, removeActivity }) => {
         </div>
         <div>
           <label className="block text-sm ny-text-2 mb-2">Description (optional)</label>
-          <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="Themed: Building the future of healthcare with Innovation and Creativity" />
+          <input type="text" value={local.description} onChange={e => setLocal(p => ({ ...p, description: e.target.value }))} className="w-full px-4 py-2 ny-input rounded-lg" placeholder="A short note about what you did or learned" />
         </div>
         <CustomFieldsBlock
           fields={local.customFields || []}
@@ -2671,7 +2695,7 @@ const CustomSectionsStep = ({ profile, setProfile }) => {
       <div className="flex justify-between items-center">
         <div>
           <p className="ny-text-2 text-sm">Add any section that doesn't fit the standard fields</p>
-          <p className="ny-text-3 text-xs mt-1">Examples: Patents, Grants, Clinical Rotations, Committees, Licenses, Memberships, Courses…</p>
+          <p className="ny-text-3 text-xs mt-1">Examples: Grants, Fieldwork, Volunteering, Committees, Licenses, Memberships, Courses…</p>
         </div>
         <button onClick={addSection} className="px-4 py-2 ny-btn-primary rounded-lg flex items-center gap-2 whitespace-nowrap">
           <Plus className="w-4 h-4" /> Add Section
@@ -2724,7 +2748,7 @@ const CustomSectionCard = ({ section, onUpdate, onRemove }) => {
             value={section.title}
             onChange={e => onUpdate({ ...section, title: e.target.value })}
             className="w-full px-4 py-2 ny-input rounded-lg text-base font-semibold"
-            placeholder="e.g., Patents, Grants, Memberships, Clinical Rotations…"
+            placeholder="e.g., Grants, Volunteering, Memberships, Committees…"
           />
         </div>
         <button onClick={onRemove} className="ny-danger-text hover:opacity-80 mt-6 flex-shrink-0">
@@ -3023,10 +3047,13 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
         // Safely get experience fields with defaults
         const title = experience.title || '';
         const company = experience.company || '';
-        const description = experience.description || '';
-        const duration = experience.duration || '';
+        const location = experience.location || '';
+        // The wizard stores achievements in `bullets`, not a `description`/`duration`
+        // field — scanning those is what makes keyword matching actually work.
+        const bulletText = Array.isArray(experience.bullets) ? experience.bullets.join(' ') : '';
+        const duration = `${experience.startDate || ''} ${experience.endDate || ''}`;
 
-        const expText = `${title} ${company} ${description}`.toLowerCase();
+        const expText = `${title} ${company} ${location} ${bulletText}`.toLowerCase();
 
         let matchScore = 0;
         let matchedKeywords = [];
@@ -3046,7 +3073,7 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
         }
 
         // Bonus for recent experience (within last 5 years)
-        if (duration) {
+        if (duration.trim()) {
           const yearMatch = duration.match(/(\d{4})/);
           if (yearMatch) {
             const year = parseInt(yearMatch[1]);
@@ -3721,6 +3748,11 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                 margin: ${['creative', 'bold'].includes(selectedTemplate) ? '0' : '0.75in'};
               }
 
+              /* The screen-only fit-to-width scaling must not reach the printed page:
+                 undo the transform and the measured height so the PDF is full A4 size. */
+              .rp-fit-wrap { height: auto !important; overflow: visible !important; }
+              .rp-fit-page { transform: none !important; width: 794px !important; }
+
               /* Hide everything except resume */
               body * {
                 visibility: hidden;
@@ -3808,7 +3840,8 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
                small viewports. Full-bleed templates (Creative/Bold) use 0 padding
                so their headers/sidebars run edge-to-edge. All others get 0.75in
                padding to mirror the @page margin the PDF engine applies. */}
-          <div className="overflow-x-auto mb-6 print:mb-0 print:overflow-visible">
+          <div className="mb-6 print:mb-0" style={{ maxWidth: 794, margin: '0 auto' }}>
+          <FitToWidth>
           <div
             id="resume-preview"
             className="print:shadow-none print:rounded-none print:p-0"
@@ -3891,7 +3924,8 @@ const GenerateView = ({ setCurrentView, profile, setSavedResumes, savedResumeToL
               <AcademicTemplate profile={sortedProfile} />
             )}
           </div>{/* end #resume-preview */}
-          </div>{/* end overflow-x-auto scroll wrapper */}
+          </FitToWidth>
+          </div>{/* end fit-to-width wrapper */}
 
           <div className="flex gap-3 no-print">
             <button

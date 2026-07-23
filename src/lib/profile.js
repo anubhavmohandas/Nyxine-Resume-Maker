@@ -46,7 +46,7 @@ export const profileToResumeText = (prof) => {
     lines.push('\nSKILLS');
     if (tech.length)  lines.push('Technical: ' + tech.join(', '));
     if (soft.length)  lines.push('Professional: ' + soft.join(', '));
-    if (lab.length)   lines.push('Laboratory: ' + lab.join(', '));
+    if (lab.length)   lines.push('Methods & Tools: ' + lab.join(', '));
     if (lang.length)  lines.push('Languages: ' + lang.join(', '));
     if (certs.length) lines.push('Certifications: ' + certs.join(', '));
   }

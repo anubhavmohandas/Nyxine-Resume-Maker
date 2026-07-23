@@ -16,6 +16,7 @@ import {
   BorderStyle,
   convertInchesToTwip,
 } from 'docx';
+import { formatDate } from './dates';
 
 const clean = (s) => String(s ?? '').trim();
 const stripProtocol = (u) => clean(u).replace(/^https?:\/\//i, '');
@@ -45,10 +46,48 @@ const sectionHeading = (text) =>
     heading: HeadingLevel.HEADING_2,
     spacing: { before: 280, after: 120 },
     border: { bottom: { color: '000000', space: 2, style: BorderStyle.SINGLE, size: 4 } },
-    children: [new TextRun({ text: text.toUpperCase(), bold: true })],
+    children: [new TextRun({ text: String(text || '').toUpperCase(), bold: true })],
   });
 
-export async function buildResumeDocxBlob({ personal, selectedJobs, education, skills, projects }) {
+const dateRange = (start, end, current) =>
+  `${formatDate(start)} – ${current ? 'Present' : formatDate(end)}`;
+
+// Shared renderer for role-style entries (work + research). Both carry a
+// title, an org, a date range, and achievement bullets — only the org field
+// name differs (company vs institution), which the caller resolves.
+const pushRoleEntries = (children, entries, orgKey) => {
+  entries.filter(Boolean).forEach((e) => {
+    const roleLine = [clean(e.title), e[orgKey] ? `— ${clean(e[orgKey])}` : ''].filter(Boolean).join(' ');
+    children.push(
+      new Paragraph({
+        spacing: { before: 160, after: 20 },
+        children: [
+          new TextRun({ text: roleLine, bold: true }),
+          new TextRun({ text: `    ${dateRange(e.startDate, e.endDate, e.current)}`, italics: true, color: '555555' }),
+        ],
+      })
+    );
+    (e.bullets || [])
+      .filter((b) => b && b.trim())
+      .forEach((b) => {
+        children.push(new Paragraph({ text: clean(b), bullet: { level: 0 } }));
+      });
+  });
+};
+
+export async function buildResumeDocxBlob({
+  personal,
+  selectedJobs,
+  education,
+  skills,
+  projects,
+  researchExperience = [],
+  publications = [],
+  presentations = [],
+  awards = [],
+  activities = [],
+  customSections = [],
+}) {
   const p = personal || {};
   const children = [];
 
@@ -72,6 +111,8 @@ export async function buildResumeDocxBlob({ personal, selectedJobs, education, s
   if (p.linkedin) pushContact(stripProtocol(p.linkedin), p.linkedin);
   if (p.github) pushContact(stripProtocol(p.github), p.github);
   if (p.portfolio) pushContact(stripProtocol(p.portfolio), p.portfolio);
+  if (p.researchgate) pushContact(stripProtocol(p.researchgate), p.researchgate);
+  if (p.orcid) pushContact(`ORCID: ${clean(p.orcid)}`);
   if (contactRuns.length) {
     children.push(new Paragraph({ children: contactRuns, spacing: { after: 200 } }));
   }
@@ -84,24 +125,13 @@ export async function buildResumeDocxBlob({ personal, selectedJobs, education, s
   const jobs = (selectedJobs || []).filter(Boolean);
   if (jobs.length) {
     children.push(sectionHeading('Experience'));
-    jobs.forEach((j) => {
-      const roleLine = [clean(j.title), j.company ? `— ${clean(j.company)}` : ''].filter(Boolean).join(' ');
-      const dateText = `${clean(j.startDate)} – ${j.current ? 'Present' : clean(j.endDate)}`;
-      children.push(
-        new Paragraph({
-          spacing: { before: 160, after: 20 },
-          children: [
-            new TextRun({ text: roleLine, bold: true }),
-            new TextRun({ text: `    ${dateText}`, italics: true, color: '555555' }),
-          ],
-        })
-      );
-      (j.bullets || [])
-        .filter((b) => b && b.trim())
-        .forEach((b) => {
-          children.push(new Paragraph({ text: clean(b), bullet: { level: 0 } }));
-        });
-    });
+    pushRoleEntries(children, jobs, 'company');
+  }
+
+  const research = (researchExperience || []).filter(Boolean);
+  if (research.length) {
+    children.push(sectionHeading('Research Experience'));
+    pushRoleEntries(children, research, 'institution');
   }
 
   const edu = (education || []).filter(Boolean);
@@ -115,10 +145,66 @@ export async function buildResumeDocxBlob({ personal, selectedJobs, education, s
           children: [new TextRun({ text: degreeLine, bold: true })],
         })
       );
-      const meta = [clean(e.school), clean(e.graduationDate), e.gpa ? `${clean(e.gradeType || 'GPA')}: ${clean(e.gpa)}` : '']
+      const meta = [clean(e.school), formatDate(e.graduationDate), e.gpa ? `${clean(e.gradeType || 'GPA')}: ${clean(e.gpa)}` : '']
         .filter(Boolean)
         .join('  ·  ');
       if (meta) children.push(new Paragraph({ text: meta, spacing: { after: 100 } }));
+      if (e.thesis) children.push(new Paragraph({ children: [new TextRun({ text: 'Thesis: ', italics: true }), new TextRun({ text: clean(e.thesis) })], spacing: { after: 60 } }));
+      if (e.coursework) children.push(new Paragraph({ children: [new TextRun({ text: 'Relevant Coursework: ', italics: true }), new TextRun({ text: clean(e.coursework) })], spacing: { after: 100 } }));
+    });
+  }
+
+  const pubs = (publications || []).filter(Boolean);
+  if (pubs.length) {
+    children.push(sectionHeading('Publications'));
+    pubs.forEach((pub) => {
+      const runs = [];
+      if (pub.authors) runs.push(new TextRun({ text: `${clean(pub.authors)}. ` }));
+      if (pub.title) runs.push(new TextRun({ text: clean(pub.title), italics: true }), new TextRun({ text: '.' }));
+      if (pub.journal) runs.push(new TextRun({ text: ` ${clean(pub.journal)}.` }));
+      if (pub.year) runs.push(new TextRun({ text: ` ${clean(pub.year)}.` }));
+      if (pub.doi) runs.push(new TextRun({ text: ` DOI: ${clean(pub.doi)}.` }));
+      if (runs.length) children.push(new Paragraph({ children: runs, spacing: { after: 80 } }));
+    });
+  }
+
+  const pres = (presentations || []).filter(Boolean);
+  if (pres.length) {
+    children.push(sectionHeading('Presentations'));
+    pres.forEach((pr) => {
+      const meta = [pr.event, pr.location, pr.date].filter(Boolean).map((x) => ` ${clean(x)}.`).join('');
+      children.push(
+        new Paragraph({
+          spacing: { after: 60 },
+          children: [new TextRun({ text: clean(pr.title), bold: true }), ...(meta ? [new TextRun({ text: meta })] : [])],
+        })
+      );
+    });
+  }
+
+  const aw = (awards || []).filter(Boolean);
+  if (aw.length) {
+    children.push(sectionHeading('Awards & Honors'));
+    aw.forEach((a) => {
+      const line = [clean(a.title), a.org ? `, ${clean(a.org)}` : '', a.year ? ` (${clean(a.year)})` : ''].join('');
+      children.push(new Paragraph({ spacing: { after: a.description ? 0 : 60 }, children: [new TextRun({ text: line, bold: true })] }));
+      if (a.description) children.push(new Paragraph({ text: clean(a.description), spacing: { after: 60 } }));
+    });
+  }
+
+  const acts = (activities || []).filter(Boolean);
+  if (acts.length) {
+    children.push(sectionHeading('Leadership & Activities'));
+    acts.forEach((a) => {
+      const head = [clean(a.name), a.role ? ` — ${clean(a.role)}` : ''].join('');
+      const meta = [a.org, a.date].filter(Boolean).map(clean).join('. ');
+      children.push(
+        new Paragraph({
+          spacing: { after: a.description ? 0 : 60 },
+          children: [new TextRun({ text: head, bold: true }), ...(meta ? [new TextRun({ text: `   ${meta}`, color: '555555' })] : [])],
+        })
+      );
+      if (a.description) children.push(new Paragraph({ text: clean(a.description), spacing: { after: 60 } }));
     });
   }
 
@@ -133,9 +219,11 @@ export async function buildResumeDocxBlob({ personal, selectedJobs, education, s
   };
   const skillParas = [
     skillRow('Technical', sk.technical),
+    skillRow('Methods & Tools', sk.laboratory),
     skillRow('Professional', sk.soft),
     skillRow('Languages', sk.languages),
     skillRow('Certifications', sk.certifications),
+    skillRow('Interests', sk.interests),
   ].filter(Boolean);
   if (skillParas.length) {
     children.push(sectionHeading('Skills'));
@@ -166,6 +254,16 @@ export async function buildResumeDocxBlob({ personal, selectedJobs, education, s
       }
     });
   }
+
+  // Profile-level custom sections (both modes) — appended last, in order.
+  (customSections || [])
+    .filter((s) => s && s.title && (s.entries || []).some((e) => e.text && e.text.trim()))
+    .forEach((sec) => {
+      children.push(sectionHeading(sec.title));
+      (sec.entries || [])
+        .filter((e) => e.text && e.text.trim())
+        .forEach((e) => children.push(new Paragraph({ text: clean(e.text), bullet: { level: 0 } })));
+    });
 
   const doc = new Document({
     sections: [
